@@ -1,3 +1,5 @@
+using System;
+
 namespace LightUpUI.Models.Tiles;
 
 public enum TileItemKind
@@ -17,6 +19,8 @@ public sealed class TileItem
     public string? Arguments { get; set; }
     public TileItemKind Kind { get; set; } = TileItemKind.Shortcut;
     public int SortOrder { get; set; }
+    public int LaunchCount { get; set; }
+    public DateTime? LastLaunchedAtUtc { get; set; }
     public string? CustomIconPath { get; set; }
     public string? Notes { get; set; }
 }

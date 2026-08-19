@@ -17,9 +17,19 @@ public sealed class TileSearchProvider(ILauncherStateStore stateStore) : ISearch
         var state = await stateStore.LoadAsync(cancellationToken);
         var normalizedQuery = query.Trim();
 
-        return state.Categories
+        var items = state.Categories
             .OrderBy(category => category.SortOrder)
-            .SelectMany(category => category.Items.OrderBy(item => item.SortOrder))
+            .SelectMany(category => category.Items.OrderBy(item => item.SortOrder));
+
+        if (normalizedQuery.Length == 0)
+        {
+            items = items
+                .OrderByDescending(item => item.LastLaunchedAtUtc ?? DateTime.MinValue)
+                .ThenByDescending(item => item.LaunchCount)
+                .ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase);
+        }
+
+        var results = items
             .Where(item => Matches(item, normalizedQuery))
             .Select(item => new LauncherItem(
                 item.Id,
@@ -30,9 +40,14 @@ public sealed class TileSearchProvider(ILauncherStateStore stateStore) : ISearch
                 MapKind(item.Kind),
                 Score(item, normalizedQuery),
                 item.CustomIconPath))
-            .OrderByDescending(item => item.Relevance)
-            .ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+        return normalizedQuery.Length == 0
+            ? results
+            : results
+                .OrderByDescending(item => item.Relevance)
+                .ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
     }
 
     private static bool Matches(TileItem item, string query)
@@ -49,7 +64,7 @@ public sealed class TileSearchProvider(ILauncherStateStore stateStore) : ISearch
     private static int Score(TileItem item, string query)
     {
         if (query.Length == 0)
-            return 0 - item.SortOrder;
+            return item.LaunchCount;
         if (item.Title.Equals(query, StringComparison.OrdinalIgnoreCase))
             return 1000;
         if (item.Title.StartsWith(query, StringComparison.OrdinalIgnoreCase))

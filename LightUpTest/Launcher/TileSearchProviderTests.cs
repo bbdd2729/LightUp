@@ -43,6 +43,33 @@ public sealed class TileSearchProviderTests
         Assert.Empty(results);
     }
 
+    [Fact]
+    public async Task SearchAsync_without_a_query_orders_tiles_by_recent_use_then_launch_count()
+    {
+        var state = new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory
+                {
+                    Id = "all",
+                    Name = "全部",
+                    Items =
+                    [
+                        new TileItem { Id = "frequent", Title = "Frequent", TargetPath = "frequent.exe", LaunchCount = 10 },
+                        new TileItem { Id = "recent", Title = "Recent", TargetPath = "recent.exe", LaunchCount = 1, LastLaunchedAtUtc = new DateTime(2026, 8, 20, 10, 0, 0, DateTimeKind.Utc) },
+                        new TileItem { Id = "older", Title = "Older", TargetPath = "older.exe", LaunchCount = 50, LastLaunchedAtUtc = new DateTime(2026, 8, 19, 10, 0, 0, DateTimeKind.Utc) }
+                    ]
+                }
+            ]
+        };
+        var provider = new TileSearchProvider(new FakeStateStore(state));
+
+        var results = await provider.SearchAsync("", TestContext.Current.CancellationToken);
+
+        Assert.Equal(["recent", "older", "frequent"], results.Select(item => item.Id));
+    }
+
     private sealed class FakeStateStore(TileLauncherState state) : ILauncherStateStore
     {
         public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)

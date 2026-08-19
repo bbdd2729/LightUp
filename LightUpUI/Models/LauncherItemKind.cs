@@ -4,5 +4,6 @@ public enum LauncherItemKind
 {
     Application,
     Shortcut,
-    PathExecutable
+    PathExecutable,
+    Action
 }

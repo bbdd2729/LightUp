@@ -71,6 +71,7 @@ public partial class MainViewModel : ViewModelBase
         SelectedItem = null;
         StatusText = "输入应用名称开始搜索";
         IsLauncherVisible = true;
+        _ = SearchAsync(string.Empty);
     }
 
     public void ResetForHide()
@@ -90,15 +91,6 @@ public partial class MainViewModel : ViewModelBase
         _searchCancellation = new CancellationTokenSource();
         var cancellationToken = _searchCancellation.Token;
 
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            Results.Clear();
-            SelectedItem = null;
-            StatusText = "输入应用名称开始搜索";
-            IsSearching = false;
-            return;
-        }
-
         IsSearching = true;
         StatusText = string.Empty;
         try
@@ -106,10 +98,13 @@ public partial class MainViewModel : ViewModelBase
             var results = await _searchService.SearchAsync(SearchMode, query, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             Results.Clear();
-            foreach (var item in results.Take(30))
+            var maxResults = string.IsNullOrWhiteSpace(query) ? 10 : 30;
+            foreach (var item in results.Take(maxResults))
                 Results.Add(item);
             SelectedItem = Results.FirstOrDefault();
-            StatusText = Results.Count == 0 ? "没有找到匹配项目" : string.Empty;
+            StatusText = Results.Count == 0
+                ? string.IsNullOrWhiteSpace(query) ? "暂无可显示的最近项目" : "没有找到匹配项目"
+                : string.Empty;
         }
         catch (OperationCanceledException)
         {

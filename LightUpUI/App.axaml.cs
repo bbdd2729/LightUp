@@ -33,6 +33,7 @@ public class App : Application
                 .GetResult();
             var fullProviders = new List<ISearchProvider>
             {
+                tileProvider,
                 new ShortcutSearchProvider(),
                 new PathExecutableSearchProvider()
             };
@@ -41,7 +42,9 @@ public class App : Application
                 searchSettings);
             fullProviders.AddRange(pluginHost.Providers);
             var searchService = new SearchService(fullProviders, [tileProvider]);
-            var processLauncher = new WindowsProcessLauncher();
+            IProcessLauncher processLauncher = new UsageTrackingProcessLauncher(
+                new WindowsProcessLauncher(),
+                new TileUsageService(tileStateStore));
             var windowHost = new LauncherWindowHost();
             var viewModel = new ViewModels.MainViewModel(searchService, processLauncher, windowHost);
             viewModel.SearchMode = searchSettings.Mode;
