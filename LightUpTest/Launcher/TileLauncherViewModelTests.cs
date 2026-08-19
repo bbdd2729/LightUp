@@ -48,13 +48,53 @@ public sealed class TileLauncherViewModelTests
         Assert.Equal(1, store.SaveCount);
     }
 
+    [Fact]
+    public async Task AddCategory_creates_selects_and_persists_a_named_category()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部" }]
+        });
+        var viewModel = new TileLauncherViewModel(store, new FakeProcessLauncher());
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.AddCategory("工作");
+
+        Assert.Equal(2, viewModel.Categories.Count);
+        Assert.Equal("工作", viewModel.SelectedCategory?.Name);
+        Assert.Equal(viewModel.SelectedCategory?.Id, store.State.SelectedCategoryId);
+        Assert.Equal(1, store.SaveCount);
+    }
+
+    [Fact]
+    public async Task Selecting_a_category_persists_it_as_the_next_active_category()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作" }
+            ]
+        });
+        var viewModel = new TileLauncherViewModel(store, new FakeProcessLauncher());
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.SelectedCategory = viewModel.Categories[1];
+
+        Assert.Equal("work", store.State.SelectedCategoryId);
+        Assert.Equal(1, store.SaveCount);
+    }
+
     private sealed class FakeStateStore(TileLauncherState state) : ILauncherStateStore
     {
         public int SaveCount { get; private set; }
-        public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken) => Task.FromResult(state);
+        public TileLauncherState State { get; private set; } = state;
+        public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken) => Task.FromResult(State);
         public Task SaveAsync(TileLauncherState state, CancellationToken cancellationToken)
         {
             SaveCount++;
+            State = state;
             return Task.CompletedTask;
         }
     }

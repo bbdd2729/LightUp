@@ -16,6 +16,7 @@ public partial class TileLauncherViewModel : ViewModelBase
     private readonly ILauncherStateStore _stateStore;
     private readonly IProcessLauncher _processLauncher;
     private TileLauncherState _state = new();
+    private bool _isLoading;
 
     public TileLauncherViewModel(ILauncherStateStore stateStore, IProcessLauncher processLauncher)
     {
@@ -38,21 +39,32 @@ public partial class TileLauncherViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = string.Empty;
 
+    [ObservableProperty]
+    private string _newCategoryName = string.Empty;
+
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        _state = await _stateStore.LoadAsync(cancellationToken);
-        if (_state.Categories.Count == 0)
+        _isLoading = true;
+        try
         {
-            _state.Categories.Add(new TileCategory { Id = "all", Name = "全部" });
+            _state = await _stateStore.LoadAsync(cancellationToken);
+            if (_state.Categories.Count == 0)
+            {
+                _state.Categories.Add(new TileCategory { Id = "all", Name = "全部" });
+            }
+
+            Categories.Clear();
+            foreach (var category in _state.Categories.OrderBy(category => category.SortOrder))
+                Categories.Add(category);
+
+            SelectedCategory = Categories.FirstOrDefault(category => category.Id == _state.SelectedCategoryId)
+                ?? Categories[0];
+            StatusText = string.Empty;
         }
-
-        Categories.Clear();
-        foreach (var category in _state.Categories.OrderBy(category => category.SortOrder))
-            Categories.Add(category);
-
-        SelectedCategory = Categories.FirstOrDefault(category => category.Id == _state.SelectedCategoryId)
-            ?? Categories[0];
-        StatusText = string.Empty;
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     public void AddItem(TileItem item)
@@ -73,6 +85,29 @@ public partial class TileLauncherViewModel : ViewModelBase
         SaveState();
     }
 
+    public void AddCategory(string name)
+    {
+        var normalizedName = name.Trim();
+        if (normalizedName.Length == 0)
+            return;
+
+        if (Categories.Any(category => category.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusText = "已存在同名分类";
+            return;
+        }
+
+        var category = new TileCategory
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Name = normalizedName,
+            SortOrder = Categories.Count
+        };
+        Categories.Add(category);
+        SelectedCategory = category;
+        NewCategoryName = string.Empty;
+    }
+
     public void RemoveItem(TileItem item)
     {
         if (SelectedCategory?.Items.Remove(item) != true)
@@ -88,9 +123,10 @@ public partial class TileLauncherViewModel : ViewModelBase
             return;
 
         SelectedCategory = category;
-        _state.SelectedCategoryId = category.Id;
-        SaveState();
     }
+
+    [RelayCommand]
+    private void AddNewCategory() => AddCategory(NewCategoryName);
 
     [RelayCommand]
     private async Task OpenSelectedAsync()
@@ -105,6 +141,12 @@ public partial class TileLauncherViewModel : ViewModelBase
     partial void OnSelectedCategoryChanged(TileCategory? value)
     {
         RefreshVisibleItems();
+        if (value is null)
+            return;
+
+        _state.SelectedCategoryId = value.Id;
+        if (!_isLoading)
+            SaveState();
     }
 
     partial void OnSearchTextChanged(string value)
