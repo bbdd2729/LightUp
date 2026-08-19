@@ -41,6 +41,11 @@ public class App : Application
             windowHost.AttachViewModel(viewModel);
             windowHost.Attach(window);
 
+            var tileViewModel = new ViewModels.TileLauncherViewModel(tileStateStore, processLauncher);
+            var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
+            var tileWindow = new TileLauncherWindow(tileViewModel);
+            tileWindowHost.Attach(tileWindow);
+
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             desktop.MainWindow = window;
 
@@ -48,7 +53,17 @@ public class App : Application
             hotkeyService.HotkeyPressed += (_, _) =>
                 Dispatcher.UIThread.Post(windowHost.Toggle);
             hotkeyService.Start();
-            desktop.Exit += (_, _) => hotkeyService.Dispose();
+
+            var tileHotkeyService = new WindowsGlobalHotkeyService(includeShift: true);
+            tileHotkeyService.HotkeyPressed += (_, _) =>
+                Dispatcher.UIThread.Post(tileWindowHost.Toggle);
+            tileHotkeyService.Start();
+
+            desktop.Exit += (_, _) =>
+            {
+                hotkeyService.Dispose();
+                tileHotkeyService.Dispose();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

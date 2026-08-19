@@ -8,12 +8,16 @@ namespace LightUpUI.Services;
 public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
 {
     private const int ModAlt = 0x0001;
+    private const int ModShift = 0x0004;
     private const int VirtualKeySpace = 0x20;
     private const uint WmHotKey = 0x0312;
     private const uint WmQuit = 0x0012;
     private const uint PmNoRemove = 0x0000;
-    private const int HotkeyId = 0x4C55;
+    private static int s_nextHotkeyId = 0x4C55;
 
+    private readonly uint _modifiers;
+    private readonly uint _virtualKey;
+    private readonly int _hotkeyId;
     private readonly ManualResetEventSlim _ready = new(false);
     private readonly object _gate = new();
     private Thread? _thread;
@@ -22,6 +26,13 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
     private bool _disposed;
 
     public event EventHandler? HotkeyPressed;
+
+    public WindowsGlobalHotkeyService(bool includeShift = false)
+    {
+        _modifiers = (uint)(ModAlt | (includeShift ? ModShift : 0));
+        _virtualKey = VirtualKeySpace;
+        _hotkeyId = Interlocked.Increment(ref s_nextHotkeyId);
+    }
 
     public void Start()
     {
@@ -78,7 +89,7 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
     {
         _threadId = GetCurrentThreadId();
         _ = PeekMessage(out _, IntPtr.Zero, 0, 0, PmNoRemove);
-        _registered = RegisterHotKey(IntPtr.Zero, HotkeyId, ModAlt, VirtualKeySpace);
+        _registered = RegisterHotKey(IntPtr.Zero, _hotkeyId, _modifiers, _virtualKey);
         _ready.Set();
 
         if (!_registered)
@@ -88,7 +99,7 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
         {
             while (GetMessage(out var message, IntPtr.Zero, 0, 0) > 0)
             {
-                if (message.Message == WmHotKey && message.WParam.ToInt32() == HotkeyId)
+                if (message.Message == WmHotKey && message.WParam.ToInt32() == _hotkeyId)
                 {
                     try
                     {
@@ -103,7 +114,7 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
         }
         finally
         {
-            UnregisterHotKey(IntPtr.Zero, HotkeyId);
+            UnregisterHotKey(IntPtr.Zero, _hotkeyId);
             _registered = false;
             _threadId = 0;
         }
