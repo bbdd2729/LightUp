@@ -24,7 +24,12 @@ public partial class TileLauncherWindow : Window
         DragDrop.SetAllowDrop(this, true);
     }
 
-    public void FocusSearchBox() => SearchBox.Focus();
+    public void FocusSearchBox()
+    {
+        TryFocusSearchBox(this.FindControl<TextBox>("SearchBox"));
+    }
+
+    public static bool TryFocusSearchBox(Control? searchBox) => searchBox?.Focus() == true;
 
     private TileLauncherViewModel ViewModel => (TileLauncherViewModel)DataContext!;
 
