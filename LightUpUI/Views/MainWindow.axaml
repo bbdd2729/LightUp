@@ -1,22 +1,89 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LightUpUI.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LightUpUI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="LightUpUI">
+        Width="680"
+        Height="460"
+        MinHeight="180"
+        MaxHeight="620"
+        Title="LightUp"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        ShowActivated="True"
+        Topmost="True"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur,Transparent"
+        TransparencyBackgroundFallback="#E61B1B1B"
+        KeyDown="Window_KeyDown"
+        Deactivated="Window_Deactivated">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+    <Border Background="#E61B1B1B"
+            BorderBrush="#32FFFFFF"
+            BorderThickness="1"
+            CornerRadius="18"
+            Padding="18">
+        <Border.BoxShadow>
+            <BoxShadows>0 12 36 0 #90000000</BoxShadows>
+        </Border.BoxShadow>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+            <TextBlock Grid.Row="0" Text="LightUp" FontSize="13" FontWeight="SemiBold" Foreground="#A8FFFFFF"/>
 
+            <Border Grid.Row="1" Height="50" Background="#20FFFFFF" BorderBrush="#35FFFFFF" BorderThickness="1" CornerRadius="12" Padding="14,0">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <TextBlock Grid.Column="0" Text="⌕" FontSize="25" Foreground="#B8FFFFFF" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1" x:Name="QueryBox"
+                             Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="搜索应用、程序或快捷方式..."
+                             Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White"
+                             FontSize="17" VerticalContentAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text="Alt + Space" Foreground="#66FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2">
+                <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                         Background="Transparent" BorderThickness="0" Padding="0">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0,2"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#18FFFFFF"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#303B82F6"/>
+                            <Setter Property="BorderBrush" Value="#FF3B82F6"/>
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="12,9" CornerRadius="10">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border Width="38" Height="38" CornerRadius="10" Background="#303B82F6">
+                                        <TextBlock Text="●" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="White"/>
+                                        <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="#99FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Text="{Binding Kind}" Foreground="#66FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock Text="{Binding StatusText}" Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding !IsSearching}"/>
+                <ProgressBar IsIndeterminate="True" Height="2" VerticalAlignment="Bottom" IsVisible="{Binding IsSearching}"/>
+            </Grid>
+
+            <TextBlock Grid.Row="3" Text="↑↓ 选择    Enter 启动    Esc 关闭" Foreground="#66FFFFFF" FontSize="10" HorizontalAlignment="Right"/>
+        </Grid>
+    </Border>
 </Window>
