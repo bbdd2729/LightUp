@@ -155,6 +155,7 @@ public class App : Application
         openTilesItem.Click += (_, _) => tileHost.Show();
         settingsItem.Click += (_, _) => openSettings();
         exitItem.Click += (_, _) => desktop.Shutdown();
+        trayIcon.Clicked += (_, _) => searchHost.Show();
         TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
         desktop.Exit += (_, _) => trayIcon.Dispose();
     }
