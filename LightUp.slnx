@@ -1,0 +1,4 @@
+<Solution>
+    <Project Path="LightUpTest/LightUpTest.csproj"/>
+    <Project Path="LightUpUI/LightUpUI.csproj"/>
+</Solution>
