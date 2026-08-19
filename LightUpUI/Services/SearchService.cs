@@ -7,16 +7,40 @@ using LightUpUI.Models;
 
 namespace LightUpUI.Services;
 
-public sealed class SearchService(IEnumerable<ISearchProvider> providers) : ISearchService
+public sealed class SearchService : ISearchService
 {
-    private readonly IReadOnlyList<ISearchProvider> _providers = providers.ToArray();
+    private readonly IReadOnlyList<ISearchProvider> _providers;
+    private readonly IReadOnlyList<ISearchProvider> _simpleProviders;
+
+    public SearchService(IEnumerable<ISearchProvider> providers)
+    {
+        _providers = providers.ToArray();
+        _simpleProviders = _providers;
+    }
+
+    public SearchService(
+        IEnumerable<ISearchProvider> providers,
+        IEnumerable<ISearchProvider> simpleProviders)
+        : this(providers)
+    {
+        _simpleProviders = simpleProviders.ToArray();
+    }
+
+    public SearchLauncherMode Mode { get; set; } = SearchLauncherMode.Full;
 
     public async Task<IReadOnlyList<LauncherItem>> SearchAsync(
         string query,
         CancellationToken cancellationToken)
+        => await SearchAsync(Mode, query, cancellationToken);
+
+    public async Task<IReadOnlyList<LauncherItem>> SearchAsync(
+        SearchLauncherMode mode,
+        string query,
+        CancellationToken cancellationToken)
     {
         var normalizedQuery = query.Trim();
-        var providerTasks = _providers.Select(provider => SearchProviderSafeAsync(provider, normalizedQuery, cancellationToken));
+        var providers = mode == SearchLauncherMode.Simple ? _simpleProviders : _providers;
+        var providerTasks = providers.Select(provider => SearchProviderSafeAsync(provider, normalizedQuery, cancellationToken));
         var providerResults = await Task.WhenAll(providerTasks);
 
         return providerResults

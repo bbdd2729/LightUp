@@ -1,8 +1,10 @@
 using Avalonia;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using LightUpUI.Models;
 using LightUpUI.Services;
 using LightUpUI.Views;
 
@@ -19,14 +21,22 @@ public class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var tileStateStore = new JsonLauncherStateStore();
+            var tileProvider = new TileSearchProvider(tileStateStore);
             var searchService = new SearchService(
             [
                 new ShortcutSearchProvider(),
                 new PathExecutableSearchProvider()
-            ]);
+            ],
+            [tileProvider]);
+            var searchSettings = new SearchLauncherSettingsStore()
+                .LoadAsync(CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
             var processLauncher = new WindowsProcessLauncher();
             var windowHost = new LauncherWindowHost();
             var viewModel = new ViewModels.MainViewModel(searchService, processLauncher, windowHost);
+            viewModel.SearchMode = searchSettings.Mode;
             var window = new MainWindow(viewModel);
             windowHost.AttachViewModel(viewModel);
             windowHost.Attach(window);

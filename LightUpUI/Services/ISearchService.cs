@@ -10,4 +10,9 @@ public interface ISearchService
     Task<IReadOnlyList<LauncherItem>> SearchAsync(
         string query,
         CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<LauncherItem>> SearchAsync(
+        SearchLauncherMode mode,
+        string query,
+        CancellationToken cancellationToken);
 }

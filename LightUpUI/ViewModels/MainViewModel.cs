@@ -47,11 +47,20 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLauncherVisible;
 
+    [ObservableProperty]
+    private SearchLauncherMode _searchMode = SearchLauncherMode.Full;
+
     public ObservableCollection<LauncherItem> Results { get; } = [];
 
     partial void OnQueryTextChanged(string value)
     {
         _ = SearchAsync(value);
+    }
+
+    partial void OnSearchModeChanged(SearchLauncherMode value)
+    {
+        if (!string.IsNullOrWhiteSpace(QueryText))
+            _ = SearchAsync(QueryText);
     }
 
     public void ResetForActivation()
@@ -94,7 +103,7 @@ public partial class MainViewModel : ViewModelBase
         StatusText = string.Empty;
         try
         {
-            var results = await _searchService.SearchAsync(query, cancellationToken);
+            var results = await _searchService.SearchAsync(SearchMode, query, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             Results.Clear();
             foreach (var item in results.Take(30))
