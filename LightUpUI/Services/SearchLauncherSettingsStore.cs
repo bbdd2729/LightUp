@@ -7,7 +7,7 @@ using LightUpUI.Models;
 
 namespace LightUpUI.Services;
 
-public sealed class SearchLauncherSettingsStore
+public sealed class SearchLauncherSettingsStore : ISearchLauncherSettingsStore
 {
     private readonly string _filePath;
     private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web)
