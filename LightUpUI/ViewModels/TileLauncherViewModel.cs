@@ -437,6 +437,21 @@ public partial class TileLauncherViewModel : ViewModelBase
         return RemoveItemAsync(SelectedItem, cancellationToken);
     }
 
+    public Task RemoveTileByIdAsync(string tileId, CancellationToken cancellationToken = default)
+    {
+        var item = Categories
+            .SelectMany(category => category.Items)
+            .FirstOrDefault(candidate => candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
+        if (item is null)
+        {
+            StatusText = "找不到要移除的入口";
+            return Task.CompletedTask;
+        }
+
+        SelectedItem = item;
+        return RemoveSelectedItemAsync(cancellationToken);
+    }
+
     [RelayCommand]
     public async Task UndoLastRemovalAsync(CancellationToken cancellationToken = default)
     {

@@ -186,6 +186,12 @@ public partial class TileLauncherWindow : Window
 
     private void Window_KeyDown(object? sender, KeyEventArgs e)
     {
+        if (TileLauncherKeyboardPolicy.ShouldRemoveSelectedItem(e.Key, IsTextEditing()))
+        {
+            ViewModel.RemoveSelectedItemCommand.Execute(null);
+            e.Handled = true;
+        }
+        else
         if (e.Key == Key.Escape)
         {
             Hide();
@@ -257,6 +263,9 @@ public partial class TileLauncherWindow : Window
 
         await ViewModel.AddItemsAsync(items);
     }
+
+    private bool IsTextEditing()
+        => FocusManager?.GetFocusedElement() is TextBox;
 
     private void ClearSearch_Click(object? sender, RoutedEventArgs e)
     {
@@ -518,7 +527,7 @@ public partial class TileLauncherWindow : Window
     private async void RemoveTile_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Control { DataContext: TileItem item })
-            await ViewModel.RemoveItemAsync(item);
+            await ViewModel.RemoveTileByIdAsync(item.Id);
 
         e.Handled = true;
     }

@@ -323,6 +323,23 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task RemoveTileByIdAsync_selects_and_removes_the_matching_item_through_the_shared_command_path()
+    {
+        var item = CreateTile("remove-by-id");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.RemoveTileByIdAsync(item.Id, TestContext.Current.CancellationToken);
+
+        Assert.Empty(viewModel.VisibleItems);
+        Assert.True(viewModel.CanUndoLastRemoval);
+        Assert.Equal(1, store.SaveCount);
+    }
+
+    [Fact]
     public async Task UndoLastRemovalAsync_rejects_an_item_that_was_readded_at_the_same_path()
     {
         var removed = CreateTile("remove");
