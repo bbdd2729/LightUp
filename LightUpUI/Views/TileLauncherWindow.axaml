@@ -23,8 +23,10 @@
 
     <Border Background="#E91A1A1A" BorderBrush="#32FFFFFF" BorderThickness="1" CornerRadius="18" Padding="16">
         <Grid RowDefinitions="Auto,*" RowSpacing="14">
-            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                <TextBlock Text="LightUp" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                <Border PointerPressed="TitleBar_PointerPressed" Background="Transparent" Padding="2,4">
+                    <TextBlock Text="LightUp" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                </Border>
                 <TextBox Grid.Column="1" x:Name="SearchBox"
                          Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="搜索当前分类..."
@@ -33,7 +35,9 @@
                          Background="#20FFFFFF" BorderBrush="#30FFFFFF" BorderThickness="1" CornerRadius="9"
                          Foreground="White" CaretBrush="White" Padding="10,7"/>
                 <TextBlock Grid.Column="2" Text="Alt + Shift + Space" Foreground="#66FFFFFF" FontSize="10" VerticalAlignment="Center"/>
-                <Button Grid.Column="3" Content="×" Click="Close_Click" Width="30" Height="30" Background="#18FFFFFF" BorderThickness="0"/>
+                <Button Grid.Column="3" x:Name="TopmostButton" Content="📌" Click="ToggleTopmost_Click" ToolTip.Tip="置顶" Width="30" Height="30" Padding="0" Background="#18FFFFFF" BorderThickness="0"/>
+                <Button Grid.Column="4" Content="—" Click="Collapse_Click" ToolTip.Tip="收起窗口" Width="30" Height="30" Padding="0" Background="#18FFFFFF" BorderThickness="0"/>
+                <Button Grid.Column="5" Content="×" Click="Close_Click" ToolTip.Tip="关闭窗口" Width="30" Height="30" Padding="0" Background="#18FFFFFF" BorderThickness="0"/>
             </Grid>
 
             <Grid Grid.Row="1" ColumnDefinitions="190,*" ColumnSpacing="16">

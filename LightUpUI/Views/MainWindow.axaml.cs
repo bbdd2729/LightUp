@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using LightUpUI.Services;
 using LightUpUI.ViewModels;
 
 namespace LightUpUI.Views;
@@ -17,9 +18,35 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
+        UpdateTopmostButton();
     }
 
     public void FocusQueryBox() => QueryBox.Focus();
+
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!WindowChromePolicy.CanStartMoveDrag(e.Source is Control { Focusable: true }))
+            return;
+
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            BeginMoveDrag(e);
+    }
+
+    private void ToggleTopmost_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Topmost = WindowChromePolicy.ToggleTopmost(Topmost);
+        UpdateTopmostButton();
+    }
+
+    private void Collapse_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Hide();
+
+    private void Close_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Hide();
+
+    private void UpdateTopmostButton()
+    {
+        if (TopmostButton is not null)
+            TopmostButton.Content = Topmost ? "📌" : "📍";
+    }
 
     private MainViewModel ViewModel => (MainViewModel)DataContext!;
 

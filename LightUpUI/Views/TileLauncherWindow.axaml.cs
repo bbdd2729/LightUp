@@ -22,6 +22,7 @@ public partial class TileLauncherWindow : Window
         InitializeComponent();
         DataContext = viewModel;
         DragDrop.SetAllowDrop(this, true);
+        UpdateTopmostButton();
     }
 
     public void FocusSearchBox()
@@ -30,6 +31,23 @@ public partial class TileLauncherWindow : Window
     }
 
     public static bool TryFocusSearchBox(Control? searchBox) => searchBox?.Focus() == true;
+
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!WindowChromePolicy.CanStartMoveDrag(e.Source is Control { Focusable: true }))
+            return;
+
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            BeginMoveDrag(e);
+    }
+
+    private void ToggleTopmost_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Topmost = WindowChromePolicy.ToggleTopmost(Topmost);
+        UpdateTopmostButton();
+    }
+
+    private void Collapse_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Hide();
 
     private TileLauncherViewModel ViewModel => (TileLauncherViewModel)DataContext!;
 
@@ -88,6 +106,12 @@ public partial class TileLauncherWindow : Window
     }
 
     private void Close_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Hide();
+
+    private void UpdateTopmostButton()
+    {
+        if (TopmostButton is not null)
+            TopmostButton.Content = Topmost ? "📌" : "📍";
+    }
 
     private async void Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
