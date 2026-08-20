@@ -516,6 +516,31 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task MoveTileByIdToCategoryAsync_moves_only_the_dragged_tile()
+    {
+        var first = CreateTile("first");
+        var dragged = CreateTile("dragged");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作", Items = [first, dragged] },
+                new TileCategory { Id = "archive", Name = "归档" }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        var destination = viewModel.Categories.Single(category => category.Id == "archive");
+
+        await viewModel.MoveTileByIdToCategoryAsync(dragged.Id, destination, TestContext.Current.CancellationToken);
+
+        Assert.Equal(["first"], viewModel.Categories.Single(category => category.Id == "work").Items.Select(item => item.Id));
+        Assert.Equal(["dragged"], destination.Items.Select(item => item.Id));
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已移动", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState

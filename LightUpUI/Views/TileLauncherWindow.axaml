@@ -26,6 +26,14 @@
         SizeChanged="Window_SizeChanged"
         Deactivated="Window_Deactivated">
 
+    <Window.Styles>
+        <Style Selector="Border.category-drop-target">
+            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Styles>
+
     <Border Background="{DynamicResource LightUpWindowBrush}"
             BorderBrush="{DynamicResource LightUpBorderBrush}"
             BorderThickness="1"
@@ -220,7 +228,8 @@
                                             Padding="10,7"
                                             CornerRadius="8"
                                             BorderThickness="1"
-                                            BorderBrush="Transparent">
+                                            BorderBrush="Transparent"
+                                            DragDrop.AllowDrop="True">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
                                                                 Width="14"
@@ -345,7 +354,8 @@
                                             Padding="10,9"
                                             CornerRadius="8"
                                             BorderThickness="1"
-                                            BorderBrush="Transparent">
+                                            BorderBrush="Transparent"
+                                            DragDrop.AllowDrop="True">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
                                                                 Width="15"
@@ -582,13 +592,29 @@
                                                            TextTrimming="CharacterEllipsis"
                                                            MaxLines="1"/>
                                             </StackPanel>
-                                            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                                            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
                                                 <TextBlock Text="{CompiledBinding LaunchCount, StringFormat='打开 {0} 次'}"
                                                            FontSize="9"
                                                            Foreground="{DynamicResource LightUpTextFaintBrush}"
                                                            VerticalAlignment="Center"
                                                            TextTrimming="CharacterEllipsis"/>
-                                                <Button Grid.Column="1"
+                                                <Border Grid.Column="1"
+                                                        Width="22"
+                                                        Height="22"
+                                                        CornerRadius="6"
+                                                        Classes="tile-drag-handle"
+                                                        PointerPressed="TileDragHandle_PointerPressed"
+                                                        ToolTip.Tip="拖动到分类以移动入口"
+                                                        AutomationProperties.Name="拖动磁贴入口"
+                                                        Cursor="SizeAll">
+                                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Drag}"
+                                                                        Width="13"
+                                                                        Height="13"
+                                                                        Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                </Border>
+                                                <Button Grid.Column="2"
                                                         Classes="launcher-tile-remove"
                                                         Click="RemoveTile_Click"
                                                         CommandParameter="{CompiledBinding}"

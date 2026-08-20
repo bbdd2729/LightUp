@@ -527,6 +527,24 @@ public partial class TileLauncherViewModel : ViewModelBase
             StatusText = $"已移动“{item.Title}”至“{destination.Name}”";
     }
 
+    public Task MoveTileByIdToCategoryAsync(
+        string tileId,
+        TileCategory destination,
+        CancellationToken cancellationToken = default)
+    {
+        var item = Categories
+            .SelectMany(category => category.Items)
+            .FirstOrDefault(candidate => candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
+        if (item is null)
+        {
+            StatusText = "找不到要移动的入口";
+            return Task.CompletedTask;
+        }
+
+        SelectedItem = item;
+        return MoveItemAsync(item, destination, cancellationToken);
+    }
+
     [RelayCommand]
     private Task MoveSelectedItemAsync()
     {

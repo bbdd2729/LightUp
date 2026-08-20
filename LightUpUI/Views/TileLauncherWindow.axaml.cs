@@ -33,6 +33,9 @@ public partial class TileLauncherWindow : Window
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         Closed += (_, _) => viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         DragDrop.SetAllowDrop(this, true);
+        AddHandler(DragDrop.DragOverEvent, Category_DragOver, RoutingStrategies.Bubble);
+        AddHandler(DragDrop.DragLeaveEvent, Category_DragLeave, RoutingStrategies.Bubble);
+        AddHandler(DragDrop.DropEvent, Category_Drop, RoutingStrategies.Bubble);
         UpdateTopmostButton();
         UpdateSearchWidth();
         UpdateWorkspaceLayout();
@@ -213,6 +216,60 @@ public partial class TileLauncherWindow : Window
         ViewModel.SearchText = string.Empty;
         FocusSearchBox();
         e.Handled = true;
+    }
+
+    private async void TileDragHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not Control control
+            || control.DataContext is not TileItem item
+            || !e.GetCurrentPoint(control).Properties.IsLeftButtonPressed)
+            return;
+
+        ViewModel.SelectedItem = item;
+        var payload = new DataTransfer();
+        payload.Add(DataTransferItem.CreateText(Presentation.TileDragPayload.Create(item.Id)));
+        e.Handled = true;
+        await DragDrop.DoDragDropAsync(e, payload, DragDropEffects.Move);
+    }
+
+    private static bool TryGetDraggedTileId(DragEventArgs e, out string tileId)
+        => Presentation.TileDragPayload.TryParse(e.DataTransfer.TryGetText(), out tileId);
+
+    private static TileCategory? GetDropCategory(object? sender)
+        => (sender as Control)?.DataContext as TileCategory;
+
+    private void Category_DragOver(object? sender, DragEventArgs e)
+    {
+        var target = e.Source as Control;
+        var category = GetDropCategory(target);
+        if (category is null || !TryGetDraggedTileId(e, out _))
+            return;
+
+        target!.Classes.Add("category-drop-target");
+        e.DragEffects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    private void Category_DragLeave(object? sender, DragEventArgs e)
+    {
+        (e.Source as Control)?.Classes.Remove("category-drop-target");
+    }
+
+    private async void Category_Drop(object? sender, DragEventArgs e)
+    {
+        if (GetDropCategory(e.Source) is not TileCategory category
+            || !TryGetDraggedTileId(e, out var tileId))
+            return;
+
+        try
+        {
+            await ViewModel.MoveTileByIdToCategoryAsync(tileId, category);
+        }
+        finally
+        {
+            (e.Source as Control)?.Classes.Remove("category-drop-target");
+            e.Handled = true;
+        }
     }
 
     private static TileItem? GetContextTile(object? sender)
