@@ -59,6 +59,20 @@ public partial class TileLauncherWindow : Window
         return true;
     }
 
+    public void FocusTileNotesBox()
+    {
+        TryFocusTileNotesBox(this.FindControl<TextBox>("TileNotesBox"));
+    }
+
+    public static bool TryFocusTileNotesBox(TextBox? notesBox)
+    {
+        if (notesBox?.Focus() != true)
+            return false;
+
+        notesBox.SelectAll();
+        return true;
+    }
+
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not Visual dragSurface
@@ -237,6 +251,14 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
+    private void ContextNotes_Click(object? sender, RoutedEventArgs e)
+    {
+        if (SelectContextTile(sender) is not null)
+            Dispatcher.UIThread.Post(FocusTileNotesBox);
+
+        e.Handled = true;
+    }
+
     private async void ContextReveal_Click(object? sender, RoutedEventArgs e)
     {
         if (SelectContextTile(sender) is not null)
@@ -285,6 +307,15 @@ public partial class TileLauncherWindow : Window
             return;
 
         ViewModel.RenameSelectedItemCommand.Execute(null);
+        e.Handled = true;
+    }
+
+    private void SaveNotes_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || !ViewModel.CanEditSelectedItemNotes)
+            return;
+
+        ViewModel.SaveSelectedItemNotesCommand.Execute(null);
         e.Handled = true;
     }
 

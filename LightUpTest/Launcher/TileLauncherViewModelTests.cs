@@ -385,6 +385,46 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task SaveSelectedItemNotesAsync_persists_trimmed_notes_and_updates_the_editor()
+    {
+        var item = CreateTile("notes");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+        viewModel.EditedTileNotes = "  重要资料  ";
+
+        await viewModel.SaveSelectedItemNotesAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("重要资料", item.Notes);
+        Assert.Equal("重要资料", viewModel.EditedTileNotes);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已保存备注", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task SaveSelectedItemNotesAsync_clears_whitespace_only_notes()
+    {
+        var item = CreateTile("notes");
+        item.Notes = "旧备注";
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+        viewModel.EditedTileNotes = "   ";
+
+        await viewModel.SaveSelectedItemNotesAsync(TestContext.Current.CancellationToken);
+
+        Assert.Null(item.Notes);
+        Assert.Equal(string.Empty, viewModel.EditedTileNotes);
+        Assert.Equal(1, store.SaveCount);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState

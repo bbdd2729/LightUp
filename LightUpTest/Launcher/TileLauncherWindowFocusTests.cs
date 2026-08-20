@@ -32,4 +32,18 @@ public sealed class TileLauncherWindowFocusTests
 
         Assert.Null(exception);
     }
+
+    [Fact]
+    public void TryFocusTileNotesBox_returns_false_when_xaml_control_is_not_ready()
+    {
+        Assert.False(TileLauncherWindow.TryFocusTileNotesBox(null));
+    }
+
+    [Fact]
+    public void TryFocusTileNotesBox_does_not_throw_for_a_detached_control()
+    {
+        var exception = Record.Exception(() => TileLauncherWindow.TryFocusTileNotesBox(new TextBox()));
+
+        Assert.Null(exception);
+    }
 }

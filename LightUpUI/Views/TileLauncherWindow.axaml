@@ -498,6 +498,13 @@
                                                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
+                                                <MenuItem Header="编辑备注"
+                                                          Click="ContextNotes_Click"
+                                                          AutomationProperties.Name="编辑磁贴备注">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="打开所在位置"
                                                           Click="ContextReveal_Click"
                                                           AutomationProperties.Name="打开磁贴所在位置">
@@ -554,6 +561,12 @@
                                                            FontSize="9.5"
                                                            Foreground="{DynamicResource LightUpTextFaintBrush}"
                                                            TextAlignment="Center"/>
+                                                <TextBlock Text="{CompiledBinding Notes}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                                           TextAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxLines="1"/>
                                             </StackPanel>
                                             <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="4">
                                                 <TextBlock Text="{CompiledBinding LaunchCount, StringFormat='打开 {0} 次'}"
@@ -684,6 +697,28 @@
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}"
                                                     Width="14"
                                                     Height="14"/>
+                            </Button>
+                            <TextBox x:Name="TileNotesBox"
+                                     Width="142"
+                                     Height="28"
+                                     Text="{CompiledBinding EditedTileNotes, Mode=TwoWay}"
+                                     IsEnabled="{CompiledBinding CanEditSelectedItemNotes}"
+                                     FontSize="10.5"
+                                     Padding="7,4"
+                                     Background="{DynamicResource LightUpWindowBrush}"
+                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                     BorderThickness="1"
+                                     CornerRadius="7"
+                                     Foreground="{DynamicResource LightUpTextBrush}"
+                                     ToolTip.Tip="编辑选中入口备注"
+                                     AutomationProperties.Name="选中入口备注"
+                                     KeyDown="SaveNotes_KeyDown"/>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding SaveSelectedItemNotesCommand}"
+                                    IsEnabled="{CompiledBinding CanEditSelectedItemNotes}"
+                                    ToolTip.Tip="保存入口备注"
+                                    AutomationProperties.Name="保存入口备注">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
                             </Button>
                             <TextBlock Text="移动至"
                                        FontSize="10"
