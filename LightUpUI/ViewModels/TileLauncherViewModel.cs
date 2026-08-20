@@ -70,6 +70,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     [ObservableProperty]
     private string _editedCategoryName = string.Empty;
 
+    [ObservableProperty]
+    private string _editedTileTitle = string.Empty;
+
     private CategoryNavigationPlacement _categoryNavigationPlacement;
 
     public CategoryNavigationPlacement CategoryNavigationPlacement
@@ -89,6 +92,8 @@ public partial class TileLauncherViewModel : ViewModelBase
     public bool HasVisibleItems => VisibleItems.Count > 0;
 
     public bool HasSelectedItem => SelectedItem is not null;
+
+    public bool CanRenameSelectedItem => SelectedItem is not null && !IsLoading;
 
     public bool ShowEmptyState => TileLauncherLayoutPolicy.ShouldShowEmptyState(IsLoading, HasVisibleItems);
 
@@ -412,6 +417,38 @@ public partial class TileLauncherViewModel : ViewModelBase
         return MoveItemAsync(SelectedItem, MoveDestinationCategory);
     }
 
+    [RelayCommand]
+    public async Task RenameSelectedItemAsync(CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        if (item is null)
+        {
+            StatusText = "请先选择一个入口";
+            return;
+        }
+
+        var normalizedTitle = EditedTileTitle.Trim();
+        if (normalizedTitle.Length == 0)
+        {
+            StatusText = "入口名称不能为空";
+            return;
+        }
+
+        if (item.Title.Equals(normalizedTitle, StringComparison.Ordinal))
+        {
+            StatusText = "入口名称未更改";
+            return;
+        }
+
+        item.Title = normalizedTitle;
+        var visibleIndex = VisibleItems.IndexOf(item);
+        if (visibleIndex >= 0)
+            VisibleItems[visibleIndex] = item;
+
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = $"已重命名为“{normalizedTitle}”";
+    }
+
     public async Task RemoveItemAsync(
         TileItem item,
         CancellationToken cancellationToken = default)
@@ -472,8 +509,10 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     partial void OnSelectedItemChanged(TileItem? value)
     {
+        EditedTileTitle = value?.Title ?? string.Empty;
         MoveDestinationCategory = null;
         OnPropertyChanged(nameof(HasSelectedItem));
+        OnPropertyChanged(nameof(CanRenameSelectedItem));
         OnPropertyChanged(nameof(CanMoveSelectedItem));
     }
 
@@ -489,6 +528,7 @@ public partial class TileLauncherViewModel : ViewModelBase
     {
         NotifyViewStateChanged();
         OnPropertyChanged(nameof(CanEdit));
+        OnPropertyChanged(nameof(CanRenameSelectedItem));
     }
 
     partial void OnStatusTextChanged(string value) => OnPropertyChanged(nameof(HasStatus));

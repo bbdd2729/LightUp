@@ -44,6 +44,20 @@ public partial class TileLauncherWindow : Window
 
     public static bool TryFocusSearchBox(Control? searchBox) => searchBox?.Focus() == true;
 
+    public void FocusTileTitleBox()
+    {
+        TryFocusTileTitleBox(this.FindControl<TextBox>("TileTitleBox"));
+    }
+
+    public static bool TryFocusTileTitleBox(TextBox? titleBox)
+    {
+        if (titleBox?.Focus() != true)
+            return false;
+
+        titleBox.SelectAll();
+        return true;
+    }
+
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not Visual dragSurface
@@ -115,6 +129,11 @@ public partial class TileLauncherWindow : Window
         else if (e.Key == Key.Enter)
         {
             ViewModel.OpenSelectedCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.F2 && ViewModel.SelectedItem is not null)
+        {
+            FocusTileTitleBox();
             e.Handled = true;
         }
     }
@@ -196,6 +215,15 @@ public partial class TileLauncherWindow : Window
             return;
 
         ViewModel.RenameSelectedCategoryCommand.Execute(null);
+        e.Handled = true;
+    }
+
+    private void RenameTile_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || !ViewModel.CanRenameSelectedItem)
+            return;
+
+        ViewModel.RenameSelectedItemCommand.Execute(null);
         e.Handled = true;
     }
 

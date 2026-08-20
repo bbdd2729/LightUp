@@ -611,6 +611,30 @@
                                     Spacing="5"
                                     VerticalAlignment="Center"
                                     IsVisible="{CompiledBinding HasSelectedItem}">
+                            <TextBox x:Name="TileTitleBox"
+                                     Width="120"
+                                     Height="28"
+                                     Text="{CompiledBinding EditedTileTitle, Mode=TwoWay}"
+                                     IsEnabled="{CompiledBinding CanRenameSelectedItem}"
+                                     FontSize="10.5"
+                                     Padding="7,4"
+                                     Background="{DynamicResource LightUpWindowBrush}"
+                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                     BorderThickness="1"
+                                     CornerRadius="7"
+                                     Foreground="{DynamicResource LightUpTextBrush}"
+                                     ToolTip.Tip="重命名选中入口（F2）"
+                                     AutomationProperties.Name="选中入口名称"
+                                     KeyDown="RenameTile_KeyDown"/>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding RenameSelectedItemCommand}"
+                                    IsEnabled="{CompiledBinding CanRenameSelectedItem}"
+                                    ToolTip.Tip="保存入口名称"
+                                    AutomationProperties.Name="保存入口名称">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}"
+                                                    Width="14"
+                                                    Height="14"/>
+                            </Button>
                             <TextBlock Text="移动至"
                                        FontSize="10"
                                        Foreground="{DynamicResource LightUpTextFaintBrush}"

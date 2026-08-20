@@ -254,6 +254,47 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task RenameSelectedItemAsync_updates_the_title_and_persists_once()
+    {
+        var item = CreateTile("notes");
+        item.Title = "旧名称";
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+        viewModel.EditedTileTitle = "  我的笔记  ";
+
+        await viewModel.RenameSelectedItemAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("我的笔记", item.Title);
+        Assert.Equal("我的笔记", viewModel.VisibleItems.Single().Title);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已重命名", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RenameSelectedItemAsync_rejects_an_empty_title_without_saving()
+    {
+        var item = CreateTile("notes");
+        item.Title = "保留名称";
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+        viewModel.EditedTileTitle = "   ";
+
+        await viewModel.RenameSelectedItemAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("保留名称", item.Title);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("不能为空", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState
