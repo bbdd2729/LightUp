@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using LightUpUI.Models.Tiles;
@@ -26,6 +27,7 @@ public partial class TileLauncherWindow : Window
         DataContext = viewModel;
         DragDrop.SetAllowDrop(this, true);
         UpdateTopmostButton();
+        UpdateSearchWidth();
     }
 
     public void FocusSearchBox()
@@ -37,7 +39,8 @@ public partial class TileLauncherWindow : Window
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (!WindowChromePolicy.CanStartMoveDrag(e.Source as Visual, (Visual)sender!))
+        if (sender is not Visual dragSurface
+            || !WindowChromePolicy.CanStartMoveDrag(e.Source as Visual, dragSurface))
             return;
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -119,15 +122,18 @@ public partial class TileLauncherWindow : Window
 
     private void UpdateTopmostButton()
     {
-        if (TopmostButton is not null)
-        {
-            TopmostIcon.Icon = Topmost
-                ? FluentIcons.Common.Icon.Pin
-                : FluentIcons.Common.Icon.PinOff;
-            TopmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
-            ToolTip.SetTip(TopmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
-            TopmostStatus.IsVisible = Topmost;
-        }
+        var topmostButton = this.FindControl<Button>("TopmostButton");
+        var topmostIcon = this.FindControl<FluentIcons.Avalonia.FluentIcon>("TopmostIcon");
+        var topmostStatus = this.FindControl<Control>("TopmostStatus");
+        if (topmostButton is null || topmostIcon is null || topmostStatus is null)
+            return;
+
+        topmostIcon.Icon = Topmost
+            ? FluentIcons.Common.Icon.Pin
+            : FluentIcons.Common.Icon.PinOff;
+        topmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
+        ToolTip.SetTip(topmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
+        topmostStatus.IsVisible = Topmost;
     }
 
     private async void Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -159,6 +165,38 @@ public partial class TileLauncherWindow : Window
         }
 
         await ViewModel.AddItemsAsync(items);
+    }
+
+    private void ClearSearch_Click(object? sender, RoutedEventArgs e)
+    {
+        ViewModel.SearchText = string.Empty;
+        FocusSearchBox();
+        e.Handled = true;
+    }
+
+    private void NewCategory_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+            return;
+
+        ViewModel.AddNewCategoryCommand.Execute(null);
+        e.Handled = true;
+    }
+
+    private async void RemoveTile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { DataContext: TileItem item })
+            await ViewModel.RemoveItemAsync(item);
+
+        e.Handled = true;
+    }
+
+    private void Window_SizeChanged(object? sender, SizeChangedEventArgs e) => UpdateSearchWidth();
+
+    private void UpdateSearchWidth()
+    {
+        if (SearchBox is not null)
+            SearchBox.MaxWidth = TileLauncherLayoutPolicy.GetSearchMaxWidth(Bounds.Width);
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

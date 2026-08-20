@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LightUpUI.Models;
 using LightUpUI.Models.Tiles;
+using LightUpUI.Presentation;
 using LightUpUI.Services;
 
 namespace LightUpUI.ViewModels;
@@ -60,11 +61,19 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public bool HasVisibleItems => VisibleItems.Count > 0;
 
+    public bool ShowEmptyState => TileLauncherLayoutPolicy.ShouldShowEmptyState(IsLoading, HasVisibleItems);
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
+
+    public bool CanEdit => !IsLoading;
+
     public string EmptyStateText => IsLoading
         ? "正在加载磁贴…"
-        : SearchText.Trim().Length > 0
-            ? "当前分类没有匹配的磁贴"
-            : "当前分类还没有磁贴";
+        : HasVisibleItems
+            ? string.Empty
+            : SearchText.Trim().Length > 0
+                ? "当前分类没有匹配的磁贴"
+                : "当前分类还没有磁贴";
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
@@ -107,7 +116,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
-            OnPropertyChanged(nameof(EmptyStateText));
+            NotifyViewStateChanged();
         }
     }
 
@@ -261,14 +270,24 @@ public partial class TileLauncherViewModel : ViewModelBase
     partial void OnSearchTextChanged(string value)
     {
         RefreshVisibleItems();
-        OnPropertyChanged(nameof(EmptyStateText));
     }
+
+    partial void OnIsLoadingChanged(bool value)
+    {
+        NotifyViewStateChanged();
+        OnPropertyChanged(nameof(CanEdit));
+    }
+
+    partial void OnStatusTextChanged(string value) => OnPropertyChanged(nameof(HasStatus));
 
     private void RefreshVisibleItems()
     {
         VisibleItems.Clear();
         if (SelectedCategory is null)
+        {
+            NotifyViewStateChanged();
             return;
+        }
 
         var query = SearchText.Trim();
         foreach (var item in SelectedCategory.Items
@@ -283,8 +302,14 @@ public partial class TileLauncherViewModel : ViewModelBase
         if (SelectedItem is not null && !VisibleItems.Contains(SelectedItem))
             SelectedItem = null;
 
+        NotifyViewStateChanged();
+    }
+
+    private void NotifyViewStateChanged()
+    {
         OnPropertyChanged(nameof(HasVisibleItems));
         OnPropertyChanged(nameof(EmptyStateText));
+        OnPropertyChanged(nameof(ShowEmptyState));
     }
 
     public void ReportError(string message)

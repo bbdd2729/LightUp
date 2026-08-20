@@ -99,6 +99,7 @@ public sealed class TileLauncherViewModelTests
 
         Assert.Equal(2, viewModel.VisibleItems.Count);
         Assert.True(viewModel.IsSaving);
+        Assert.True(viewModel.CanEdit);
 
         store.CompleteSave();
         await addTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
@@ -159,6 +160,43 @@ public sealed class TileLauncherViewModelTests
         Assert.Single(viewModel.VisibleItems);
         Assert.Equal(0, store.SaveCount);
         Assert.Contains("已存在", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task Empty_state_describes_the_current_filter_and_clears_after_an_add()
+    {
+        var viewModel = await CreateLoadedViewModelAsync(
+            new FakeStateStore(CreateDefaultState()),
+            TestContext.Current.CancellationToken);
+
+        Assert.False(viewModel.HasVisibleItems);
+        Assert.Equal("当前分类还没有磁贴", viewModel.EmptyStateText);
+
+        viewModel.SearchText = "missing";
+        Assert.Equal("当前分类没有匹配的磁贴", viewModel.EmptyStateText);
+
+        await viewModel.AddItemsAsync([CreateTile("missing")], TestContext.Current.CancellationToken);
+
+        Assert.True(viewModel.HasVisibleItems);
+        Assert.DoesNotContain("没有", viewModel.EmptyStateText);
+    }
+
+    [Fact]
+    public async Task Removing_the_selected_item_clears_selection_and_updates_empty_state()
+    {
+        var item = CreateTile("remove-me");
+        var state = CreateDefaultState();
+        state.Categories[0].Items.Add(item);
+        var viewModel = await CreateLoadedViewModelAsync(
+            new FakeStateStore(state),
+            TestContext.Current.CancellationToken);
+
+        viewModel.SelectedItem = item;
+        await viewModel.RemoveItemAsync(item, TestContext.Current.CancellationToken);
+
+        Assert.Null(viewModel.SelectedItem);
+        Assert.False(viewModel.HasVisibleItems);
+        Assert.Equal("当前分类还没有磁贴", viewModel.EmptyStateText);
     }
 
     private static async Task<TileLauncherViewModel> CreateLoadedViewModelAsync(

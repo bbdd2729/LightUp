@@ -11,6 +11,7 @@
         <SolidColorBrush x:Key="LightUpSurfaceBrush" Color="#1AFFFFFF"/>
         <SolidColorBrush x:Key="LightUpSurfaceStrongBrush" Color="#24FFFFFF"/>
         <SolidColorBrush x:Key="LightUpBorderBrush" Color="#32FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpBorderBrushStrong" Color="#5AFFFFFF"/>
         <SolidColorBrush x:Key="LightUpTextBrush" Color="#FFF7FAFC"/>
         <SolidColorBrush x:Key="LightUpTextMutedBrush" Color="#A8C1CBD6"/>
         <SolidColorBrush x:Key="LightUpTextFaintBrush" Color="#7596A6B5"/>
@@ -56,6 +57,32 @@
         </Style>
         <Style Selector="Button.launcher-primary:pressed">
             <Setter Property="Opacity" Value="0.78"/>
+        </Style>
+        <Style Selector="Border.launcher-search-shell">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+        <Style Selector="Button.launcher-search-clear">
+            <Setter Property="MinWidth" Value="26"/>
+            <Setter Property="MinHeight" Value="26"/>
+        </Style>
+        <Style Selector="Button.launcher-tile-remove">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextFaintBrush}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="MinWidth" Value="26"/>
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="Button.launcher-tile-remove:pointerover">
+            <Setter Property="Background" Value="#20E66D75"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-tile-remove:pressed">
+            <Setter Property="Opacity" Value="0.72"/>
         </Style>
         <Style Selector="Button.launcher-chrome:focus-visible">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>

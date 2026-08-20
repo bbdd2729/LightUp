@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LightUpUI.ViewModels"
         xmlns:tiles="using:LightUpUI.Models.Tiles"
-        xmlns:presentation="using:LightUpUI.Presentation"
         xmlns:fluent="using:FluentIcons.Avalonia"
         xmlns:icon="using:FluentIcons.Common"
         x:Class="LightUpUI.Views.TileLauncherWindow"
@@ -14,6 +13,7 @@
         Title="LightUp 磁贴启动器"
         WindowDecorations="None"
         ShowInTaskbar="False"
+        ShowActivated="True"
         Topmost="False"
         CanResize="True"
         WindowStartupLocation="CenterScreen"
@@ -23,86 +23,262 @@
         DragDrop.DragOver="Window_DragOver"
         DragDrop.Drop="Window_Drop"
         KeyDown="Window_KeyDown"
+        SizeChanged="Window_SizeChanged"
         Deactivated="Window_Deactivated">
 
-    <Border Background="{DynamicResource LightUpWindowBrush}" BorderBrush="{DynamicResource LightUpBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="16">
-        <Grid RowDefinitions="Auto,*" RowSpacing="14">
-            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8" PointerPressed="TitleBar_PointerPressed" Background="Transparent" Cursor="SizeAll">
-                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <TextBlock Text="LightUp" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}" VerticalAlignment="Center"/>
-                    <Border x:Name="TopmostStatus" IsVisible="False" Background="{DynamicResource LightUpAccentSoftBrush}" CornerRadius="5" Padding="6,2">
-                        <TextBlock Text="置顶中" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource LightUpAccentBrush}"/>
+    <Border Background="{DynamicResource LightUpWindowBrush}"
+            BorderBrush="{DynamicResource LightUpBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="18"
+            Padding="18">
+        <Border.BoxShadow>
+            <BoxShadows>0 12 36 0 #90000000</BoxShadows>
+        </Border.BoxShadow>
+
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+            <Grid x:Name="TitleBar"
+                  Grid.Row="0"
+                  ColumnDefinitions="Auto,*,Auto"
+                  ColumnSpacing="12"
+                  Background="Transparent"
+                  Cursor="SizeAll"
+                  PointerPressed="TitleBar_PointerPressed">
+                <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                    <Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource LightUpAccentSoftBrush}">
+                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Apps}"
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="{DynamicResource LightUpAccentBrush}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Spacing="1" VerticalAlignment="Center">
+                        <TextBlock Text="LightUp"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource LightUpTextBrush}"/>
+                        <TextBlock Text="磁贴启动器"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                    </StackPanel>
+                    <Border x:Name="TopmostStatus"
+                            IsVisible="False"
+                            Background="{DynamicResource LightUpAccentSoftBrush}"
+                            CornerRadius="6"
+                            Padding="7,3"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Pin}"
+                                                Width="11"
+                                                Height="11"
+                                                Foreground="{DynamicResource LightUpAccentBrush}"/>
+                            <TextBlock Text="已置顶"
+                                       FontSize="9"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource LightUpAccentBrush}"/>
+                        </StackPanel>
                     </Border>
                 </StackPanel>
-                <TextBox Grid.Column="1" x:Name="SearchBox"
-                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="搜索当前分类..."
-                         MaxWidth="360"
-                         HorizontalAlignment="Right"
-                         Background="{DynamicResource LightUpSurfaceBrush}" BorderBrush="{DynamicResource LightUpBorderBrush}" BorderThickness="1" CornerRadius="9"
-                         Foreground="{DynamicResource LightUpTextBrush}" CaretBrush="{DynamicResource LightUpTextBrush}" Padding="10,7"/>
-                <Border Grid.Column="2" Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="6" Padding="7,4" VerticalAlignment="Center">
-                    <TextBlock Text="Alt + Shift + Space" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" VerticalAlignment="Center"/>
+
+                <Border Grid.Column="1"
+                        Classes="launcher-search-shell"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        MinWidth="220"
+                        Height="40"
+                        Padding="10,0">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                        <fluent:FluentIcon Grid.Column="0"
+                                            Icon="{x:Static icon:Icon.Search}"
+                                            Width="15"
+                                            Height="15"
+                                            Foreground="{DynamicResource LightUpAccentBrush}"
+                                            VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1"
+                                 x:Name="SearchBox"
+                                 Text="{CompiledBinding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 PlaceholderText="搜索当前分类的磁贴"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="{DynamicResource LightUpTextBrush}"
+                                 CaretBrush="{DynamicResource LightUpAccentBrush}"
+                                 FontSize="13"
+                                 VerticalContentAlignment="Center"
+                                 KeyboardNavigation.TabIndex="0"/>
+                        <Button Grid.Column="2"
+                                Classes="launcher-chrome launcher-search-clear"
+                                Click="ClearSearch_Click"
+                                ToolTip.Tip="清空搜索"
+                                AutomationProperties.Name="清空磁贴搜索">
+                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}"
+                                                Width="13"
+                                                Height="13"/>
+                        </Button>
+                    </Grid>
                 </Border>
-                <Button Classes="launcher-chrome" Grid.Column="3" x:Name="TopmostButton" Click="ToggleTopmost_Click" ToolTip.Tip="置顶">
-                    <fluent:FluentIcon x:Name="TopmostIcon" Icon="{x:Static icon:Icon.Pin}" Width="15" Height="15"/>
-                </Button>
-                <Button Classes="launcher-chrome" Grid.Column="4" Click="Collapse_Click" ToolTip.Tip="收起窗口">
-                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowMinimize}" Width="15" Height="15"/>
-                </Button>
-                <Button Classes="launcher-chrome" Grid.Column="5" Click="Close_Click" ToolTip.Tip="关闭窗口">
-                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}" Width="15" Height="15"/>
-                </Button>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource LightUpSurfaceBrush}"
+                            CornerRadius="6"
+                            Padding="7,4"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="Alt + Shift + Space"
+                                   FontSize="9"
+                                   Foreground="{DynamicResource LightUpTextFaintBrush}"/>
+                    </Border>
+                    <Button Classes="launcher-chrome"
+                            x:Name="TopmostButton"
+                            Click="ToggleTopmost_Click"
+                            ToolTip.Tip="置顶窗口"
+                            AutomationProperties.Name="切换窗口置顶">
+                        <fluent:FluentIcon x:Name="TopmostIcon"
+                                            Icon="{x:Static icon:Icon.PinOff}"
+                                            Width="15"
+                                            Height="15"/>
+                    </Button>
+                    <Button Classes="launcher-chrome"
+                            Click="Collapse_Click"
+                            ToolTip.Tip="收起窗口"
+                            AutomationProperties.Name="收起磁贴启动器">
+                        <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowMinimize}"
+                                            Width="15"
+                                            Height="15"/>
+                    </Button>
+                    <Button Classes="launcher-chrome"
+                            Click="Close_Click"
+                            ToolTip.Tip="关闭窗口"
+                            AutomationProperties.Name="关闭磁贴启动器">
+                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}"
+                                            Width="15"
+                                            Height="15"/>
+                    </Button>
+                </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="1" ColumnDefinitions="190,*" ColumnSpacing="16">
-                <Border Grid.Column="0" Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="12" Padding="10">
-                    <DockPanel>
-                        <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
-                            <TextBlock Text="分类" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="11" Margin="4,2,4,0"/>
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
-                                <TextBox Text="{Binding NewCategoryName, Mode=TwoWay}"
-                                         PlaceholderText="新分类"
-                                         FontSize="11"
-                                         Padding="7,5"
-                                         Background="{DynamicResource LightUpSurfaceBrush}"
-                                         BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                         BorderThickness="1"
-                                         CornerRadius="7"
-                                         Foreground="{DynamicResource LightUpTextBrush}"/>
-                                <Button Classes="launcher-primary" Grid.Column="1"
-                                        Command="{Binding AddNewCategoryCommand}"
-                                        Width="28"
-                                        Height="28"
-                                        Padding="0"
-                                        Background="{DynamicResource LightUpAccentSoftBrush}"
-                                        BorderThickness="0"
-                                        Foreground="White">
-                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
-                                </Button>
-                            </Grid>
+            <Grid Grid.Row="1" ColumnDefinitions="204,*" ColumnSpacing="16">
+                <Border Grid.Column="0"
+                        Background="{DynamicResource LightUpSurfaceBrush}"
+                        BorderBrush="{DynamicResource LightUpBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="13"
+                        Padding="10">
+                    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
+                        <StackPanel Grid.Row="0" Spacing="2" Margin="3,2,3,0">
+                            <TextBlock Text="分类"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource LightUpTextBrush}"/>
+                            <TextBlock Text="按场景整理你的入口"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                         </StackPanel>
-                        <ListBox ItemsSource="{Binding Categories}"
-                                 SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
-                                 Background="Transparent" BorderThickness="0">
+
+                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                            <TextBox x:Name="NewCategoryBox"
+                                     Text="{CompiledBinding NewCategoryName, Mode=TwoWay}"
+                                     PlaceholderText="新分类"
+                                     FontSize="11"
+                                     Padding="8,6"
+                                     Background="{DynamicResource LightUpWindowBrush}"
+                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                     BorderThickness="1"
+                                     CornerRadius="8"
+                                     Foreground="{DynamicResource LightUpTextBrush}"
+                                     KeyboardNavigation.TabIndex="1"
+                                     KeyDown="NewCategory_KeyDown"/>
+                            <Button Grid.Column="1"
+                                    Classes="launcher-primary launcher-icon-button"
+                                    Command="{CompiledBinding AddNewCategoryCommand}"
+                                    Width="32"
+                                    Height="32"
+                                    Padding="0"
+                                    ToolTip.Tip="添加分类"
+                                    AutomationProperties.Name="添加分类">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}"
+                                                    Width="14"
+                                                    Height="14"/>
+                            </Button>
+                        </Grid>
+
+                        <ListBox Grid.Row="2"
+                                 ItemsSource="{CompiledBinding Categories}"
+                                 SelectedItem="{CompiledBinding SelectedCategory, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 KeyboardNavigation.TabIndex="2">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0,2"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:pointerover Border.category-item">
+                                    <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected Border.category-item">
+                                    <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:focus-visible Border.category-item">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                </Style>
+                            </ListBox.Styles>
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="tiles:TileCategory">
-                                    <Border Padding="10,8" CornerRadius="8" Margin="0,2">
-                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource LightUpTextBrush}"/>
+                                    <Border Classes="category-item"
+                                            Padding="10,9"
+                                            CornerRadius="8"
+                                            BorderThickness="1"
+                                            BorderBrush="Transparent">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
+                                                                Width="15"
+                                                                Height="15"
+                                                                Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                                                VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{CompiledBinding Name}"
+                                                       FontSize="11.5"
+                                                       Foreground="{DynamicResource LightUpTextBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{CompiledBinding Items.Count}"
+                                                       FontSize="9"
+                                                       Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                    </DockPanel>
+                    </Grid>
                 </Border>
 
-                <Grid Grid.Column="1" RowDefinitions="Auto,*" RowSpacing="12">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                        <StackPanel Spacing="2">
-                            <TextBlock Text="{Binding SelectedCategory.Name}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>
-                            <TextBlock Text="将文件、文件夹或快捷方式拖到这里" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="11"/>
+                <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="10">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{CompiledBinding SelectedCategory.Name}"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource LightUpTextBrush}"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="拖入文件、文件夹或快捷方式，也可以使用右侧按钮添加"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                         </StackPanel>
-                        <Button Classes="launcher-primary" Grid.Column="1" Click="Add_Click" Padding="12,7">
+                        <Button Grid.Column="1"
+                                Classes="launcher-primary"
+                                Click="Add_Click"
+                                IsEnabled="{CompiledBinding CanEdit}"
+                                Padding="12,8"
+                                ToolTip.Tip="选择文件或文件夹"
+                                AutomationProperties.Name="添加入口">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
                                 <TextBlock Text="添加入口" VerticalAlignment="Center"/>
@@ -110,31 +286,194 @@
                         </Button>
                     </Grid>
 
-                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding VisibleItems}">
-                            <ItemsControl.ItemsPanel>
+                    <Grid Grid.Row="1" ClipToBounds="True">
+                        <ListBox x:Name="TileList"
+                                 ItemsSource="{CompiledBinding VisibleItems}"
+                                 SelectedItem="{CompiledBinding SelectedItem, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 IsVisible="{CompiledBinding HasVisibleItems}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.BringIntoViewOnFocusChange="True"
+                                 KeyboardNavigation.TabIndex="3">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="4"/>
+                                    <Setter Property="Width" Value="156"/>
+                                    <Setter Property="Height" Value="132"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:pointerover Border.tile-card">
+                                    <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected Border.tile-card">
+                                    <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:focus-visible Border.tile-card">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </Style>
+                            </ListBox.Styles>
+                            <ListBox.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel ItemWidth="150" ItemHeight="118" Orientation="Horizontal"/>
+                                    <WrapPanel Orientation="Horizontal"
+                                               ItemWidth="156"
+                                               ItemHeight="132"/>
                                 </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="tiles:TileItem">
-                                    <Border Margin="5" Padding="12" CornerRadius="12" Background="{DynamicResource LightUpSurfaceBrush}"
+                                    <Border Classes="tile-card"
+                                            Padding="12"
+                                            CornerRadius="12"
+                                            Background="{DynamicResource LightUpSurfaceStrongBrush}"
+                                            BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                            BorderThickness="1"
                                             PointerPressed="Tile_PointerPressed">
-                                        <StackPanel Spacing="8" VerticalAlignment="Center">
-                                            <Border Width="44" Height="44" CornerRadius="12" Background="{DynamicResource LightUpAccentSoftBrush}" HorizontalAlignment="Center">
-                                                <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource TileItemIconConverter}}" IconSize="{x:Static presentation:LauncherItemVisuals.ResultIconSize}" Width="20" Height="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="7">
+                                            <Border Width="44"
+                                                    Height="44"
+                                                    CornerRadius="12"
+                                                    Background="{DynamicResource LightUpAccentSoftBrush}"
+                                                    HorizontalAlignment="Center">
+                                                <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource TileItemIconConverter}}"
+                                                                    Width="20"
+                                                                    Height="20"
+                                                                    Foreground="{DynamicResource LightUpAccentBrush}"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
                                             </Border>
-                                            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource LightUpTextBrush}" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                            <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemLabelConverter}}" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" TextAlignment="Center"/>
-                                        </StackPanel>
+                                            <StackPanel Grid.Row="1" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{CompiledBinding Title}"
+                                                           FontSize="12.5"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource LightUpTextBrush}"
+                                                           TextAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{CompiledBinding Kind, Converter={StaticResource LauncherItemLabelConverter}}"
+                                                           FontSize="9.5"
+                                                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                                           TextAlignment="Center"/>
+                                            </StackPanel>
+                                            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                                                <TextBlock Text="{CompiledBinding LaunchCount, StringFormat='打开 {0} 次'}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <Button Grid.Column="1"
+                                                        Classes="launcher-tile-remove"
+                                                        Click="RemoveTile_Click"
+                                                        CommandParameter="{CompiledBinding}"
+                                                        ToolTip.Tip="移除入口"
+                                                        AutomationProperties.Name="移除入口">
+                                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
+                                                                        Width="12"
+                                                                        Height="12"/>
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                    <TextBlock Grid.Row="0" Text="{Binding StatusText}" Foreground="{DynamicResource LightUpWarningBrush}" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,140,2"/>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Border IsVisible="{CompiledBinding ShowEmptyState}"
+                                Background="{DynamicResource LightUpSurfaceBrush}"
+                                BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14"
+                                Margin="4"
+                                Padding="24">
+                            <StackPanel HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Spacing="10">
+                                <Border Width="52" Height="52" CornerRadius="16" Background="{DynamicResource LightUpAccentSoftBrush}" HorizontalAlignment="Center">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.AppsAddIn}"
+                                                        Width="24"
+                                                        Height="24"
+                                                        Foreground="{DynamicResource LightUpAccentBrush}"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{CompiledBinding EmptyStateText}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource LightUpTextBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="拖放入口到这里，或点击下方按钮选择文件"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <Button Classes="launcher-primary"
+                                        Click="Add_Click"
+                                        IsEnabled="{CompiledBinding CanEdit}"
+                                        Padding="13,8"
+                                        HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
+                                        <TextBlock Text="选择入口"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+
+                        <Border IsVisible="{CompiledBinding IsLoading}"
+                                Background="{DynamicResource LightUpSurfaceBrush}"
+                                CornerRadius="14"
+                                Margin="4"
+                                Padding="24">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="9">
+                                <ProgressBar Width="180" Height="3" IsIndeterminate="True"/>
+                                <TextBlock Text="正在加载磁贴…"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12" MinHeight="22">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Info}"
+                                                Width="13"
+                                                Height="13"
+                                                Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                                IsVisible="{CompiledBinding HasStatus}"/>
+                            <TextBlock Text="{CompiledBinding StatusText}"
+                                       FontSize="10.5"
+                                       Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                       IsVisible="{CompiledBinding HasStatus}"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <ProgressBar Width="70" Height="3" IsIndeterminate="True" IsVisible="{CompiledBinding IsSaving}"/>
+                            <TextBlock Text="正在保存…"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                       IsVisible="{CompiledBinding IsSaving}"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
+            </Grid>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Text="单击选择 · 双击打开 · Enter 打开 · Esc 收起"
+                           FontSize="10"
+                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1"
+                           Text="拖放也可添加入口"
+                           FontSize="10"
+                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                           VerticalAlignment="Center"/>
             </Grid>
         </Grid>
     </Border>
