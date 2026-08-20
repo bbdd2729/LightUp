@@ -6,6 +6,8 @@
     <Application.Resources>
         <converters:LauncherItemIconConverter x:Key="LauncherItemIconConverter"/>
         <converters:TileItemIconConverter x:Key="TileItemIconConverter"/>
+        <converters:LauncherItemNativeIconConverter x:Key="LauncherItemNativeIconConverter"/>
+        <converters:TileItemNativeIconConverter x:Key="TileItemNativeIconConverter"/>
         <converters:LauncherItemLabelConverter x:Key="LauncherItemLabelConverter"/>
         <SolidColorBrush x:Key="LightUpWindowBrush" Color="#F0141A27"/>
         <SolidColorBrush x:Key="LightUpSurfaceBrush" Color="#1AFFFFFF"/>

@@ -97,7 +97,15 @@
                             <Border Padding="12,9" CornerRadius="10" PointerPressed="Result_PointerPressed">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                                     <Border Width="40" Height="40" CornerRadius="11" Background="{DynamicResource LightUpAccentSoftBrush}">
-                                        <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource LauncherItemIconConverter}}" IconSize="{x:Static presentation:LauncherItemVisuals.ResultIconSize}" Width="20" Height="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Grid>
+                                            <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource LauncherItemIconConverter}}" IconSize="{x:Static presentation:LauncherItemVisuals.ResultIconSize}" Width="20" Height="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Image Source="{CompiledBinding Converter={StaticResource LauncherItemNativeIconConverter}}"
+                                                   Width="25"
+                                                   Height="25"
+                                                   Stretch="Uniform"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                        </Grid>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                         <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>

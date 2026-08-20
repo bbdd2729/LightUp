@@ -454,12 +454,20 @@
                                                     CornerRadius="12"
                                                     Background="{DynamicResource LightUpAccentSoftBrush}"
                                                     HorizontalAlignment="Center">
-                                                <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource TileItemIconConverter}}"
-                                                                    Width="20"
-                                                                    Height="20"
-                                                                    Foreground="{DynamicResource LightUpAccentBrush}"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
+                                                <Grid>
+                                                    <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource TileItemIconConverter}}"
+                                                                        Width="20"
+                                                                        Height="20"
+                                                                        Foreground="{DynamicResource LightUpAccentBrush}"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                    <Image Source="{CompiledBinding Converter={StaticResource TileItemNativeIconConverter}}"
+                                                           Width="32"
+                                                           Height="32"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Grid>
                                             </Border>
                                             <StackPanel Grid.Row="1" Spacing="2" VerticalAlignment="Center">
                                                 <TextBlock Text="{CompiledBinding Title}"
