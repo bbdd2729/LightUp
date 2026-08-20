@@ -20,8 +20,8 @@
         KeyDown="Window_KeyDown"
         Deactivated="Window_Deactivated">
 
-    <Border Background="#E61B1B1B"
-            BorderBrush="#32FFFFFF"
+    <Border Background="{DynamicResource LightUpWindowBrush}"
+            BorderBrush="{DynamicResource LightUpBorderBrush}"
             BorderThickness="1"
             CornerRadius="18"
             Padding="18">
@@ -32,24 +32,28 @@
         <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <Border PointerPressed="TitleBar_PointerPressed" Background="Transparent" Padding="2,4">
-                    <TextBlock Text="LightUp" FontSize="13" FontWeight="SemiBold" Foreground="#A8FFFFFF"/>
+                    <TextBlock Text="LightUp" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                 </Border>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                    <Button x:Name="TopmostButton" Content="📌" Click="ToggleTopmost_Click" ToolTip.Tip="置顶" Width="28" Height="26" Padding="0" Background="#18FFFFFF" BorderThickness="0"/>
-                    <Button Content="—" Click="Collapse_Click" ToolTip.Tip="收起窗口" Width="28" Height="26" Padding="0" Background="#18FFFFFF" BorderThickness="0"/>
-                    <Button Content="×" Click="Close_Click" ToolTip.Tip="关闭窗口" Width="28" Height="26" Padding="0" Background="#18FFFFFF" BorderThickness="0"/>
+                    <Button Classes="launcher-chrome" x:Name="TopmostButton" Content="📌" Click="ToggleTopmost_Click" ToolTip.Tip="置顶" Width="28" Height="26"/>
+                    <Button Classes="launcher-chrome" Content="—" Click="Collapse_Click" ToolTip.Tip="收起窗口" Width="28" Height="26"/>
+                    <Button Classes="launcher-chrome" Content="×" Click="Close_Click" ToolTip.Tip="关闭窗口" Width="28" Height="26"/>
                 </StackPanel>
             </Grid>
 
-            <Border Grid.Row="1" Height="50" Background="#20FFFFFF" BorderBrush="#35FFFFFF" BorderThickness="1" CornerRadius="12" Padding="14,0">
+            <Border Grid.Row="1" Height="52" Background="{DynamicResource LightUpSurfaceBrush}" BorderBrush="{DynamicResource LightUpBorderBrush}" BorderThickness="1" CornerRadius="13" Padding="14,0">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                    <TextBlock Grid.Column="0" Text="⌕" FontSize="25" Foreground="#B8FFFFFF" VerticalAlignment="Center"/>
+                    <Border Grid.Column="0" Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpAccentSoftBrush}">
+                        <TextBlock Text="⌕" FontSize="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                     <TextBox Grid.Column="1" x:Name="QueryBox"
                              Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="搜索应用、程序或快捷方式..."
                              Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White"
-                             FontSize="17" VerticalContentAlignment="Center"/>
-                    <TextBlock Grid.Column="2" Text="Alt + Space" Foreground="#66FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                             FontSize="17" FontWeight="SemiBold" VerticalContentAlignment="Center"/>
+                    <Border Grid.Column="2" Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="6" Padding="7,4">
+                        <TextBlock Text="Alt + Space" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </Border>
 
@@ -74,25 +78,27 @@
                         <DataTemplate>
                             <Border Padding="12,9" CornerRadius="10">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                    <Border Width="38" Height="38" CornerRadius="10" Background="#303B82F6">
-                                        <TextBlock Text="●" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Border Width="40" Height="40" CornerRadius="11" Background="{DynamicResource LightUpAccentSoftBrush}">
+                                        <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemGlyphConverter}}" FontSize="18" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="White"/>
-                                        <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="#99FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>
+                                        <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{DynamicResource LightUpTextMutedBrush}" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="{Binding Kind}" Foreground="#66FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    <Border Grid.Column="2" Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="5" Padding="6,3" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemLabelConverter}}" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="9" VerticalAlignment="Center"/>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock Text="{Binding StatusText}" Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding !IsSearching}"/>
+                <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource LightUpTextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding !IsSearching}"/>
                 <ProgressBar IsIndeterminate="True" Height="2" VerticalAlignment="Bottom" IsVisible="{Binding IsSearching}"/>
             </Grid>
 
-            <TextBlock Grid.Row="3" Text="↑↓ 选择    Enter 启动    Esc 关闭" Foreground="#66FFFFFF" FontSize="10" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Row="3" Text="↑↓ 选择    Enter 启动    Esc 关闭" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" HorizontalAlignment="Right"/>
         </Grid>
     </Border>
 </Window>

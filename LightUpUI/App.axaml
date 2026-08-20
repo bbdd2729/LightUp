@@ -1,10 +1,49 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="using:LightUpUI.Converters"
              x:Class="LightUpUI.App"
              RequestedThemeVariant="Default">
-    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <Application.Resources>
+        <converters:LauncherItemGlyphConverter x:Key="LauncherItemGlyphConverter"/>
+        <converters:LauncherItemLabelConverter x:Key="LauncherItemLabelConverter"/>
+        <SolidColorBrush x:Key="LightUpWindowBrush" Color="#F0141A27"/>
+        <SolidColorBrush x:Key="LightUpSurfaceBrush" Color="#1AFFFFFF"/>
+        <SolidColorBrush x:Key="LightUpSurfaceStrongBrush" Color="#24FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpBorderBrush" Color="#32FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpTextBrush" Color="#FFF7FAFC"/>
+        <SolidColorBrush x:Key="LightUpTextMutedBrush" Color="#A8C1CBD6"/>
+        <SolidColorBrush x:Key="LightUpTextFaintBrush" Color="#7596A6B5"/>
+        <SolidColorBrush x:Key="LightUpAccentBrush" Color="#4CC2FF"/>
+        <SolidColorBrush x:Key="LightUpAccentSoftBrush" Color="#304CC2FF"/>
+    </Application.Resources>
 
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme DensityStyle="Compact" />
+        <Style Selector="Button.launcher-chrome">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextMutedBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="Button.launcher-chrome:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-chrome:pressed">
+            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-primary">
+            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.launcher-primary:pointerover">
+            <Setter Property="Background" Value="#405CCBFF"/>
+        </Style>
     </Application.Styles>
 </Application>
