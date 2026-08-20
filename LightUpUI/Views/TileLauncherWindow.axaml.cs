@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using LightUpUI.Models.Tiles;
 using LightUpUI.Presentation;
 using LightUpUI.Services;
@@ -197,6 +198,58 @@ public partial class TileLauncherWindow : Window
     {
         ViewModel.SearchText = string.Empty;
         FocusSearchBox();
+        e.Handled = true;
+    }
+
+    private static TileItem? GetContextTile(object? sender)
+    {
+        if (sender is not MenuItem menuItem)
+            return null;
+
+        if (menuItem.DataContext is TileItem item)
+            return item;
+
+        return (menuItem.Parent as ContextMenu)?.PlacementTarget?.DataContext as TileItem;
+    }
+
+    private TileItem? SelectContextTile(object? sender)
+    {
+        var item = GetContextTile(sender);
+        if (item is not null)
+            ViewModel.SelectedItem = item;
+
+        return item;
+    }
+
+    private void ContextOpen_Click(object? sender, RoutedEventArgs e)
+    {
+        if (SelectContextTile(sender) is not null)
+            ViewModel.OpenSelectedCommand.Execute(null);
+
+        e.Handled = true;
+    }
+
+    private void ContextRename_Click(object? sender, RoutedEventArgs e)
+    {
+        if (SelectContextTile(sender) is not null)
+            Dispatcher.UIThread.Post(FocusTileTitleBox);
+
+        e.Handled = true;
+    }
+
+    private void ContextMove_Click(object? sender, RoutedEventArgs e)
+    {
+        if (SelectContextTile(sender) is not null)
+            Dispatcher.UIThread.Post(() => this.FindControl<ComboBox>("MoveCategoryBox")?.Focus());
+
+        e.Handled = true;
+    }
+
+    private async void ContextRemove_Click(object? sender, RoutedEventArgs e)
+    {
+        if (SelectContextTile(sender) is not null)
+            await ViewModel.RemoveSelectedItemAsync();
+
         e.Handled = true;
     }
 

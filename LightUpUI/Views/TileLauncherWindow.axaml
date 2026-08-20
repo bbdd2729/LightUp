@@ -475,13 +475,46 @@
                             </ListBox.ItemsPanel>
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="tiles:TileItem">
-                                    <Border Classes="tile-card"
-                                            Padding="12"
-                                            CornerRadius="12"
-                                            Background="{DynamicResource LightUpSurfaceStrongBrush}"
-                                            BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                            BorderThickness="1"
-                                            PointerPressed="Tile_PointerPressed">
+                            <Border Classes="tile-card"
+                                    Padding="12"
+                                    CornerRadius="12"
+                                    Background="{DynamicResource LightUpSurfaceStrongBrush}"
+                                    BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                    BorderThickness="1"
+                                    PointerPressed="Tile_PointerPressed">
+                                        <Border.ContextMenu>
+                                            <ContextMenu Classes="launcher-context-menu">
+                                                <MenuItem Header="打开"
+                                                          Click="ContextOpen_Click"
+                                                          AutomationProperties.Name="打开磁贴入口">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Open}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="重命名"
+                                                          Click="ContextRename_Click"
+                                                          AutomationProperties.Name="重命名磁贴入口">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="移动到分类"
+                                                          Click="ContextMove_Click"
+                                                          AutomationProperties.Name="移动磁贴入口">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowRight}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <Separator/>
+                                                <MenuItem Header="移除入口"
+                                                          Click="ContextRemove_Click"
+                                                          AutomationProperties.Name="移除磁贴入口">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
                                         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="7">
                                             <Border Width="44"
                                                     Height="44"
@@ -605,6 +638,16 @@
                                        Foreground="{DynamicResource LightUpTextMutedBrush}"
                                        IsVisible="{CompiledBinding HasStatus}"
                                        TextTrimming="CharacterEllipsis"/>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding UndoLastRemovalCommand}"
+                                    IsVisible="{CompiledBinding CanUndoLastRemoval}"
+                                    ToolTip.Tip="撤销移除"
+                                    AutomationProperties.Name="撤销移除入口">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="12" Height="12"/>
+                                    <TextBlock Text="撤销" FontSize="10"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
@@ -640,6 +683,7 @@
                                        Foreground="{DynamicResource LightUpTextFaintBrush}"
                                        VerticalAlignment="Center"/>
                             <ComboBox Width="108"
+                                      x:Name="MoveCategoryBox"
                                       Height="28"
                                       ItemsSource="{CompiledBinding Categories}"
                                       SelectedItem="{CompiledBinding MoveDestinationCategory, Mode=TwoWay}"

@@ -24,6 +24,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     private TileLauncherState _state = new();
     private bool _suppressSelectionPersistence;
     private int _pendingSaveCount;
+    private RemovedTileSnapshot? _lastRemovedTile;
+
+    private sealed record RemovedTileSnapshot(string CategoryId, TileItem Item, int SortOrder);
 
     public TileLauncherViewModel(
         ILauncherStateStore stateStore,
@@ -94,6 +97,8 @@ public partial class TileLauncherViewModel : ViewModelBase
     public bool HasSelectedItem => SelectedItem is not null;
 
     public bool CanRenameSelectedItem => SelectedItem is not null && !IsLoading;
+
+    public bool CanUndoLastRemoval => _lastRemovedTile is not null && !IsLoading;
 
     public bool ShowEmptyState => TileLauncherLayoutPolicy.ShouldShowEmptyState(IsLoading, HasVisibleItems);
 
@@ -358,6 +363,61 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public void RemoveItem(TileItem item) => _ = RemoveItemAsync(item);
 
+    [RelayCommand]
+    public Task RemoveSelectedItemAsync(CancellationToken cancellationToken = default)
+    {
+        if (SelectedItem is null)
+        {
+            StatusText = "请先选择一个入口";
+            return Task.CompletedTask;
+        }
+
+        return RemoveItemAsync(SelectedItem, cancellationToken);
+    }
+
+    [RelayCommand]
+    public async Task UndoLastRemovalAsync(CancellationToken cancellationToken = default)
+    {
+        var snapshot = _lastRemovedTile;
+        if (snapshot is null)
+        {
+            StatusText = "没有可恢复的入口";
+            return;
+        }
+
+        var category = Categories.FirstOrDefault(candidate =>
+            candidate.Id.Equals(snapshot.CategoryId, StringComparison.OrdinalIgnoreCase));
+        if (category is null)
+        {
+            _lastRemovedTile = null;
+            NotifyUndoStateChanged();
+            StatusText = "原分类已不存在，无法恢复入口";
+            return;
+        }
+
+        if (category.Items.Any(existing =>
+                string.Equals(existing.TargetPath, snapshot.Item.TargetPath, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusText = "原分类已存在该入口，暂不恢复";
+            return;
+        }
+
+        category.Items.Insert(Math.Clamp(snapshot.SortOrder, 0, category.Items.Count), snapshot.Item);
+        ResetItemSortOrder(category.Items);
+        if (ReferenceEquals(SelectedCategory, category))
+        {
+            RefreshVisibleItems();
+            SelectedItem = snapshot.Item;
+        }
+
+        if (await PersistStateAsync(cancellationToken))
+        {
+            _lastRemovedTile = null;
+            NotifyUndoStateChanged();
+            StatusText = $"已恢复“{snapshot.Item.Title}”";
+        }
+    }
+
     public async Task MoveItemAsync(
         TileItem item,
         TileCategory destination,
@@ -453,9 +513,15 @@ public partial class TileLauncherViewModel : ViewModelBase
         TileItem item,
         CancellationToken cancellationToken = default)
     {
-        if (SelectedCategory?.Items.Remove(item) != true)
+        var category = Categories.FirstOrDefault(candidate => candidate.Items.Contains(item));
+        if (category is null)
             return;
 
+        var sortOrder = category.Items.IndexOf(item);
+        category.Items.RemoveAt(sortOrder);
+        ResetItemSortOrder(category.Items);
+        _lastRemovedTile = new RemovedTileSnapshot(category.Id, item, sortOrder);
+        NotifyUndoStateChanged();
         RefreshVisibleItems();
         if (await PersistStateAsync(cancellationToken))
             StatusText = $"已移除“{item.Title}”";
@@ -529,6 +595,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         NotifyViewStateChanged();
         OnPropertyChanged(nameof(CanEdit));
         OnPropertyChanged(nameof(CanRenameSelectedItem));
+        OnPropertyChanged(nameof(CanUndoLastRemoval));
     }
 
     partial void OnStatusTextChanged(string value) => OnPropertyChanged(nameof(HasStatus));
@@ -564,6 +631,9 @@ public partial class TileLauncherViewModel : ViewModelBase
         OnPropertyChanged(nameof(EmptyStateText));
         OnPropertyChanged(nameof(ShowEmptyState));
     }
+
+    private void NotifyUndoStateChanged()
+        => OnPropertyChanged(nameof(CanUndoLastRemoval));
 
     private static bool IsDefaultCategory(TileCategory category)
         => category.Id.Equals(DefaultCategoryId, StringComparison.OrdinalIgnoreCase);

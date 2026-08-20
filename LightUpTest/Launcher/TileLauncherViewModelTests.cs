@@ -295,6 +295,55 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task RemoveSelectedItemAsync_can_restore_the_item_at_its_original_position()
+    {
+        var first = CreateTile("first");
+        var removed = CreateTile("remove");
+        var last = CreateTile("last");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [first, removed, last] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = removed;
+
+        await viewModel.RemoveSelectedItemAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(["first", "last"], viewModel.VisibleItems.Select(item => item.Id));
+        Assert.True(viewModel.CanUndoLastRemoval);
+        Assert.Equal(1, store.SaveCount);
+
+        await viewModel.UndoLastRemovalAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(["first", "remove", "last"], viewModel.VisibleItems.Select(item => item.Id));
+        Assert.Equal([0, 1, 2], viewModel.VisibleItems.Select(item => item.SortOrder));
+        Assert.False(viewModel.CanUndoLastRemoval);
+        Assert.Equal(2, store.SaveCount);
+        Assert.Contains("已恢复", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task UndoLastRemovalAsync_rejects_an_item_that_was_readded_at_the_same_path()
+    {
+        var removed = CreateTile("remove");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [removed] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = removed;
+        await viewModel.RemoveSelectedItemAsync(TestContext.Current.CancellationToken);
+        await viewModel.AddItemsAsync([CreateTile("remove")], TestContext.Current.CancellationToken);
+
+        await viewModel.UndoLastRemovalAsync(TestContext.Current.CancellationToken);
+
+        Assert.Single(viewModel.VisibleItems);
+        Assert.True(viewModel.CanUndoLastRemoval);
+        Assert.Equal(2, store.SaveCount);
+        Assert.Contains("已存在", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState
