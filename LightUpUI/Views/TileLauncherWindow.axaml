@@ -384,6 +384,20 @@
                                        Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding MoveSelectedCategoryUpCommand}"
+                                    IsEnabled="{CompiledBinding CanMoveSelectedCategoryUp}"
+                                    ToolTip.Tip="上移当前分类"
+                                    AutomationProperties.Name="上移当前分类">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowUp}" Width="14" Height="14"/>
+                            </Button>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding MoveSelectedCategoryDownCommand}"
+                                    IsEnabled="{CompiledBinding CanMoveSelectedCategoryDown}"
+                                    ToolTip.Tip="下移当前分类"
+                                    AutomationProperties.Name="下移当前分类">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="14" Height="14"/>
+                            </Button>
                             <TextBox x:Name="CategoryNameBox"
                                      Width="112"
                                      Text="{CompiledBinding EditedCategoryName, Mode=TwoWay}"

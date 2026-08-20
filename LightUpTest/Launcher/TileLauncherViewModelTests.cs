@@ -425,6 +425,55 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task MoveSelectedCategoryAsync_moves_custom_categories_and_reindexes_them()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "archive",
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部", SortOrder = 20 },
+                new TileCategory { Id = "work", Name = "工作", SortOrder = 30 },
+                new TileCategory { Id = "archive", Name = "归档", SortOrder = 40 }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.MoveSelectedCategoryAsync(-1, TestContext.Current.CancellationToken);
+
+        Assert.Equal(["all", "archive", "work"], viewModel.Categories.Select(category => category.Id));
+        Assert.Equal([0, 1, 2], viewModel.Categories.Select(category => category.SortOrder));
+        Assert.Equal("archive", viewModel.SelectedCategory?.Id);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已上移", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task MoveSelectedCategoryAsync_keeps_all_fixed_and_rejects_boundary_moves()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作" }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.MoveSelectedCategoryAsync(-1, TestContext.Current.CancellationToken);
+        Assert.Equal(["all", "work"], viewModel.Categories.Select(category => category.Id));
+        Assert.Equal(0, store.SaveCount);
+
+        viewModel.SelectedCategory = viewModel.Categories.Single(category => category.Id == "work");
+        await viewModel.MoveSelectedCategoryAsync(1, TestContext.Current.CancellationToken);
+
+        Assert.Equal(["all", "work"], viewModel.Categories.Select(category => category.Id));
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已经是最后", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState

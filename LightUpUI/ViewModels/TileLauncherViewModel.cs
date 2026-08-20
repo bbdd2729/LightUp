@@ -116,6 +116,17 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public bool CanManageSelectedCategory => SelectedCategory is not null && !IsDefaultCategory(SelectedCategory);
 
+    public bool CanMoveSelectedCategoryUp => GetSelectedCategoryIndex() > 1;
+
+    public bool CanMoveSelectedCategoryDown
+    {
+        get
+        {
+            var index = GetSelectedCategoryIndex();
+            return index >= 1 && index < Categories.Count - 1;
+        }
+    }
+
     public bool CanMoveSelectedItem => SelectedItem is not null
         && MoveDestinationCategory is not null
         && !ReferenceEquals(SelectedCategory, MoveDestinationCategory);
@@ -369,6 +380,38 @@ public partial class TileLauncherViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public async Task MoveSelectedCategoryAsync(
+        int direction,
+        CancellationToken cancellationToken = default)
+    {
+        var category = SelectedCategory;
+        if (category is null || IsDefaultCategory(category))
+        {
+            StatusText = "“全部”分类固定在第一位";
+            return;
+        }
+
+        if (direction is not (-1 or 1))
+        {
+            StatusText = "分类移动方向无效";
+            return;
+        }
+
+        var currentIndex = Categories.IndexOf(category);
+        var targetIndex = currentIndex + direction;
+        if (currentIndex < 1 || targetIndex < 1 || targetIndex >= Categories.Count)
+        {
+            StatusText = direction < 0 ? "分类已经是第一个自定义分类" : "分类已经是最后一个分类";
+            return;
+        }
+
+        Categories.Move(currentIndex, targetIndex);
+        ReindexCategories();
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = direction < 0 ? $"已上移分类“{category.Name}”" : $"已下移分类“{category.Name}”";
+    }
+
     public void RemoveItem(TileItem item) => _ = RemoveItemAsync(item);
 
     [RelayCommand]
@@ -607,6 +650,14 @@ public partial class TileLauncherViewModel : ViewModelBase
     private Task AddNewCategoryAsync() => AddCategoryAsync(NewCategoryName);
 
     [RelayCommand]
+    private Task MoveSelectedCategoryUpAsync()
+        => MoveSelectedCategoryAsync(-1);
+
+    [RelayCommand]
+    private Task MoveSelectedCategoryDownAsync()
+        => MoveSelectedCategoryAsync(1);
+
+    [RelayCommand]
     private async Task OpenSelectedAsync()
     {
         if (SelectedItem is null)
@@ -632,6 +683,7 @@ public partial class TileLauncherViewModel : ViewModelBase
     {
         EditedCategoryName = value?.Name ?? string.Empty;
         OnPropertyChanged(nameof(CanManageSelectedCategory));
+        NotifyCategoryOrderChanged();
         RefreshVisibleItems();
         if (value is null)
             return;
@@ -706,6 +758,12 @@ public partial class TileLauncherViewModel : ViewModelBase
     private void NotifyUndoStateChanged()
         => OnPropertyChanged(nameof(CanUndoLastRemoval));
 
+    private void NotifyCategoryOrderChanged()
+    {
+        OnPropertyChanged(nameof(CanMoveSelectedCategoryUp));
+        OnPropertyChanged(nameof(CanMoveSelectedCategoryDown));
+    }
+
     private static bool IsDefaultCategory(TileCategory category)
         => category.Id.Equals(DefaultCategoryId, StringComparison.OrdinalIgnoreCase);
 
@@ -735,6 +793,17 @@ public partial class TileLauncherViewModel : ViewModelBase
             Categories[index] = category;
 
         OnPropertyChanged(nameof(SelectedCategory));
+    }
+
+    private int GetSelectedCategoryIndex()
+        => SelectedCategory is null ? -1 : Categories.IndexOf(SelectedCategory);
+
+    private void ReindexCategories()
+    {
+        for (var index = 0; index < Categories.Count; index++)
+            Categories[index].SortOrder = index;
+
+        NotifyCategoryOrderChanged();
     }
 
     private static void ResetItemSortOrder(IList<TileItem> items)
