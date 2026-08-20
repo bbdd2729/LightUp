@@ -1,5 +1,6 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -61,29 +62,36 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
-    private void Window_Drop(object? sender, DragEventArgs e)
+    private async void Window_Drop(object? sender, DragEventArgs e)
     {
-        var files = e.DataTransfer.TryGetFiles();
-        if (files is null)
-            return;
-
-        foreach (var file in files)
+        try
         {
-            var path = file.TryGetLocalPath();
-            if (!string.IsNullOrWhiteSpace(path))
-                ViewModel.AddItem(CreateTileItem(path));
+            var files = e.DataTransfer.TryGetFiles();
+            if (files is not null)
+                await AddFilesAsync(files);
         }
-
-        e.Handled = true;
+        catch (Exception exception)
+        {
+            ViewModel.ReportError($"添加入口失败：{exception.Message}");
+        }
+        finally
+        {
+            e.Handled = true;
+        }
     }
 
     private void Tile_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e.ClickCount < 2 || sender is not Control control || control.DataContext is not TileItem item)
+        if (sender is not Control control || control.DataContext is not TileItem item)
+            return;
+
+        if (!LauncherInteractionPolicy.ShouldSelectOnClick(e.ClickCount))
             return;
 
         ViewModel.SelectedItem = item;
-        ViewModel.OpenSelectedCommand.Execute(null);
+        if (LauncherInteractionPolicy.ShouldLaunchOnClick(e.ClickCount))
+            ViewModel.OpenSelectedCommand.Execute(null);
+
         e.Handled = true;
     }
 
@@ -124,40 +132,33 @@ public partial class TileLauncherWindow : Window
 
     private async void Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        try
         {
-            AllowMultiple = true,
-            Title = "选择要添加的入口"
-        });
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                AllowMultiple = true,
+                Title = "选择要添加的入口"
+            });
 
+            await AddFilesAsync(files);
+        }
+        catch (Exception exception)
+        {
+            ViewModel.ReportError($"添加入口失败：{exception.Message}");
+        }
+    }
+
+    private async Task AddFilesAsync(IEnumerable<IStorageItem> files)
+    {
+        var items = new List<TileItem>();
         foreach (var file in files)
         {
             var path = file.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(path))
-                ViewModel.AddItem(CreateTileItem(path));
+                items.Add(TileItemFactory.Create(path));
         }
-    }
 
-    private static TileItem CreateTileItem(string path)
-    {
-        var extension = Path.GetExtension(path);
-        var kind = Directory.Exists(path)
-            ? TileItemKind.Folder
-            : extension.Equals(".lnk", StringComparison.OrdinalIgnoreCase)
-                ? TileItemKind.Shortcut
-                : extension.Equals(".url", StringComparison.OrdinalIgnoreCase)
-                    ? TileItemKind.Url
-                    : extension.Equals(".exe", StringComparison.OrdinalIgnoreCase)
-                        ? TileItemKind.Application
-                        : TileItemKind.File;
-
-        return new TileItem
-        {
-            Id = Guid.NewGuid().ToString("N"),
-            Title = Path.GetFileNameWithoutExtension(path),
-            TargetPath = path,
-            Kind = kind
-        };
+        await ViewModel.AddItemsAsync(items);
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
