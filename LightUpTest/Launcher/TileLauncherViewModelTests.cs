@@ -97,6 +97,84 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task RenameSelectedCategory_updates_the_name_and_persists_it()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作" }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.EditedCategoryName = "  专注工作  ";
+
+        await viewModel.RenameSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("专注工作", viewModel.SelectedCategory?.Name);
+        Assert.Equal("专注工作", store.State.Categories.Single(category => category.Id == "work").Name);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已重命名", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RenameSelectedCategory_keeps_the_default_category_protected()
+    {
+        var store = new FakeStateStore(CreateDefaultState());
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.EditedCategoryName = "别的名称";
+
+        await viewModel.RenameSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(viewModel.CanManageSelectedCategory);
+        Assert.Equal("全部", viewModel.SelectedCategory?.Name);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("不能重命名", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RemoveSelectedCategory_moves_its_unique_tiles_to_default_and_persists_once()
+    {
+        var allItem = CreateTile("existing");
+        var workItem = CreateTile("work");
+        var duplicateItem = CreateTile("existing");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部", Items = [allItem] },
+                new TileCategory { Id = "work", Name = "工作", Items = [workItem, duplicateItem] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.Single(viewModel.Categories);
+        Assert.Equal("all", viewModel.SelectedCategory?.Id);
+        Assert.Equal(["existing", "work"], viewModel.SelectedCategory!.Items.Select(item => item.Id));
+        Assert.Equal("all", store.State.SelectedCategoryId);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已移至“全部”", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RemoveSelectedCategory_keeps_the_default_category_protected()
+    {
+        var store = new FakeStateStore(CreateDefaultState());
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.Single(viewModel.Categories);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("不能删除", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState

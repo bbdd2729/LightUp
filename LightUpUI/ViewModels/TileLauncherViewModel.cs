@@ -15,6 +15,9 @@ namespace LightUpUI.ViewModels;
 
 public partial class TileLauncherViewModel : ViewModelBase
 {
+    public const string DefaultCategoryId = "all";
+    public const string DefaultCategoryName = "全部";
+
     private readonly ILauncherStateStore _stateStore;
     private readonly IProcessLauncher _processLauncher;
     private readonly TileStateSaveCoordinator _saveCoordinator;
@@ -61,6 +64,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     [ObservableProperty]
     private string _newCategoryName = string.Empty;
 
+    [ObservableProperty]
+    private string _editedCategoryName = string.Empty;
+
     private CategoryNavigationPlacement _categoryNavigationPlacement;
 
     public CategoryNavigationPlacement CategoryNavigationPlacement
@@ -85,6 +91,8 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public bool CanEdit => !IsLoading;
 
+    public bool CanManageSelectedCategory => SelectedCategory is not null && !IsDefaultCategory(SelectedCategory);
+
     public bool IsLeftNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Left;
 
     public bool IsTopNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Top;
@@ -104,11 +112,6 @@ public partial class TileLauncherViewModel : ViewModelBase
         {
             _state = await _stateStore.LoadAsync(cancellationToken) ?? new TileLauncherState();
             _state.Categories ??= [];
-            if (_state.Categories.Count == 0)
-            {
-                _state.Categories.Add(new TileCategory { Id = "all", Name = "全部" });
-            }
-
             foreach (var category in _state.Categories)
             {
                 category.Items ??= [];
@@ -116,11 +119,16 @@ public partial class TileLauncherViewModel : ViewModelBase
                     category.Id = Guid.NewGuid().ToString("N");
             }
 
+            EnsureDefaultCategory(_state.Categories);
+
             Categories.Clear();
-            foreach (var category in _state.Categories.OrderBy(category => category.SortOrder))
+            foreach (var category in _state.Categories
+                         .OrderBy(category => IsDefaultCategory(category) ? 0 : 1)
+                         .ThenBy(category => category.SortOrder))
                 Categories.Add(category);
 
-            SelectedCategory = Categories.FirstOrDefault(category => category.Id == _state.SelectedCategoryId)
+            SelectedCategory = Categories.FirstOrDefault(category =>
+                    category.Id.Equals(_state.SelectedCategoryId, StringComparison.OrdinalIgnoreCase))
                 ?? Categories[0];
             StatusText = string.Empty;
         }
@@ -131,7 +139,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         catch (Exception exception)
         {
             Categories.Clear();
-            Categories.Add(new TileCategory { Id = "all", Name = "全部" });
+            Categories.Add(CreateDefaultCategory());
             SelectedCategory = Categories[0];
             StatusText = $"加载失败：{exception.Message}";
         }
@@ -231,6 +239,109 @@ public partial class TileLauncherViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public async Task RenameSelectedCategoryAsync(CancellationToken cancellationToken = default)
+    {
+        var category = SelectedCategory;
+        if (category is null)
+        {
+            StatusText = "请先选择一个分类";
+            return;
+        }
+
+        if (IsDefaultCategory(category))
+        {
+            StatusText = "“全部”分类不能重命名";
+            return;
+        }
+
+        var normalizedName = EditedCategoryName.Trim();
+        if (normalizedName.Length == 0)
+        {
+            StatusText = "分类名称不能为空";
+            return;
+        }
+
+        if (Categories.Any(existing =>
+                !ReferenceEquals(existing, category)
+                && existing.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusText = "已存在同名分类";
+            return;
+        }
+
+        if (category.Name.Equals(normalizedName, StringComparison.Ordinal))
+        {
+            StatusText = "分类名称未更改";
+            return;
+        }
+
+        category.Name = normalizedName;
+        NotifyCategoryChanged(category);
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = $"已重命名为“{normalizedName}”";
+    }
+
+    [RelayCommand]
+    public async Task RemoveSelectedCategoryAsync(CancellationToken cancellationToken = default)
+    {
+        var category = SelectedCategory;
+        if (category is null)
+        {
+            StatusText = "请先选择一个分类";
+            return;
+        }
+
+        if (IsDefaultCategory(category))
+        {
+            StatusText = "“全部”分类不能删除";
+            return;
+        }
+
+        var defaultCategory = Categories.FirstOrDefault(IsDefaultCategory);
+        if (defaultCategory is null)
+        {
+            defaultCategory = CreateDefaultCategory();
+            Categories.Insert(0, defaultCategory);
+        }
+
+        var existingPaths = new HashSet<string>(
+            defaultCategory.Items
+                .Select(item => item.TargetPath)
+                .Where(path => !string.IsNullOrWhiteSpace(path)),
+            StringComparer.OrdinalIgnoreCase);
+        var movedCount = 0;
+        foreach (var item in category.Items)
+        {
+            if (!string.IsNullOrWhiteSpace(item.TargetPath) && !existingPaths.Add(item.TargetPath))
+                continue;
+
+            item.SortOrder = defaultCategory.Items.Count;
+            defaultCategory.Items.Add(item);
+            movedCount++;
+        }
+
+        var categoryName = category.Name;
+        Categories.Remove(category);
+        _suppressSelectionPersistence = true;
+        try
+        {
+            SelectedCategory = defaultCategory;
+        }
+        finally
+        {
+            _suppressSelectionPersistence = false;
+        }
+
+        NotifyCategoryChanged(defaultCategory);
+        if (await PersistStateAsync(cancellationToken))
+        {
+            StatusText = movedCount == 0
+                ? $"已删除分类“{categoryName}”"
+                : $"已删除分类“{categoryName}”，{movedCount} 个入口已移至“全部”";
+        }
+    }
+
     public void RemoveItem(TileItem item) => _ = RemoveItemAsync(item);
 
     public async Task RemoveItemAsync(
@@ -280,6 +391,8 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     partial void OnSelectedCategoryChanged(TileCategory? value)
     {
+        EditedCategoryName = value?.Name ?? string.Empty;
+        OnPropertyChanged(nameof(CanManageSelectedCategory));
         RefreshVisibleItems();
         if (value is null)
             return;
@@ -332,6 +445,37 @@ public partial class TileLauncherViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasVisibleItems));
         OnPropertyChanged(nameof(EmptyStateText));
         OnPropertyChanged(nameof(ShowEmptyState));
+    }
+
+    private static bool IsDefaultCategory(TileCategory category)
+        => category.Id.Equals(DefaultCategoryId, StringComparison.OrdinalIgnoreCase);
+
+    private static TileCategory CreateDefaultCategory() => new()
+    {
+        Id = DefaultCategoryId,
+        Name = DefaultCategoryName
+    };
+
+    private static void EnsureDefaultCategory(ICollection<TileCategory> categories)
+    {
+        var defaultCategory = categories.FirstOrDefault(IsDefaultCategory);
+        if (defaultCategory is null)
+        {
+            categories.Add(CreateDefaultCategory());
+            return;
+        }
+
+        defaultCategory.Id = DefaultCategoryId;
+        defaultCategory.Name = DefaultCategoryName;
+    }
+
+    private void NotifyCategoryChanged(TileCategory category)
+    {
+        var index = Categories.IndexOf(category);
+        if (index >= 0)
+            Categories[index] = category;
+
+        OnPropertyChanged(nameof(SelectedCategory));
     }
 
     public void ReportError(string message)

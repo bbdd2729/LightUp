@@ -190,6 +190,15 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
+    private void RenameCategory_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || !ViewModel.CanManageSelectedCategory)
+            return;
+
+        ViewModel.RenameSelectedCategoryCommand.Execute(null);
+        e.Handled = true;
+    }
+
     private async void RemoveTile_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Control { DataContext: TileItem item })

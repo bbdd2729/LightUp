@@ -383,18 +383,52 @@
                                        FontSize="11"
                                        Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                         </StackPanel>
-                        <Button Grid.Column="1"
-                                Classes="launcher-primary"
-                                Click="Add_Click"
-                                IsEnabled="{CompiledBinding CanEdit}"
-                                Padding="12,8"
-                                ToolTip.Tip="选择文件或文件夹"
-                                AutomationProperties.Name="添加入口">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
-                                <TextBlock Text="添加入口" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBox x:Name="CategoryNameBox"
+                                     Width="112"
+                                     Text="{CompiledBinding EditedCategoryName, Mode=TwoWay}"
+                                     IsEnabled="{CompiledBinding CanManageSelectedCategory}"
+                                     PlaceholderText="分类名称"
+                                     FontSize="11"
+                                     Padding="8,6"
+                                     Background="{DynamicResource LightUpWindowBrush}"
+                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                     BorderThickness="1"
+                                     CornerRadius="8"
+                                     Foreground="{DynamicResource LightUpTextBrush}"
+                                     ToolTip.Tip="重命名当前分类"
+                                     AutomationProperties.Name="当前分类名称"
+                                     KeyDown="RenameCategory_KeyDown"/>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding RenameSelectedCategoryCommand}"
+                                    IsEnabled="{CompiledBinding CanManageSelectedCategory}"
+                                    ToolTip.Tip="保存分类名称"
+                                    AutomationProperties.Name="保存分类名称">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}"
+                                                    Width="14"
+                                                    Height="14"/>
+                            </Button>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding RemoveSelectedCategoryCommand}"
+                                    IsEnabled="{CompiledBinding CanManageSelectedCategory}"
+                                    ToolTip.Tip="删除当前分类，入口会移至全部"
+                                    AutomationProperties.Name="删除当前分类">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
+                                                    Width="14"
+                                                    Height="14"/>
+                            </Button>
+                            <Button Classes="launcher-primary"
+                                    Click="Add_Click"
+                                    IsEnabled="{CompiledBinding CanEdit}"
+                                    Padding="12,8"
+                                    ToolTip.Tip="选择文件或文件夹"
+                                    AutomationProperties.Name="添加入口">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
+                                    <TextBlock Text="添加入口" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </Grid>
 
                     <Grid Grid.Row="1" ClipToBounds="True">
