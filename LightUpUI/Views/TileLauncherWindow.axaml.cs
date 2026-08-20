@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -470,6 +471,50 @@ public partial class TileLauncherWindow : Window
             await ViewModel.OpenContainingFolderAsync();
 
         e.Handled = true;
+    }
+
+    private async void ContextRetarget_Click(object? sender, RoutedEventArgs e)
+    {
+        var item = SelectContextTile(sender);
+        if (item is not null)
+            await RetargetItemAsync(item);
+
+        e.Handled = true;
+    }
+
+    private async Task RetargetItemAsync(TileItem item)
+    {
+        try
+        {
+            string? path;
+            if (item.Kind == TileItemKind.Folder)
+            {
+                var folder = (await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    AllowMultiple = false,
+                    Title = "选择新的文件夹目标"
+                })).FirstOrDefault();
+                path = folder?.TryGetLocalPath();
+            }
+            else
+            {
+                var file = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    AllowMultiple = false,
+                    Title = "选择新的入口目标"
+                })).FirstOrDefault();
+                path = file?.TryGetLocalPath();
+            }
+
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            await ViewModel.RetargetTileAsync(item.Id, TileItemFactory.Create(path));
+        }
+        catch (Exception exception)
+        {
+            ViewModel.ReportError($"重新选择目标失败：{exception.Message}");
+        }
     }
 
     private void ContextMove_Click(object? sender, RoutedEventArgs e)

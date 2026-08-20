@@ -459,6 +459,49 @@ public partial class TileLauncherViewModel : ViewModelBase
         return RemoveSelectedItemAsync(cancellationToken);
     }
 
+    public async Task RetargetTileAsync(
+        string tileId,
+        TileItem replacement,
+        CancellationToken cancellationToken = default)
+    {
+        if (replacement is null || string.IsNullOrWhiteSpace(replacement.TargetPath))
+        {
+            StatusText = "目标路径不能为空";
+            return;
+        }
+
+        var category = Categories.FirstOrDefault(candidate =>
+            candidate.Items.Any(item => item.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase)));
+        if (category is null)
+        {
+            StatusText = "找不到要重新定位的入口";
+            return;
+        }
+
+        var item = category.Items.First(candidate =>
+            candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
+        var targetPath = replacement.TargetPath.Trim();
+        if (category.Items.Any(candidate =>
+                !ReferenceEquals(candidate, item)
+                && candidate.TargetPath.Equals(targetPath, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusText = "当前分类已存在该目标";
+            return;
+        }
+
+        item.TargetPath = targetPath;
+        item.Arguments = replacement.Arguments;
+        item.Kind = replacement.Kind;
+        item.CustomIconPath = replacement.CustomIconPath;
+        UpdateTargetHealth(item);
+        if (ReferenceEquals(SelectedCategory, category))
+            RefreshVisibleItems();
+
+        SelectedItem = item;
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = $"已重新定位“{item.Title}”";
+    }
+
     [RelayCommand]
     public async Task UndoLastRemovalAsync(CancellationToken cancellationToken = default)
     {

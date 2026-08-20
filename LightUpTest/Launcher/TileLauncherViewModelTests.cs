@@ -425,6 +425,60 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task RetargetTileAsync_replaces_the_target_preserves_tile_identity_and_persists()
+    {
+        var item = CreateTile("missing.exe");
+        item.Title = "我的工具";
+        item.LaunchCount = 12;
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = new TileLauncherViewModel(
+            store,
+            new FakeProcessLauncher(),
+            targetHealthService: new FakeTargetHealthService(TileTargetHealthResult.Available));
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        await viewModel.RetargetTileAsync(
+            item.Id,
+            new TileItem
+            {
+                TargetPath = "C:\\Tools\\new.exe",
+                Kind = TileItemKind.Application,
+                CustomIconPath = "C:\\Tools\\new.exe"
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal("missing.exe", item.Id);
+        Assert.Equal("我的工具", item.Title);
+        Assert.Equal(12, item.LaunchCount);
+        Assert.Equal("C:\\Tools\\new.exe", item.TargetPath);
+        Assert.Equal(TileItemKind.Application, item.Kind);
+        Assert.Equal("C:\\Tools\\new.exe", item.CustomIconPath);
+        Assert.True(item.IsTargetAvailable);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已重新定位", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RetargetTileAsync_rejects_an_empty_target_without_saving()
+    {
+        var item = CreateTile("missing.exe");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.RetargetTileAsync(item.Id, new TileItem(), TestContext.Current.CancellationToken);
+
+        Assert.Equal("missing.exe", item.TargetPath);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("目标路径不能为空", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task SaveSelectedItemNotesAsync_persists_trimmed_notes_and_updates_the_editor()
     {
         var item = CreateTile("notes");

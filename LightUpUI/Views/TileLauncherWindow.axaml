@@ -555,6 +555,14 @@
                                                         <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
+                                                <MenuItem Header="重新选择目标"
+                                                          Click="ContextRetarget_Click"
+                                                          IsEnabled="{CompiledBinding HasTargetIssue}"
+                                                          AutomationProperties.Name="重新选择磁贴目标">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="移动到分类"
                                                           Click="ContextMove_Click"
                                                           AutomationProperties.Name="移动磁贴入口">
