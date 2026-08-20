@@ -57,6 +57,7 @@ public class App : Application
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
+            tileWindow.Opened += (_, _) => _ = tileWindowHost.EnsureLoadedAsync();
 
             var settingsStore = new SearchLauncherSettingsStore();
             ViewModels.MainViewModel? viewModel = null;
@@ -93,11 +94,6 @@ public class App : Application
                 });
 
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            if (LauncherStartupPolicy.ShouldShowMainSurfaceOnStartup)
-            {
-                tileViewModel.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            }
-
             desktop.MainWindow = LauncherStartupPolicy.MainSurface switch
             {
                 LauncherStartupSurface.TileLauncher => tileWindow,

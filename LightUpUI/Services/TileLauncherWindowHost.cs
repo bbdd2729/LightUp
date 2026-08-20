@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Threading;
 using LightUpUI.ViewModels;
 using LightUpUI.Views;
@@ -8,11 +9,13 @@ public sealed class TileLauncherWindowHost(TileLauncherViewModel viewModel) : IT
 {
     private readonly TileLauncherViewModel _viewModel = viewModel;
     private TileLauncherWindow? _window;
-    private bool _loaded;
+    private Task? _loadTask;
 
     public bool IsVisible => _window?.IsVisible == true;
 
     public void Attach(TileLauncherWindow window) => _window = window;
+
+    public Task EnsureLoadedAsync() => _loadTask ??= _viewModel.LoadAsync();
 
     public void Toggle()
     {
@@ -27,11 +30,7 @@ public sealed class TileLauncherWindowHost(TileLauncherViewModel viewModel) : IT
         if (_window is null)
             return;
 
-        if (!_loaded)
-        {
-            _loaded = true;
-            _ = _viewModel.LoadAsync();
-        }
+        _ = EnsureLoadedAsync();
 
         _window.Show();
         _window.Activate();

@@ -41,6 +41,24 @@ public sealed class LauncherWindowHostLifecycleTests
         Assert.False(host.IsVisible);
     }
 
+    [Fact]
+    public async Task Tile_window_host_starts_one_shared_async_load_without_a_window()
+    {
+        var stateStore = new DeferredStateStore();
+        var viewModel = new TileLauncherViewModel(stateStore, new FakeProcessLauncher());
+        var host = new TileLauncherWindowHost(viewModel);
+
+        var initialLoad = host.EnsureLoadedAsync();
+        var repeatedLoad = host.EnsureLoadedAsync();
+
+        Assert.Same(initialLoad, repeatedLoad);
+        Assert.Equal(1, stateStore.LoadCount);
+        Assert.False(initialLoad.IsCompleted);
+
+        stateStore.Complete(new TileLauncherState());
+        await initialLoad;
+    }
+
     private sealed class FakeStateStore : ILauncherStateStore
     {
         public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)
@@ -48,6 +66,24 @@ public sealed class LauncherWindowHostLifecycleTests
 
         public Task SaveAsync(TileLauncherState state, CancellationToken cancellationToken)
             => Task.CompletedTask;
+    }
+
+    private sealed class DeferredStateStore : ILauncherStateStore
+    {
+        private readonly TaskCompletionSource<TileLauncherState> _stateSource = new();
+
+        public int LoadCount { get; private set; }
+
+        public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)
+        {
+            LoadCount++;
+            return _stateSource.Task;
+        }
+
+        public Task SaveAsync(TileLauncherState state, CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        public void Complete(TileLauncherState state) => _stateSource.SetResult(state);
     }
 
     private sealed class FakeProcessLauncher : IProcessLauncher
