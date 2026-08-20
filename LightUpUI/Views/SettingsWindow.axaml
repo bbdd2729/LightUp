@@ -4,7 +4,7 @@
         x:Class="LightUpUI.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
         Width="520"
-        Height="390"
+        Height="510"
         Title="LightUp 设置"
         WindowStartupLocation="CenterOwner">
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
@@ -26,6 +26,20 @@
                     <ComboBox ItemsSource="{Binding CategoryNavigationPlacements}"
                               SelectedItem="{Binding SelectedCategoryNavigationPlacement, Mode=TwoWay}"/>
                     <TextBlock Text="左侧：分类固定在窗口左边。&#x0a;顶部：分类以横向列表显示，为磁贴区域腾出完整宽度。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="搜索结果数量" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{CompiledBinding ResultLimits}"
+                              SelectedItem="{CompiledBinding SelectedMaxResults, Mode=TwoWay}"/>
+                    <TextBlock Text="输入搜索时最多显示该数量的结果；空搜索仍最多显示 10 项常用入口。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="简约模式搜索范围" FontWeight="SemiBold"/>
+                    <CheckBox Content="搜索所有磁贴分类"
+                              IsChecked="{CompiledBinding SearchAllTileCategories, Mode=TwoWay}"/>
+                    <TextBlock Text="关闭后，简约模式只搜索磁贴启动器当前选中的分类。"
                                Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
             </StackPanel>

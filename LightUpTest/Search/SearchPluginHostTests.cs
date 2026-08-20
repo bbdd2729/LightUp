@@ -40,6 +40,24 @@ public sealed class SearchPluginHostTests
         Assert.Empty(host.Providers);
     }
 
+    [Fact]
+    public async Task Enabled_plugins_apply_their_configured_search_weight()
+    {
+        var host = new SearchPluginHost(
+            [new FakePlugin("weighted", [CreateItem("Weighted app")])],
+            new SearchLauncherSettings
+            {
+                Plugins = new Dictionary<string, PluginSettings>
+                {
+                    ["weighted"] = new() { IsEnabled = true, Weight = 75 }
+                }
+            });
+
+        var results = await Assert.Single(host.Providers).SearchAsync("weighted", CancellationToken.None);
+
+        Assert.Equal(75, Assert.Single(results).Relevance);
+    }
+
     private static LauncherItem CreateItem(string title) => new(
         title.ToLowerInvariant().Replace(' ', '-'), title, "plugin", title, null, LauncherItemKind.Application);
 

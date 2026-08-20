@@ -16,7 +16,7 @@ public sealed class SearchPluginHost
     {
         Providers = plugins
             .Where(plugin => IsEnabled(plugin, settings))
-            .Select(CreateProviderSafely)
+            .Select(plugin => CreateProviderSafely(plugin, settings))
             .Where(provider => provider is not null)
             .Cast<ISearchProvider>()
             .ToArray();
@@ -41,17 +41,26 @@ public sealed class SearchPluginHost
         => !settings.Plugins.TryGetValue(plugin.Id, out var pluginSettings)
             || pluginSettings.IsEnabled;
 
-    private static ISearchProvider? CreateProviderSafely(ISearchProviderPlugin plugin)
+    private static ISearchProvider? CreateProviderSafely(
+        ISearchProviderPlugin plugin,
+        SearchLauncherSettings settings)
     {
         try
         {
-            return plugin.CreateProvider();
+            return new WeightedSearchProvider(
+                plugin.CreateProvider(),
+                GetWeight(plugin, settings));
         }
         catch
         {
             return null;
         }
     }
+
+    private static int GetWeight(ISearchProviderPlugin plugin, SearchLauncherSettings settings)
+        => settings.Plugins.TryGetValue(plugin.Id, out var pluginSettings)
+            ? pluginSettings.Weight
+            : 0;
 
     private static IEnumerable<ISearchProviderPlugin> LoadPluginsFromAssembly(string path)
     {

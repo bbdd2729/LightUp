@@ -50,7 +50,15 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private SearchLauncherMode _searchMode = SearchLauncherMode.Full;
 
+    private int _maxResults = SearchResultLimitPolicy.DefaultLimit;
+
     public string SearchModeLabel => SearchMode == SearchLauncherMode.Simple ? "简约模式" : "完整模式";
+
+    public int MaxResults
+    {
+        get => _maxResults;
+        set => SetProperty(ref _maxResults, SearchResultLimitPolicy.Normalize(value));
+    }
 
     public ObservableCollection<LauncherItem> Results { get; } = [];
 
@@ -104,7 +112,9 @@ public partial class MainViewModel : ViewModelBase
             var results = await _searchService.SearchAsync(SearchMode, query, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             Results.Clear();
-            var maxResults = string.IsNullOrWhiteSpace(query) ? 10 : 30;
+            var maxResults = SearchResultLimitPolicy.GetVisibleResultLimit(
+                MaxResults,
+                string.IsNullOrWhiteSpace(query));
             foreach (var item in results.Take(maxResults))
                 Results.Add(item);
             SelectedItem = Results.FirstOrDefault();

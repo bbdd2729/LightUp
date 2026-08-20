@@ -31,11 +31,14 @@ public class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var tileStateStore = new JsonLauncherStateStore();
-            var tileProvider = new TileSearchProvider(tileStateStore);
             var searchSettings = new SearchLauncherSettingsStore()
                 .LoadAsync(CancellationToken.None)
                 .GetAwaiter()
                 .GetResult();
+            var tileProvider = new TileSearchProvider(tileStateStore)
+            {
+                SearchAllTileCategories = searchSettings.SearchAllTileCategories
+            };
             var fullProviders = new List<ISearchProvider>
             {
                 tileProvider,
@@ -69,7 +72,9 @@ public class App : Application
                 settingsStore,
                 searchSettings,
                 mode => viewModel!.SearchMode = mode,
-                placement => tileViewModel.CategoryNavigationPlacement = placement);
+                placement => tileViewModel.CategoryNavigationPlacement = placement,
+                maxResults => viewModel!.MaxResults = maxResults,
+                searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories);
             var actionHost = new LauncherActionHost(
                 tileWindowHost,
                 () =>
@@ -82,7 +87,8 @@ public class App : Application
                 actionHost.ExecuteAsync);
             viewModel = new ViewModels.MainViewModel(searchService, processLauncher, windowHost)
             {
-                SearchMode = searchSettings.Mode
+                SearchMode = searchSettings.Mode,
+                MaxResults = searchSettings.MaxResults
             };
             window = new MainWindow(viewModel);
             windowHost.AttachViewModel(viewModel);

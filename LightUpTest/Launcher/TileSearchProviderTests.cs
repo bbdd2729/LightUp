@@ -70,6 +70,60 @@ public sealed class TileSearchProviderTests
         Assert.Equal(["recent", "older", "frequent"], results.Select(item => item.Id));
     }
 
+    [Fact]
+    public async Task SearchAsync_uses_only_the_selected_category_when_cross_category_search_is_disabled()
+    {
+        var state = new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory
+                {
+                    Id = "work",
+                    Name = "工作",
+                    Items = [new TileItem { Id = "work-item", Title = "Work item", TargetPath = "work.exe" }]
+                },
+                new TileCategory
+                {
+                    Id = "play",
+                    Name = "娱乐",
+                    Items = [new TileItem { Id = "play-item", Title = "Play item", TargetPath = "play.exe" }]
+                }
+            ]
+        };
+        var provider = new TileSearchProvider(new FakeStateStore(state))
+        {
+            SearchAllTileCategories = false
+        };
+
+        var results = await provider.SearchAsync("item", CancellationToken.None);
+
+        Assert.Equal(["work-item"], results.Select(item => item.Id));
+    }
+
+    [Fact]
+    public async Task SearchAsync_falls_back_to_all_categories_when_the_saved_selection_is_missing()
+    {
+        var state = new TileLauncherState
+        {
+            SelectedCategoryId = "missing",
+            Categories =
+            [
+                new TileCategory { Id = "work", Name = "工作", Items = [new TileItem { Id = "work-item", Title = "Work", TargetPath = "work.exe" }] },
+                new TileCategory { Id = "play", Name = "娱乐", Items = [new TileItem { Id = "play-item", Title = "Play", TargetPath = "play.exe" }] }
+            ]
+        };
+        var provider = new TileSearchProvider(new FakeStateStore(state))
+        {
+            SearchAllTileCategories = false
+        };
+
+        var results = await provider.SearchAsync("", CancellationToken.None);
+
+        Assert.Equal(["play-item", "work-item"], results.Select(item => item.Id));
+    }
+
     private sealed class FakeStateStore(TileLauncherState state) : ILauncherStateStore
     {
         public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)

@@ -22,6 +22,28 @@ public sealed class MainViewModelDefaultResultsTests
     }
 
     [Fact]
+    public async Task Configured_result_limit_constrains_both_default_and_query_results()
+    {
+        var searchService = new FakeSearchService(Enumerable.Range(1, 12)
+            .Select(index => new LauncherItem($"item:{index}", $"Item {index}", "", $"item{index}.exe", null, LauncherItemKind.Shortcut))
+            .ToArray());
+        var viewModel = new MainViewModel(searchService, new FakeProcessLauncher(), new FakeWindowHost())
+        {
+            MaxResults = 3
+        };
+
+        viewModel.ResetForActivation();
+        await Task.Yield();
+
+        Assert.Equal(3, viewModel.Results.Count);
+
+        viewModel.QueryText = "item";
+        await Task.Yield();
+
+        Assert.Equal(3, viewModel.Results.Count);
+    }
+
+    [Fact]
     public void Search_mode_label_and_clear_command_are_user_facing_state()
     {
         var viewModel = new MainViewModel(new FakeSearchService([]), new FakeProcessLauncher(), new FakeWindowHost())

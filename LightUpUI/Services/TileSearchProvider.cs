@@ -10,6 +10,8 @@ namespace LightUpUI.Services;
 
 public sealed class TileSearchProvider(ILauncherStateStore stateStore) : ISearchProvider
 {
+    public bool SearchAllTileCategories { get; set; } = true;
+
     public async Task<IReadOnlyList<LauncherItem>> SearchAsync(
         string query,
         CancellationToken cancellationToken)
@@ -17,7 +19,15 @@ public sealed class TileSearchProvider(ILauncherStateStore stateStore) : ISearch
         var state = await stateStore.LoadAsync(cancellationToken);
         var normalizedQuery = query.Trim();
 
-        var items = state.Categories
+        IReadOnlyList<TileCategory> categories = !SearchAllTileCategories
+            ? state.Categories.Where(category => category.Id.Equals(
+                state.SelectedCategoryId,
+                StringComparison.OrdinalIgnoreCase)).ToArray()
+            : state.Categories;
+        if (categories.Count == 0)
+            categories = state.Categories;
+
+        var items = categories
             .OrderBy(category => category.SortOrder)
             .SelectMany(category => category.Items.OrderBy(item => item.SortOrder));
 

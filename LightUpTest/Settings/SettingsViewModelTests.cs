@@ -40,6 +40,42 @@ public sealed class SettingsViewModelTests
         Assert.Equal(CategoryNavigationPlacement.Top, appliedPlacement);
     }
 
+    [Fact]
+    public async Task SaveAsync_normalizes_the_result_limit_and_notifies_the_search_host()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        int? appliedLimit = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyMaxResults: limit => appliedLimit = limit);
+        viewModel.SelectedMaxResults = 500;
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(100, store.Settings.MaxResults);
+        Assert.Equal(100, appliedLimit);
+    }
+
+    [Fact]
+    public async Task SaveAsync_persists_tile_category_scope_and_notifies_the_tile_search_provider()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        bool? appliedSearchAllCategories = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applySearchAllTileCategories: value => appliedSearchAllCategories = value);
+        viewModel.SearchAllTileCategories = false;
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(store.Settings.SearchAllTileCategories);
+        Assert.False(appliedSearchAllCategories);
+    }
+
     private sealed class FakeSettingsStore(SearchLauncherSettings settings) : ISearchLauncherSettingsStore
     {
         public SearchLauncherSettings Settings { get; private set; } = settings;
