@@ -8,8 +8,9 @@ namespace LightUpUI.Services;
 public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
 {
     private const int ModAlt = 0x0001;
+    private const int ModControl = 0x0002;
     private const int ModShift = 0x0004;
-    private const int VirtualKeySpace = 0x20;
+    private const int ModWindows = 0x0008;
     private const uint WmHotKey = 0x0312;
     private const uint WmQuit = 0x0012;
     private const uint PmNoRemove = 0x0000;
@@ -27,20 +28,22 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
 
     public event EventHandler? HotkeyPressed;
 
-    public WindowsGlobalHotkeyService(bool includeShift = false)
+    public WindowsGlobalHotkeyService(GlobalHotkeyGesture gesture)
     {
-        _modifiers = (uint)(ModAlt | (includeShift ? ModShift : 0));
-        _virtualKey = VirtualKeySpace;
+        _modifiers = GetNativeModifiers(gesture.Modifiers);
+        _virtualKey = gesture.VirtualKey;
         _hotkeyId = Interlocked.Increment(ref s_nextHotkeyId);
     }
 
-    public void Start()
+    public bool Start()
     {
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            if (_thread is not null || !OperatingSystem.IsWindows())
-                return;
+            if (_thread is not null)
+                return _registered;
+            if (!OperatingSystem.IsWindows())
+                return false;
 
             _ready.Reset();
             _thread = new Thread(MessageLoop)
@@ -51,7 +54,7 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
             _thread.Start();
         }
 
-        _ready.Wait();
+        return _ready.Wait(TimeSpan.FromSeconds(2)) && _registered;
     }
 
     public void Stop()
@@ -118,6 +121,21 @@ public sealed class WindowsGlobalHotkeyService : IGlobalHotkeyService
             _registered = false;
             _threadId = 0;
         }
+    }
+
+    private static uint GetNativeModifiers(GlobalHotkeyModifiers modifiers)
+    {
+        var nativeModifiers = 0;
+        if (modifiers.HasFlag(GlobalHotkeyModifiers.Alt))
+            nativeModifiers |= ModAlt;
+        if (modifiers.HasFlag(GlobalHotkeyModifiers.Control))
+            nativeModifiers |= ModControl;
+        if (modifiers.HasFlag(GlobalHotkeyModifiers.Shift))
+            nativeModifiers |= ModShift;
+        if (modifiers.HasFlag(GlobalHotkeyModifiers.Windows))
+            nativeModifiers |= ModWindows;
+
+        return (uint)nativeModifiers;
     }
 
     [DllImport("user32.dll", SetLastError = true)]

@@ -76,6 +76,51 @@ public sealed class SettingsViewModelTests
         Assert.False(appliedSearchAllCategories);
     }
 
+    [Fact]
+    public async Task SaveAsync_normalizes_hotkeys_and_notifies_the_hotkey_host()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        (string Search, string Tile)? appliedHotkeys = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyHotkeys: (search, tile) =>
+            {
+                appliedHotkeys = (search, tile);
+                return null;
+            })
+        {
+            SearchHotkey = "Ctrl + Alt + K",
+            TileLauncherHotkey = "Win + F12"
+        };
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("ctrl+alt+k", store.Settings.Hotkey);
+        Assert.Equal("win+f12", store.Settings.TileLauncherHotkey);
+        Assert.Equal(("ctrl+alt+k", "win+f12"), appliedHotkeys);
+    }
+
+    [Fact]
+    public async Task SaveAsync_does_not_persist_hotkeys_when_the_hotkey_host_rejects_them()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyHotkeys: (_, _) => "快捷键被其他程序占用。")
+        {
+            SearchHotkey = "ctrl+alt+k"
+        };
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("alt+space", store.Settings.Hotkey);
+        Assert.Equal("快捷键被其他程序占用。", viewModel.StatusText);
+    }
+
     private sealed class FakeSettingsStore(SearchLauncherSettings settings) : ISearchLauncherSettingsStore
     {
         public SearchLauncherSettings Settings { get; private set; } = settings;

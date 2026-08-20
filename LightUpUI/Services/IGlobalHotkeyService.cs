@@ -5,6 +5,6 @@ namespace LightUpUI.Services;
 public interface IGlobalHotkeyService : IDisposable
 {
     event EventHandler? HotkeyPressed;
-    void Start();
+    bool Start();
     void Stop();
 }

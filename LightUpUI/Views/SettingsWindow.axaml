@@ -4,7 +4,7 @@
         x:Class="LightUpUI.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
         Width="520"
-        Height="510"
+        Height="670"
         Title="LightUp 设置"
         WindowStartupLocation="CenterOwner">
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
@@ -13,7 +13,8 @@
             <TextBlock Text="配置搜索模式和磁贴启动器的导航布局。" Opacity="0.65" FontSize="12"/>
         </StackPanel>
         <Border Grid.Row="1" Padding="16" Background="#12000000" CornerRadius="10">
-            <StackPanel Spacing="14">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="14">
                 <StackPanel Spacing="8">
                 <TextBlock Text="搜索模式" FontWeight="SemiBold"/>
                 <ComboBox ItemsSource="{Binding SearchModes}"
@@ -42,7 +43,20 @@
                     <TextBlock Text="关闭后，简约模式只搜索磁贴启动器当前选中的分类。"
                                Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
-            </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="搜索栏全局快捷键" FontWeight="SemiBold"/>
+                    <TextBox Text="{CompiledBinding SearchHotkey, Mode=TwoWay}"
+                             PlaceholderText="例如 alt+space"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="磁贴启动器全局快捷键" FontWeight="SemiBold"/>
+                    <TextBox Text="{CompiledBinding TileLauncherHotkey, Mode=TwoWay}"
+                             PlaceholderText="例如 alt+shift+space"/>
+                    <TextBlock Text="支持 Ctrl、Alt、Shift、Win 与字母、数字、F1–F24、Space、Enter、Tab、Esc；两个入口不能重复。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
         <DockPanel Grid.Row="2">
             <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Opacity="0.7"/>

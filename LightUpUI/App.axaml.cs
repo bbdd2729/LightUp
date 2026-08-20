@@ -64,6 +64,7 @@ public class App : Application
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
             tileWindow.Opened += (_, _) => _ = tileWindowHost.EnsureLoadedAsync();
+            var hotkeyBindings = new LauncherHotkeyBindings(new WindowsGlobalHotkeyServiceFactory());
 
             var settingsStore = new SearchLauncherSettingsStore();
             ViewModels.MainViewModel? viewModel = null;
@@ -74,7 +75,9 @@ public class App : Application
                 mode => viewModel!.SearchMode = mode,
                 placement => tileViewModel.CategoryNavigationPlacement = placement,
                 maxResults => viewModel!.MaxResults = maxResults,
-                searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories);
+                searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories,
+                applyHotkeys: (searchHotkey, tileLauncherHotkey) =>
+                    hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error);
             var actionHost = new LauncherActionHost(
                 tileWindowHost,
                 () =>
@@ -93,6 +96,17 @@ public class App : Application
             window = new MainWindow(viewModel);
             windowHost.AttachViewModel(viewModel);
             windowHost.Attach(window);
+            hotkeyBindings.SearchHotkeyPressed += (_, _) =>
+                Dispatcher.UIThread.Post(windowHost.Toggle);
+            hotkeyBindings.TileLauncherHotkeyPressed += (_, _) =>
+                Dispatcher.UIThread.Post(tileWindowHost.Toggle);
+            if (!hotkeyBindings.TryApply(
+                    searchSettings.Hotkey,
+                    searchSettings.TileLauncherHotkey,
+                    out _))
+            {
+                _ = hotkeyBindings.TryApply("alt+space", "alt+shift+space", out _);
+            }
 
             CreateTrayIcon(
                 desktop,
@@ -111,20 +125,9 @@ public class App : Application
                 _ => tileWindow
             };
 
-            var hotkeyService = new WindowsGlobalHotkeyService();
-            hotkeyService.HotkeyPressed += (_, _) =>
-                Dispatcher.UIThread.Post(windowHost.Toggle);
-            hotkeyService.Start();
-
-            var tileHotkeyService = new WindowsGlobalHotkeyService(includeShift: true);
-            tileHotkeyService.HotkeyPressed += (_, _) =>
-                Dispatcher.UIThread.Post(tileWindowHost.Toggle);
-            tileHotkeyService.Start();
-
             desktop.Exit += (_, _) =>
             {
-                hotkeyService.Dispose();
-                tileHotkeyService.Dispose();
+                hotkeyBindings.Dispose();
             };
         }
 
