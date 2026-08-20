@@ -344,6 +344,47 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task OpenContainingFolderAsync_reveals_the_selected_entry_and_reports_success()
+    {
+        var item = CreateTile("C:\\Tools\\notes.exe");
+        var revealService = new FakePathRevealService(LaunchResult.Success);
+        var viewModel = new TileLauncherViewModel(
+            new FakeStateStore(new TileLauncherState
+            {
+                Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            }),
+            new FakeProcessLauncher(),
+            pathRevealService: revealService);
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+
+        await viewModel.OpenContainingFolderAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(item.TargetPath, revealService.LastPath);
+        Assert.Contains("已打开所在位置", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task OpenContainingFolderAsync_reports_a_reveal_failure_without_throwing()
+    {
+        var item = CreateTile("missing.exe");
+        var viewModel = new TileLauncherViewModel(
+            new FakeStateStore(new TileLauncherState
+            {
+                Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            }),
+            new FakeProcessLauncher(),
+            pathRevealService: new FakePathRevealService(LaunchResult.Failed("目标不存在")));
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+
+        await viewModel.OpenContainingFolderAsync(TestContext.Current.CancellationToken);
+
+        Assert.Contains("目标不存在", viewModel.StatusText);
+        Assert.False(viewModel.IsOpening);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState
@@ -543,5 +584,16 @@ public sealed class TileLauncherViewModelTests
     {
         public Task<LaunchResult> LaunchAsync(LightUpUI.Models.LauncherItem item, CancellationToken cancellationToken)
             => Task.FromResult(LaunchResult.Success);
+    }
+
+    private sealed class FakePathRevealService(LaunchResult result) : IPathRevealService
+    {
+        public string? LastPath { get; private set; }
+
+        public Task<LaunchResult> RevealAsync(string path, CancellationToken cancellationToken)
+        {
+            LastPath = path;
+            return Task.FromResult(result);
+        }
     }
 }

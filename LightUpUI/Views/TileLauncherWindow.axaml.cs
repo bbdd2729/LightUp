@@ -237,6 +237,14 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
+    private async void ContextReveal_Click(object? sender, RoutedEventArgs e)
+    {
+        if (SelectContextTile(sender) is not null)
+            await ViewModel.OpenContainingFolderAsync();
+
+        e.Handled = true;
+    }
+
     private void ContextMove_Click(object? sender, RoutedEventArgs e)
     {
         if (SelectContextTile(sender) is not null)

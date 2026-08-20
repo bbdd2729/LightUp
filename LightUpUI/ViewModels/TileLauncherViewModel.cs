@@ -20,6 +20,7 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     private readonly ILauncherStateStore _stateStore;
     private readonly IProcessLauncher _processLauncher;
+    private readonly IPathRevealService _pathRevealService;
     private readonly TileStateSaveCoordinator _saveCoordinator;
     private TileLauncherState _state = new();
     private bool _suppressSelectionPersistence;
@@ -32,10 +33,12 @@ public partial class TileLauncherViewModel : ViewModelBase
         ILauncherStateStore stateStore,
         IProcessLauncher processLauncher,
         TileStateSaveCoordinator? saveCoordinator = null,
-        CategoryNavigationPlacement categoryNavigationPlacement = CategoryNavigationPlacement.Left)
+        CategoryNavigationPlacement categoryNavigationPlacement = CategoryNavigationPlacement.Left,
+        IPathRevealService? pathRevealService = null)
     {
         _stateStore = stateStore;
         _processLauncher = processLauncher;
+        _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
         _saveCoordinator = saveCoordinator ?? new TileStateSaveCoordinator(stateStore);
         _categoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(categoryNavigationPlacement);
     }
@@ -507,6 +510,38 @@ public partial class TileLauncherViewModel : ViewModelBase
 
         if (await PersistStateAsync(cancellationToken))
             StatusText = $"已重命名为“{normalizedTitle}”";
+    }
+
+    [RelayCommand]
+    public async Task OpenContainingFolderAsync(CancellationToken cancellationToken = default)
+    {
+        if (SelectedItem is null)
+        {
+            StatusText = "请先选择一个入口";
+            return;
+        }
+
+        IsOpening = true;
+        try
+        {
+            var item = SelectedItem;
+            var result = await _pathRevealService.RevealAsync(item.TargetPath, cancellationToken);
+            StatusText = result.Succeeded
+                ? $"已打开所在位置：{item.Title}"
+                : result.ErrorMessage ?? "无法打开所在位置";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "打开所在位置已取消";
+        }
+        catch (Exception exception)
+        {
+            StatusText = $"打开所在位置失败：{exception.Message}";
+        }
+        finally
+        {
+            IsOpening = false;
+        }
     }
 
     public async Task RemoveItemAsync(

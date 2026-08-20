@@ -498,6 +498,13 @@
                                                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
+                                                <MenuItem Header="打开所在位置"
+                                                          Click="ContextReveal_Click"
+                                                          AutomationProperties.Name="打开磁贴所在位置">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="移动到分类"
                                                           Click="ContextMove_Click"
                                                           AutomationProperties.Name="移动磁贴入口">
