@@ -734,6 +734,20 @@
                                     AutomationProperties.Name="保存入口备注">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
                             </Button>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding MoveSelectedItemUpCommand}"
+                                    IsEnabled="{CompiledBinding CanMoveSelectedItemUp}"
+                                    ToolTip.Tip="上移选中入口"
+                                    AutomationProperties.Name="上移选中入口">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowUp}" Width="14" Height="14"/>
+                            </Button>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding MoveSelectedItemDownCommand}"
+                                    IsEnabled="{CompiledBinding CanMoveSelectedItemDown}"
+                                    ToolTip.Tip="下移选中入口"
+                                    AutomationProperties.Name="下移选中入口">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="14" Height="14"/>
+                            </Button>
                             <TextBlock Text="移动至"
                                        FontSize="10"
                                        Foreground="{DynamicResource LightUpTextFaintBrush}"

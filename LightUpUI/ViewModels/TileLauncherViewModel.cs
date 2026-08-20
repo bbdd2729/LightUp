@@ -131,6 +131,17 @@ public partial class TileLauncherViewModel : ViewModelBase
         && MoveDestinationCategory is not null
         && !ReferenceEquals(SelectedCategory, MoveDestinationCategory);
 
+    public bool CanMoveSelectedItemUp => GetSelectedItemIndex() > 0;
+
+    public bool CanMoveSelectedItemDown
+    {
+        get
+        {
+            var index = GetSelectedItemIndex();
+            return index >= 0 && index < VisibleItems.Count - 1;
+        }
+    }
+
     public bool IsLeftNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Left;
 
     public bool IsTopNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Top;
@@ -529,6 +540,51 @@ public partial class TileLauncherViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private Task MoveSelectedItemUpAsync()
+        => MoveSelectedItemWithinCategoryAsync(-1);
+
+    [RelayCommand]
+    private Task MoveSelectedItemDownAsync()
+        => MoveSelectedItemWithinCategoryAsync(1);
+
+    [RelayCommand]
+    public async Task MoveSelectedItemWithinCategoryAsync(
+        int direction,
+        CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        var category = SelectedCategory;
+        if (item is null || category is null)
+        {
+            StatusText = "请先选择一个入口";
+            return;
+        }
+
+        if (direction is not (-1 or 1))
+        {
+            StatusText = "入口移动方向无效";
+            return;
+        }
+
+        var currentIndex = category.Items.IndexOf(item);
+        var targetIndex = currentIndex + direction;
+        if (currentIndex < 0 || targetIndex < 0 || targetIndex >= category.Items.Count)
+        {
+            StatusText = direction < 0 ? "入口已经是第一个" : "入口已经是最后一个";
+            return;
+        }
+
+        category.Items.RemoveAt(currentIndex);
+        category.Items.Insert(targetIndex, item);
+        ResetItemSortOrder(category.Items);
+        RefreshVisibleItems();
+        SelectedItem = item;
+        NotifyItemOrderChanged();
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = direction < 0 ? $"已上移“{item.Title}”" : $"已下移“{item.Title}”";
+    }
+
+    [RelayCommand]
     public async Task RenameSelectedItemAsync(CancellationToken cancellationToken = default)
     {
         var item = SelectedItem;
@@ -702,6 +758,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanRenameSelectedItem));
         OnPropertyChanged(nameof(CanEditSelectedItemNotes));
         OnPropertyChanged(nameof(CanMoveSelectedItem));
+        NotifyItemOrderChanged();
     }
 
     partial void OnMoveDestinationCategoryChanged(TileCategory? value)
@@ -764,6 +821,12 @@ public partial class TileLauncherViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanMoveSelectedCategoryDown));
     }
 
+    private void NotifyItemOrderChanged()
+    {
+        OnPropertyChanged(nameof(CanMoveSelectedItemUp));
+        OnPropertyChanged(nameof(CanMoveSelectedItemDown));
+    }
+
     private static bool IsDefaultCategory(TileCategory category)
         => category.Id.Equals(DefaultCategoryId, StringComparison.OrdinalIgnoreCase);
 
@@ -811,6 +874,11 @@ public partial class TileLauncherViewModel : ViewModelBase
         for (var index = 0; index < items.Count; index++)
             items[index].SortOrder = index;
     }
+
+    private int GetSelectedItemIndex()
+        => SelectedCategory is null || SelectedItem is null
+            ? -1
+            : SelectedCategory.Items.IndexOf(SelectedItem);
 
     public void ReportError(string message)
     {

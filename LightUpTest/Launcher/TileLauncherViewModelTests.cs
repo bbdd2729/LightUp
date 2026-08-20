@@ -474,6 +474,48 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task MoveSelectedItemWithinCategoryAsync_reorders_the_item_and_persists_once()
+    {
+        var first = CreateTile("first");
+        var selected = CreateTile("selected");
+        var last = CreateTile("last");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [first, selected, last] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = selected;
+
+        await viewModel.MoveSelectedItemWithinCategoryAsync(-1, TestContext.Current.CancellationToken);
+
+        Assert.Equal(["selected", "first", "last"], viewModel.VisibleItems.Select(item => item.Id));
+        Assert.Equal([0, 1, 2], viewModel.VisibleItems.Select(item => item.SortOrder));
+        Assert.Same(selected, viewModel.SelectedItem);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已上移", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task MoveSelectedItemWithinCategoryAsync_rejects_a_boundary_move_without_saving()
+    {
+        var item = CreateTile("first");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+
+        await viewModel.MoveSelectedItemWithinCategoryAsync(-1, TestContext.Current.CancellationToken);
+
+        Assert.Single(viewModel.VisibleItems);
+        Assert.False(viewModel.CanMoveSelectedItemUp);
+        Assert.False(viewModel.CanMoveSelectedItemDown);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("已经是第一个", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState
