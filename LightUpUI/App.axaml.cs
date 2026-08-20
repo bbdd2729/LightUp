@@ -30,12 +30,22 @@ public class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            _ = InitializeDesktopAsync(desktop);
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private async Task InitializeDesktopAsync(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        try
+        {
             var tileStateStore = new JsonLauncherStateStore();
             var settingsStore = new SearchLauncherSettingsStore();
-            var searchSettings = settingsStore
-                .LoadAsync(CancellationToken.None)
-                .GetAwaiter()
-                .GetResult();
+            var searchSettings = await StartupSettingsLoader.LoadAsync(
+                settingsStore,
+                CancellationToken.None);
             var tileProvider = new TileSearchProvider(tileStateStore)
             {
                 SearchAllTileCategories = searchSettings.SearchAllTileCategories
@@ -133,13 +143,15 @@ public class App : Application
                     ShowSettingsWindow(settingsViewModel, window);
                 });
 
-            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            desktop.MainWindow = LauncherStartupPolicy.MainSurface switch
+            Window startupWindow = LauncherStartupPolicy.MainSurface switch
             {
                 LauncherStartupSurface.TileLauncher => tileWindow,
                 LauncherStartupSurface.SearchLauncher => window,
                 _ => tileWindow
             };
+            desktop.MainWindow = startupWindow;
+            if (LauncherStartupPolicy.ShouldShowMainSurfaceOnStartup)
+                startupWindow.Show();
 
             desktop.Exit += (_, _) =>
             {
@@ -150,8 +162,13 @@ public class App : Application
                 tileWindowStateTracker.Dispose();
             };
         }
-
-        base.OnFrameworkInitializationCompleted();
+        catch
+        {
+            // Keep a visible recovery surface even if an unexpected bootstrap dependency fails.
+            var recoveryWindow = new MainWindow();
+            desktop.MainWindow = recoveryWindow;
+            recoveryWindow.Show();
+        }
     }
 
     private static void ShowSettingsWindow(

@@ -7,6 +7,13 @@ namespace LightUpTest.Windowing;
 public sealed class LauncherWindowHostLifecycleTests
 {
     [Fact]
+    public void Startup_policy_always_shows_the_configured_main_surface()
+    {
+        Assert.True(LauncherStartupPolicy.ShouldShowMainSurfaceOnStartup);
+        Assert.Equal(LauncherStartupSurface.TileLauncher, LauncherStartupPolicy.MainSurface);
+    }
+
+    [Fact]
     public void Search_window_host_is_safe_before_a_window_is_attached()
     {
         var host = new LauncherWindowHost();
