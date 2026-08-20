@@ -10,17 +10,21 @@ namespace LightUpUI.Services;
 public sealed class SearchLauncherSettingsStore : ISearchLauncherSettingsStore
 {
     private readonly string _filePath;
+    private readonly Func<Stream> _openReadStream;
     private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
 
-    public SearchLauncherSettingsStore(string? filePath = null)
+    public SearchLauncherSettingsStore(
+        string? filePath = null,
+        Func<Stream>? openReadStream = null)
     {
         _filePath = filePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "LightUp",
             "search-launcher.json");
+        _openReadStream = openReadStream ?? (() => File.OpenRead(_filePath));
     }
 
     public async Task<SearchLauncherSettings> LoadAsync(CancellationToken cancellationToken)
@@ -30,9 +34,13 @@ public sealed class SearchLauncherSettingsStore : ISearchLauncherSettingsStore
 
         try
         {
-            await using var stream = File.OpenRead(_filePath);
-            return await JsonSerializer.DeserializeAsync<SearchLauncherSettings>(stream, _options, cancellationToken)
-                ?? new SearchLauncherSettings();
+            using var stream = _openReadStream();
+            var settings = await JsonSerializer.DeserializeAsync<SearchLauncherSettings>(
+                    stream,
+                    _options,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            return settings ?? new SearchLauncherSettings();
         }
         catch (JsonException)
         {
@@ -51,10 +59,9 @@ public sealed class SearchLauncherSettingsStore : ISearchLauncherSettingsStore
             Directory.CreateDirectory(directory);
 
         var temporaryPath = _filePath + ".tmp";
-        await using (var stream = File.Create(temporaryPath))
-        {
-            await JsonSerializer.SerializeAsync(stream, settings, _options, cancellationToken);
-        }
+        using (var stream = File.Create(temporaryPath))
+            await JsonSerializer.SerializeAsync(stream, settings, _options, cancellationToken)
+                .ConfigureAwait(false);
 
         File.Move(temporaryPath, _filePath, overwrite: true);
     }
