@@ -93,7 +93,17 @@ public class App : Application
                 });
 
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            desktop.MainWindow = window;
+            if (LauncherStartupPolicy.ShouldShowMainSurfaceOnStartup)
+            {
+                tileViewModel.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            }
+
+            desktop.MainWindow = LauncherStartupPolicy.MainSurface switch
+            {
+                LauncherStartupSurface.TileLauncher => tileWindow,
+                LauncherStartupSurface.SearchLauncher => window,
+                _ => tileWindow
+            };
 
             var hotkeyService = new WindowsGlobalHotkeyService();
             hotkeyService.HotkeyPressed += (_, _) =>
