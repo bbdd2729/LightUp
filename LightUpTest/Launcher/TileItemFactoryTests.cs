@@ -30,4 +30,32 @@ public sealed class TileItemFactoryTests
     {
         Assert.Throws<ArgumentException>(() => TileItemFactory.Create("  "));
     }
+
+    [Theory]
+    [InlineData("https://lightup.example.com/docs", "lightup.example.com")]
+    [InlineData("  https://www.example.com:8443/path?q=1  ", "www.example.com")]
+    public void TryCreateUrl_creates_a_url_tile_from_an_http_address(string text, string expectedTitle)
+    {
+        var created = TileItemFactory.TryCreateUrl(text, out var item);
+
+        Assert.True(created);
+        Assert.NotNull(item);
+        Assert.Equal(TileItemKind.Url, item.Kind);
+        Assert.Equal(expectedTitle, item.Title);
+        Assert.Equal(text.Trim(), item.TargetPath);
+        Assert.False(string.IsNullOrWhiteSpace(item.Id));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not a link")]
+    [InlineData("file:///C:/Tools/LightUp.exe")]
+    [InlineData("ftp://example.com/file")]
+    public void TryCreateUrl_rejects_non_http_text(string text)
+    {
+        var created = TileItemFactory.TryCreateUrl(text, out var item);
+
+        Assert.False(created);
+        Assert.Null(item);
+    }
 }

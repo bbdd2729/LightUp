@@ -102,7 +102,8 @@ public partial class TileLauncherWindow : Window
 
     private void Window_DragOver(object? sender, DragEventArgs e)
     {
-        if (!e.DataTransfer.Contains(DataFormat.File))
+        if (!e.DataTransfer.Contains(DataFormat.File)
+            && !TileItemFactory.TryCreateUrl(e.DataTransfer.TryGetText(), out _))
             return;
 
         e.DragEffects = DragDropEffects.Copy;
@@ -112,12 +113,42 @@ public partial class TileLauncherWindow : Window
     private async void Window_Drop(object? sender, DragEventArgs e)
     {
         var files = e.DataTransfer.TryGetFiles();
-        if (files is null)
+        if (files is not null)
+        {
+            try
+            {
+                await AddFilesAsync(files);
+            }
+            catch (Exception exception)
+            {
+                ViewModel.ReportError($"添加入口失败：{exception.Message}");
+            }
+            finally
+            {
+                e.Handled = true;
+            }
+
             return;
+        }
+
+        var text = e.DataTransfer.TryGetText();
+        if (Presentation.TileDragPayload.TryParse(text, out _))
+            return;
+
+        if (!TileItemFactory.TryCreateUrl(text, out var item))
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                ViewModel.ReportError("只能拖入文件、文件夹或有效的 HTTP(S) 地址");
+                e.Handled = true;
+            }
+
+            return;
+        }
 
         try
         {
-            await AddFilesAsync(files);
+            await ViewModel.AddItemsAsync([item]);
         }
         catch (Exception exception)
         {
