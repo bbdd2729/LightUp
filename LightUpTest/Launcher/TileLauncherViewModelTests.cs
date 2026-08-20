@@ -86,6 +86,102 @@ public sealed class TileLauncherViewModelTests
         Assert.Equal(1, store.SaveCount);
     }
 
+    [Fact]
+    public async Task AddItemsAsync_updates_items_before_a_deferred_save_finishes()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var store = new DeferredSaveStateStore(CreateDefaultState());
+        var viewModel = await CreateLoadedViewModelAsync(store, cancellationToken);
+
+        var addTask = viewModel.AddItemsAsync(
+            [CreateTile("first"), CreateTile("second")],
+            cancellationToken);
+
+        Assert.Equal(2, viewModel.VisibleItems.Count);
+        Assert.True(viewModel.IsSaving);
+
+        store.CompleteSave();
+        await addTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
+
+        Assert.False(viewModel.IsSaving);
+        Assert.Contains("2", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task AddItemsAsync_persists_a_batch_once()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var store = new FakeStateStore(CreateDefaultState());
+        var viewModel = await CreateLoadedViewModelAsync(store, cancellationToken);
+
+        await viewModel.AddItemsAsync(
+            [CreateTile("first"), CreateTile("second")],
+            cancellationToken);
+
+        Assert.Equal(1, store.SaveCount);
+        Assert.Equal(2, viewModel.VisibleItems.Count);
+    }
+
+    [Fact]
+    public async Task AddItemsAsync_reports_save_failure_without_losing_the_added_items()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var store = new FailingSaveStateStore(CreateDefaultState());
+        var viewModel = await CreateLoadedViewModelAsync(store, cancellationToken);
+
+        await viewModel.AddItemsAsync([CreateTile("broken")], cancellationToken);
+
+        Assert.Single(viewModel.VisibleItems);
+        Assert.Contains("保存失败", viewModel.StatusText);
+        Assert.False(viewModel.IsSaving);
+    }
+
+    [Fact]
+    public async Task AddItemsAsync_rejects_duplicate_paths_without_saving()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory
+                {
+                    Id = "all",
+                    Name = "全部",
+                    Items = [CreateTile("same")]
+                }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, cancellationToken);
+
+        await viewModel.AddItemsAsync([CreateTile("same")], cancellationToken);
+
+        Assert.Single(viewModel.VisibleItems);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("已存在", viewModel.StatusText);
+    }
+
+    private static async Task<TileLauncherViewModel> CreateLoadedViewModelAsync(
+        ILauncherStateStore store,
+        CancellationToken cancellationToken)
+    {
+        var viewModel = new TileLauncherViewModel(store, new FakeProcessLauncher());
+        await viewModel.LoadAsync(cancellationToken);
+        return viewModel;
+    }
+
+    private static TileLauncherState CreateDefaultState() => new()
+    {
+        Categories = [new TileCategory { Id = "all", Name = "全部" }]
+    };
+
+    private static TileItem CreateTile(string path) => new()
+    {
+        Id = path,
+        Title = path,
+        TargetPath = path
+    };
+
     private sealed class FakeStateStore(TileLauncherState state) : ILauncherStateStore
     {
         public int SaveCount { get; private set; }
@@ -97,6 +193,35 @@ public sealed class TileLauncherViewModelTests
             State = state;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class DeferredSaveStateStore(TileLauncherState state) : ILauncherStateStore
+    {
+        private TaskCompletionSource? _saveCompletion;
+
+        public int SaveCount { get; private set; }
+
+        public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)
+            => Task.FromResult(state);
+
+        public Task SaveAsync(TileLauncherState state, CancellationToken cancellationToken)
+        {
+            SaveCount++;
+            _saveCompletion = new TaskCompletionSource(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            return _saveCompletion.Task;
+        }
+
+        public void CompleteSave() => _saveCompletion?.SetResult();
+    }
+
+    private sealed class FailingSaveStateStore(TileLauncherState state) : ILauncherStateStore
+    {
+        public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)
+            => Task.FromResult(state);
+
+        public Task SaveAsync(TileLauncherState state, CancellationToken cancellationToken)
+            => Task.FromException(new IOException("simulated save failure"));
     }
 
     private sealed class FakeProcessLauncher : IProcessLauncher
