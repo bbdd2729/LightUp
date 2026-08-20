@@ -53,7 +53,10 @@ public class App : Application
                 new TileUsageService(tileStateStore));
             var windowHost = new LauncherWindowHost();
 
-            var tileViewModel = new ViewModels.TileLauncherViewModel(tileStateStore, launchProcess);
+            var tileViewModel = new ViewModels.TileLauncherViewModel(
+                tileStateStore,
+                launchProcess,
+                categoryNavigationPlacement: searchSettings.CategoryNavigationPlacement);
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
@@ -65,7 +68,8 @@ public class App : Application
             var settingsViewModel = new ViewModels.SettingsViewModel(
                 settingsStore,
                 searchSettings,
-                mode => viewModel!.SearchMode = mode);
+                mode => viewModel!.SearchMode = mode,
+                placement => tileViewModel.CategoryNavigationPlacement = placement);
             var actionHost = new LauncherActionHost(
                 tileWindowHost,
                 () =>

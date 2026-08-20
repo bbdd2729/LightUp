@@ -25,11 +25,13 @@ public partial class TileLauncherViewModel : ViewModelBase
     public TileLauncherViewModel(
         ILauncherStateStore stateStore,
         IProcessLauncher processLauncher,
-        TileStateSaveCoordinator? saveCoordinator = null)
+        TileStateSaveCoordinator? saveCoordinator = null,
+        CategoryNavigationPlacement categoryNavigationPlacement = CategoryNavigationPlacement.Left)
     {
         _stateStore = stateStore;
         _processLauncher = processLauncher;
         _saveCoordinator = saveCoordinator ?? new TileStateSaveCoordinator(stateStore);
+        _categoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(categoryNavigationPlacement);
     }
 
     public ObservableCollection<TileCategory> Categories { get; } = [];
@@ -59,6 +61,22 @@ public partial class TileLauncherViewModel : ViewModelBase
     [ObservableProperty]
     private string _newCategoryName = string.Empty;
 
+    private CategoryNavigationPlacement _categoryNavigationPlacement;
+
+    public CategoryNavigationPlacement CategoryNavigationPlacement
+    {
+        get => _categoryNavigationPlacement;
+        set
+        {
+            var normalizedPlacement = CategoryNavigationPlacementPolicy.Normalize(value);
+            if (!SetProperty(ref _categoryNavigationPlacement, normalizedPlacement))
+                return;
+
+            OnPropertyChanged(nameof(IsLeftNavigation));
+            OnPropertyChanged(nameof(IsTopNavigation));
+        }
+    }
+
     public bool HasVisibleItems => VisibleItems.Count > 0;
 
     public bool ShowEmptyState => TileLauncherLayoutPolicy.ShouldShowEmptyState(IsLoading, HasVisibleItems);
@@ -66,6 +84,10 @@ public partial class TileLauncherViewModel : ViewModelBase
     public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
 
     public bool CanEdit => !IsLoading;
+
+    public bool IsLeftNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Left;
+
+    public bool IsTopNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Top;
 
     public string EmptyStateText => IsLoading
         ? "正在加载磁贴…"

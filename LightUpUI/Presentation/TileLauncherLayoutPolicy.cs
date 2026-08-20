@@ -1,4 +1,5 @@
 using System;
+using LightUpUI.Models.Tiles;
 
 namespace LightUpUI.Presentation;
 
@@ -17,4 +18,15 @@ public static class TileLauncherLayoutPolicy
 
     public static bool ShouldShowEmptyState(bool isLoading, bool hasVisibleItems)
         => !isLoading && !hasVisibleItems;
+
+    public static TileLauncherWorkspaceLayout GetWorkspaceLayout(
+        CategoryNavigationPlacement placement)
+        => placement == CategoryNavigationPlacement.Top
+            ? new TileLauncherWorkspaceLayout(0, 0, 10)
+            : new TileLauncherWorkspaceLayout(SidebarWidth, 16, 0);
 }
+
+public readonly record struct TileLauncherWorkspaceLayout(
+    double SidebarWidth,
+    double ColumnSpacing,
+    double RowSpacing);

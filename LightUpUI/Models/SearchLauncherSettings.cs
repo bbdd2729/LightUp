@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using LightUpUI.Models.Tiles;
 
 namespace LightUpUI.Models;
 
@@ -9,6 +10,7 @@ public sealed class SearchLauncherSettings
     public string Hotkey { get; set; } = "alt+space";
     public int MaxResults { get; set; } = 30;
     public bool SearchAllTileCategories { get; set; } = true;
+    public CategoryNavigationPlacement CategoryNavigationPlacement { get; set; } = CategoryNavigationPlacement.Left;
     public Dictionary<string, PluginSettings> Plugins { get; set; } = [];
 }
 

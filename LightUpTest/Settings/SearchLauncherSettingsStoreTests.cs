@@ -1,5 +1,6 @@
 using System.Text;
 using LightUpUI.Models;
+using LightUpUI.Models.Tiles;
 using LightUpUI.Services;
 
 namespace LightUpTest.Settings;
@@ -49,6 +50,32 @@ public sealed class SearchLauncherSettingsStoreTests
         {
             releaseWorker.Set();
             worker.Join(TimeSpan.FromSeconds(2));
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task SaveAsync_round_trips_the_category_navigation_placement()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var store = new SearchLauncherSettingsStore(filePath);
+
+        try
+        {
+            await store.SaveAsync(
+                new SearchLauncherSettings
+                {
+                    CategoryNavigationPlacement = CategoryNavigationPlacement.Top
+                },
+                cancellationToken);
+
+            var loaded = await store.LoadAsync(cancellationToken);
+
+            Assert.Equal(CategoryNavigationPlacement.Top, loaded.CategoryNavigationPlacement);
+        }
+        finally
+        {
             File.Delete(filePath);
         }
     }

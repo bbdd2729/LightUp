@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -16,6 +17,8 @@ namespace LightUpUI.Views;
 
 public partial class TileLauncherWindow : Window
 {
+    private readonly TileLauncherViewModel _viewModel;
+
     public TileLauncherWindow()
         : this(new TileLauncherViewModel(new JsonLauncherStateStore(), new WindowsProcessLauncher()))
     {
@@ -23,11 +26,15 @@ public partial class TileLauncherWindow : Window
 
     public TileLauncherWindow(TileLauncherViewModel viewModel)
     {
+        _viewModel = viewModel;
         InitializeComponent();
         DataContext = viewModel;
+        viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        Closed += (_, _) => viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         DragDrop.SetAllowDrop(this, true);
         UpdateTopmostButton();
         UpdateSearchWidth();
+        UpdateWorkspaceLayout();
     }
 
     public void FocusSearchBox()
@@ -193,10 +200,29 @@ public partial class TileLauncherWindow : Window
 
     private void Window_SizeChanged(object? sender, SizeChangedEventArgs e) => UpdateSearchWidth();
 
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TileLauncherViewModel.CategoryNavigationPlacement))
+            UpdateWorkspaceLayout();
+    }
+
+    private void UpdateWorkspaceLayout()
+    {
+        var workspace = this.FindControl<Grid>("TileWorkspace");
+        if (workspace is null || workspace.ColumnDefinitions.Count < 2)
+            return;
+
+        var layout = TileLauncherLayoutPolicy.GetWorkspaceLayout(_viewModel.CategoryNavigationPlacement);
+        workspace.ColumnDefinitions[0].Width = new GridLength(layout.SidebarWidth, GridUnitType.Pixel);
+        workspace.ColumnSpacing = layout.ColumnSpacing;
+        workspace.RowSpacing = layout.RowSpacing;
+    }
+
     private void UpdateSearchWidth()
     {
-        if (SearchBox is not null)
-            SearchBox.MaxWidth = TileLauncherLayoutPolicy.GetSearchMaxWidth(Bounds.Width);
+        var searchShell = this.FindControl<Control>("SearchShell");
+        if (searchShell is not null)
+            searchShell.MaxWidth = TileLauncherLayoutPolicy.GetSearchMaxWidth(Bounds.Width);
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

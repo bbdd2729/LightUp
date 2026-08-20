@@ -1,4 +1,5 @@
 using LightUpUI.Models;
+using LightUpUI.Models.Tiles;
 using LightUpUI.Services;
 using LightUpUI.ViewModels;
 
@@ -19,6 +20,24 @@ public sealed class SettingsViewModelTests
         Assert.Equal(SearchLauncherMode.Simple, store.Settings.Mode);
         Assert.Equal(SearchLauncherMode.Simple, appliedMode);
         Assert.Equal("设置已保存", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task SaveAsync_persists_category_navigation_placement_and_notifies_the_tile_host()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        CategoryNavigationPlacement? appliedPlacement = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            placement => appliedPlacement = placement);
+        viewModel.SelectedCategoryNavigationPlacement = CategoryNavigationPlacement.Top;
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(CategoryNavigationPlacement.Top, store.Settings.CategoryNavigationPlacement);
+        Assert.Equal(CategoryNavigationPlacement.Top, appliedPlacement);
     }
 
     private sealed class FakeSettingsStore(SearchLauncherSettings settings) : ISearchLauncherSettingsStore

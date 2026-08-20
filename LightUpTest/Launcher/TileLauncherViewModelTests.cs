@@ -33,6 +33,36 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public void Category_navigation_flags_follow_the_configured_placement()
+    {
+        var viewModel = new TileLauncherViewModel(
+            new FakeStateStore(CreateDefaultState()),
+            new FakeProcessLauncher(),
+            categoryNavigationPlacement: CategoryNavigationPlacement.Top);
+
+        Assert.True(viewModel.IsTopNavigation);
+        Assert.False(viewModel.IsLeftNavigation);
+
+        viewModel.CategoryNavigationPlacement = CategoryNavigationPlacement.Left;
+
+        Assert.True(viewModel.IsLeftNavigation);
+        Assert.False(viewModel.IsTopNavigation);
+    }
+
+    [Fact]
+    public void Category_navigation_defaults_to_left_for_an_unknown_configuration_value()
+    {
+        var viewModel = new TileLauncherViewModel(
+            new FakeStateStore(CreateDefaultState()),
+            new FakeProcessLauncher(),
+            categoryNavigationPlacement: (CategoryNavigationPlacement)42);
+
+        Assert.Equal(CategoryNavigationPlacement.Left, viewModel.CategoryNavigationPlacement);
+        Assert.True(viewModel.IsLeftNavigation);
+        Assert.False(viewModel.IsTopNavigation);
+    }
+
+    [Fact]
     public async Task AddItem_adds_to_the_current_category_and_requests_a_save()
     {
         var store = new FakeStateStore(new TileLauncherState

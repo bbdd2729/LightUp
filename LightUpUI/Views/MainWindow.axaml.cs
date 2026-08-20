@@ -33,7 +33,8 @@ public partial class MainWindow : Window
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (!WindowChromePolicy.CanStartMoveDrag(e.Source as Visual, (Visual)sender!))
+        if (sender is not Visual dragSurface
+            || !WindowChromePolicy.CanStartMoveDrag(e.Source as Visual, dragSurface))
             return;
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -73,15 +74,18 @@ public partial class MainWindow : Window
 
     private void UpdateTopmostButton()
     {
-        if (TopmostButton is not null)
-        {
-            TopmostIcon.Icon = Topmost
-                ? FluentIcons.Common.Icon.Pin
-                : FluentIcons.Common.Icon.PinOff;
-            TopmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
-            ToolTip.SetTip(TopmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
-            TopmostStatus.IsVisible = Topmost;
-        }
+        var topmostButton = this.FindControl<Button>("TopmostButton");
+        var topmostIcon = this.FindControl<FluentIcons.Avalonia.FluentIcon>("TopmostIcon");
+        var topmostStatus = this.FindControl<Control>("TopmostStatus");
+        if (topmostButton is null || topmostIcon is null || topmostStatus is null)
+            return;
+
+        topmostIcon.Icon = Topmost
+            ? FluentIcons.Common.Icon.Pin
+            : FluentIcons.Common.Icon.PinOff;
+        topmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
+        ToolTip.SetTip(topmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
+        topmostStatus.IsVisible = Topmost;
     }
 
     private MainViewModel ViewModel => (MainViewModel)DataContext!;

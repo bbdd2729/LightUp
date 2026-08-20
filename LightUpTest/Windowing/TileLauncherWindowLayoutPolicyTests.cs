@@ -1,4 +1,5 @@
 using LightUpUI.Presentation;
+using LightUpUI.Models.Tiles;
 
 namespace LightUpTest.Windowing;
 
@@ -33,5 +34,21 @@ public sealed class TileLauncherWindowLayoutPolicyTests
         Assert.Equal(0, TileLauncherLayoutPolicy.GetSearchMaxWidth(0));
         Assert.Equal(0, TileLauncherLayoutPolicy.GetSearchMaxWidth(-1));
         Assert.Equal(0, TileLauncherLayoutPolicy.GetSearchMaxWidth(double.NaN));
+    }
+
+    [Theory]
+    [InlineData(CategoryNavigationPlacement.Left, 204, 16, 0)]
+    [InlineData(CategoryNavigationPlacement.Top, 0, 0, 10)]
+    public void Workspace_layout_uses_the_expected_space_for_each_navigation_placement(
+        CategoryNavigationPlacement placement,
+        double expectedSidebarWidth,
+        double expectedColumnSpacing,
+        double expectedRowSpacing)
+    {
+        var layout = TileLauncherLayoutPolicy.GetWorkspaceLayout(placement);
+
+        Assert.Equal(expectedSidebarWidth, layout.SidebarWidth);
+        Assert.Equal(expectedColumnSpacing, layout.ColumnSpacing);
+        Assert.Equal(expectedRowSpacing, layout.RowSpacing);
     }
 }
