@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -35,7 +36,7 @@ public partial class TileLauncherWindow : Window
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (!WindowChromePolicy.CanStartMoveDrag(e.Source is Control { Focusable: true }))
+        if (!WindowChromePolicy.CanStartMoveDrag(e.Source as Visual, (Visual)sender!))
             return;
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -102,7 +103,7 @@ public partial class TileLauncherWindow : Window
 
     private void Window_Deactivated(object? sender, EventArgs e)
     {
-        if (IsVisible)
+        if (IsVisible && WindowChromePolicy.ShouldHideOnDeactivated(Topmost, staysOpenWhenDeactivated: true))
             Hide();
     }
 
@@ -111,9 +112,14 @@ public partial class TileLauncherWindow : Window
     private void UpdateTopmostButton()
     {
         if (TopmostButton is not null)
+        {
             TopmostIcon.Icon = Topmost
                 ? FluentIcons.Common.Icon.Pin
                 : FluentIcons.Common.Icon.PinOff;
+            TopmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
+            ToolTip.SetTip(TopmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
+            TopmostStatus.IsVisible = Topmost;
+        }
     }
 
     private async void Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

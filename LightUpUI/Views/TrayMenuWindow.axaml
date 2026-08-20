@@ -1,0 +1,83 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LightUpUI.ViewModels"
+        xmlns:fluent="using:FluentIcons.Avalonia"
+        xmlns:icon="using:FluentIcons.Common"
+        x:Class="LightUpUI.Views.TrayMenuWindow"
+        x:DataType="vm:TrayMenuViewModel"
+        Width="304"
+        Height="304"
+        MinWidth="304"
+        MaxWidth="304"
+        MinHeight="304"
+        MaxHeight="304"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        Topmost="True"
+        CanResize="False"
+        WindowStartupLocation="Manual"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur,Transparent"
+        TransparencyBackgroundFallback="#E61B1B1B"
+        Deactivated="Window_Deactivated">
+    <Border Background="{DynamicResource LightUpWindowBrush}"
+            BorderBrush="{DynamicResource LightUpBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="16"
+            Padding="12">
+        <Border.BoxShadow>
+            <BoxShadows>0 14 38 0 #90000000</BoxShadows>
+        </Border.BoxShadow>
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
+            <StackPanel Spacing="2" Margin="4,2,4,0">
+                <TextBlock Text="LightUp" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource LightUpTextBrush}"/>
+                <TextBlock Text="快捷操作" FontSize="11" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Spacing="4">
+                <Button Classes="tray-menu-item" Command="{Binding OpenSearchCommand}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpAccentSoftBrush}">
+                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Search}" Width="16" Height="16" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                            <TextBlock Text="打开搜索" FontWeight="SemiBold"/>
+                            <TextBlock Text="搜索应用、快捷方式和操作" FontSize="10" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="Alt + Space" FontSize="9" Foreground="{DynamicResource LightUpTextFaintBrush}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Button Classes="tray-menu-item" Command="{Binding OpenTilesCommand}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpSurfaceStrongBrush}">
+                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Apps}" Width="16" Height="16" Foreground="{DynamicResource LightUpTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                            <TextBlock Text="打开磁贴启动器" FontWeight="SemiBold"/>
+                            <TextBlock Text="管理分类和常用入口" FontSize="10" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="Alt + Shift + Space" FontSize="9" Foreground="{DynamicResource LightUpTextFaintBrush}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Button Classes="tray-menu-item" Command="{Binding OpenSettingsCommand}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpSurfaceStrongBrush}">
+                            <fluent:FluentIcon Icon="{x:Static icon:Icon.Settings}" Width="16" Height="16" Foreground="{DynamicResource LightUpTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                            <TextBlock Text="设置" FontWeight="SemiBold"/>
+                            <TextBlock Text="搜索模式与启动器选项" FontSize="10" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Button>
+            </StackPanel>
+
+            <Button Grid.Row="2" Classes="tray-menu-item tray-menu-exit" Command="{Binding ExitApplicationCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <fluent:FluentIcon Icon="{x:Static icon:Icon.SignOut}" Width="16" Height="16" Foreground="{DynamicResource LightUpDangerBrush}"/>
+                    <TextBlock Text="退出 LightUp" Foreground="{DynamicResource LightUpDangerBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</Window>

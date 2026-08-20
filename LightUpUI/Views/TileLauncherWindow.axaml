@@ -12,7 +12,7 @@
         Title="LightUp 磁贴启动器"
         WindowDecorations="None"
         ShowInTaskbar="False"
-        Topmost="True"
+        Topmost="False"
         CanResize="True"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
@@ -25,10 +25,13 @@
 
     <Border Background="{DynamicResource LightUpWindowBrush}" BorderBrush="{DynamicResource LightUpBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="16">
         <Grid RowDefinitions="Auto,*" RowSpacing="14">
-            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
-                <Border PointerPressed="TitleBar_PointerPressed" Background="Transparent" Padding="2,4">
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8" PointerPressed="TitleBar_PointerPressed" Background="Transparent" Cursor="SizeAll">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <TextBlock Text="LightUp" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}" VerticalAlignment="Center"/>
-                </Border>
+                    <Border x:Name="TopmostStatus" IsVisible="False" Background="{DynamicResource LightUpAccentSoftBrush}" CornerRadius="5" Padding="6,2">
+                        <TextBlock Text="置顶中" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource LightUpAccentBrush}"/>
+                    </Border>
+                </StackPanel>
                 <TextBox Grid.Column="1" x:Name="SearchBox"
                          Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="搜索当前分类..."

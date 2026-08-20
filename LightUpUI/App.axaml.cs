@@ -15,6 +15,7 @@ using LightUpUI.Models;
 using LightUpUI.Plugins;
 using LightUpUI.Services;
 using LightUpUI.Views;
+using LightUpUI.ViewModels;
 
 namespace LightUpUI;
 
@@ -139,33 +140,36 @@ public class App : Application
         var iconUri = new Uri("avares://LightUpUI/Assets/avalonia-logo.ico");
         using var stream = AssetLoader.Open(iconUri);
         var bitmap = new Bitmap(stream);
-        var openSearchItem = new NativeMenuItem("打开搜索") { Gesture = KeyGesture.Parse("Alt+Space") };
-        var openTilesItem = new NativeMenuItem("打开磁贴启动器") { Gesture = KeyGesture.Parse("Alt+Shift+Space") };
-        var settingsItem = new NativeMenuItem("打开设置");
-        var exitItem = new NativeMenuItem("退出");
+        TrayMenuWindow? quickMenu = null;
+        var menuViewModel = new TrayMenuViewModel(
+            () =>
+            {
+                quickMenu?.Hide();
+                searchHost.Show();
+            },
+            () =>
+            {
+                quickMenu?.Hide();
+                tileHost.Show();
+            },
+            () =>
+            {
+                quickMenu?.Hide();
+                openSettings();
+            },
+            () => desktop.Shutdown());
+        quickMenu = new TrayMenuWindow(menuViewModel);
         var trayIcon = new TrayIcon
         {
             Icon = new WindowIcon(bitmap),
-            ToolTipText = "LightUp 启动器",
-            Menu = new NativeMenu
-            {
-                    Items =
-                    {
-                    openSearchItem,
-                    openTilesItem,
-                    new NativeMenuItemSeparator(),
-                    settingsItem,
-                    new NativeMenuItemSeparator(),
-                    exitItem
-                }
-            }
+            ToolTipText = "LightUp 启动器 · 点击打开快捷菜单"
         };
-        openSearchItem.Click += (_, _) => searchHost.Show();
-        openTilesItem.Click += (_, _) => tileHost.Show();
-        settingsItem.Click += (_, _) => openSettings();
-        exitItem.Click += (_, _) => desktop.Shutdown();
-        trayIcon.Clicked += (_, _) => searchHost.Show();
+        trayIcon.Clicked += (_, _) => quickMenu.Toggle();
         TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
-        desktop.Exit += (_, _) => trayIcon.Dispose();
+        desktop.Exit += (_, _) =>
+        {
+            quickMenu.Close();
+            trayIcon.Dispose();
+        };
     }
 }

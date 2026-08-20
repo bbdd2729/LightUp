@@ -61,5 +61,26 @@
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
+        <Style Selector="Button.tray-menu-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+        </Style>
+        <Style Selector="Button.tray-menu-item:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+        </Style>
+        <Style Selector="Button.tray-menu-item:pressed">
+            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+        </Style>
+        <Style Selector="Button.tray-menu-item:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Button.tray-menu-exit:pointerover">
+            <Setter Property="Background" Value="#20E66D75"/>
+        </Style>
     </Application.Styles>
 </Application>
