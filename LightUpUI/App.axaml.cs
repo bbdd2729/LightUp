@@ -68,9 +68,7 @@ public class App : Application
                 tileWindowHost,
                 () =>
                 {
-                    var settingsWindow = new SettingsWindow(settingsViewModel);
-                    settingsWindow.Show(window!);
-                    settingsWindow.Activate();
+                    ShowSettingsWindow(settingsViewModel, window);
                     return Task.CompletedTask;
                 });
             IProcessLauncher processLauncher = new LauncherProcessRouter(
@@ -90,9 +88,7 @@ public class App : Application
                 tileWindowHost,
                 () =>
                 {
-                    var settingsWindow = new SettingsWindow(settingsViewModel);
-                    settingsWindow.Show(window);
-                    settingsWindow.Activate();
+                    ShowSettingsWindow(settingsViewModel, window);
                 });
 
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -116,6 +112,19 @@ public class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void ShowSettingsWindow(
+        ViewModels.SettingsViewModel viewModel,
+        Window? owner)
+    {
+        var settingsWindow = new SettingsWindow(viewModel);
+        if (owner is not null && WindowOwnerPolicy.CanUseOwner(owner.IsVisible))
+            settingsWindow.Show(owner);
+        else
+            settingsWindow.Show();
+
+        settingsWindow.Activate();
     }
 
     private void CreateTrayIcon(
