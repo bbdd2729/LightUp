@@ -4,7 +4,8 @@
              x:Class="LightUpUI.App"
              RequestedThemeVariant="Default">
     <Application.Resources>
-        <converters:LauncherItemGlyphConverter x:Key="LauncherItemGlyphConverter"/>
+        <converters:LauncherItemIconConverter x:Key="LauncherItemIconConverter"/>
+        <converters:TileItemIconConverter x:Key="TileItemIconConverter"/>
         <converters:LauncherItemLabelConverter x:Key="LauncherItemLabelConverter"/>
         <SolidColorBrush x:Key="LightUpWindowBrush" Color="#F0141A27"/>
         <SolidColorBrush x:Key="LightUpSurfaceBrush" Color="#1AFFFFFF"/>
@@ -15,6 +16,11 @@
         <SolidColorBrush x:Key="LightUpTextFaintBrush" Color="#7596A6B5"/>
         <SolidColorBrush x:Key="LightUpAccentBrush" Color="#4CC2FF"/>
         <SolidColorBrush x:Key="LightUpAccentSoftBrush" Color="#304CC2FF"/>
+        <SolidColorBrush x:Key="LightUpSelectionBrush" Color="#3A4CC2FF"/>
+        <SolidColorBrush x:Key="LightUpHoverBrush" Color="#20FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpDangerBrush" Color="#FFE66D75"/>
+        <SolidColorBrush x:Key="LightUpSuccessBrush" Color="#FF76E3A1"/>
+        <SolidColorBrush x:Key="LightUpWarningBrush" Color="#FFFFD166"/>
     </Application.Resources>
 
     <Application.Styles>
@@ -27,6 +33,8 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="CornerRadius" Value="7"/>
             <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="32"/>
         </Style>
         <Style Selector="Button.launcher-chrome:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
@@ -43,7 +51,15 @@
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
         <Style Selector="Button.launcher-primary:pointerover">
-            <Setter Property="Background" Value="#405CCBFF"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="Foreground" Value="#FF08131C"/>
+        </Style>
+        <Style Selector="Button.launcher-primary:pressed">
+            <Setter Property="Opacity" Value="0.78"/>
+        </Style>
+        <Style Selector="Button.launcher-chrome:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </Application.Styles>
 </Application>

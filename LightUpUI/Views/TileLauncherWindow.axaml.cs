@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using LightUpUI.Models.Tiles;
+using LightUpUI.Presentation;
 using LightUpUI.Services;
 using LightUpUI.ViewModels;
 
@@ -110,7 +111,9 @@ public partial class TileLauncherWindow : Window
     private void UpdateTopmostButton()
     {
         if (TopmostButton is not null)
-            TopmostButton.Content = Topmost ? "📌" : "📍";
+            TopmostIcon.Icon = Topmost
+                ? FluentIcons.Common.Icon.Pin
+                : FluentIcons.Common.Icon.PinOff;
     }
 
     private async void Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

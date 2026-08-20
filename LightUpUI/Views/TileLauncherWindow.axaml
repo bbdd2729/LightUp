@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LightUpUI.ViewModels"
+        xmlns:fluent="using:FluentIcons.Avalonia"
+        xmlns:icon="using:FluentIcons.Common"
         x:Class="LightUpUI.Views.TileLauncherWindow"
         x:DataType="vm:TileLauncherViewModel"
         Width="980"
@@ -37,9 +39,15 @@
                 <Border Grid.Column="2" Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="6" Padding="7,4" VerticalAlignment="Center">
                     <TextBlock Text="Alt + Shift + Space" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" VerticalAlignment="Center"/>
                 </Border>
-                <Button Classes="launcher-chrome" Grid.Column="3" x:Name="TopmostButton" Content="📌" Click="ToggleTopmost_Click" ToolTip.Tip="置顶" Width="30" Height="30"/>
-                <Button Classes="launcher-chrome" Grid.Column="4" Content="—" Click="Collapse_Click" ToolTip.Tip="收起窗口" Width="30" Height="30"/>
-                <Button Classes="launcher-chrome" Grid.Column="5" Content="×" Click="Close_Click" ToolTip.Tip="关闭窗口" Width="30" Height="30"/>
+                <Button Classes="launcher-chrome" Grid.Column="3" x:Name="TopmostButton" Click="ToggleTopmost_Click" ToolTip.Tip="置顶">
+                    <fluent:FluentIcon x:Name="TopmostIcon" Icon="{x:Static icon:Icon.Pin}" Width="15" Height="15"/>
+                </Button>
+                <Button Classes="launcher-chrome" Grid.Column="4" Click="Collapse_Click" ToolTip.Tip="收起窗口">
+                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowMinimize}" Width="15" Height="15"/>
+                </Button>
+                <Button Classes="launcher-chrome" Grid.Column="5" Click="Close_Click" ToolTip.Tip="关闭窗口">
+                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}" Width="15" Height="15"/>
+                </Button>
             </Grid>
 
             <Grid Grid.Row="1" ColumnDefinitions="190,*" ColumnSpacing="16">
@@ -58,14 +66,15 @@
                                          CornerRadius="7"
                                          Foreground="{DynamicResource LightUpTextBrush}"/>
                                 <Button Classes="launcher-primary" Grid.Column="1"
-                                        Content="＋"
                                         Command="{Binding AddNewCategoryCommand}"
                                         Width="28"
                                         Height="28"
                                         Padding="0"
-                                        Background="#303B82F6"
+                                        Background="{DynamicResource LightUpAccentSoftBrush}"
                                         BorderThickness="0"
-                                        Foreground="White"/>
+                                        Foreground="White">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
+                                </Button>
                             </Grid>
                         </StackPanel>
                         <ListBox ItemsSource="{Binding Categories}"
@@ -88,7 +97,12 @@
                             <TextBlock Text="{Binding SelectedCategory.Name}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>
                             <TextBlock Text="将文件、文件夹或快捷方式拖到这里" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="11"/>
                         </StackPanel>
-                        <Button Classes="launcher-primary" Grid.Column="1" Content="＋ 添加入口" Click="Add_Click" Padding="12,7"/>
+                        <Button Classes="launcher-primary" Grid.Column="1" Click="Add_Click" Padding="12,7">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
+                                <TextBlock Text="添加入口" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -104,7 +118,7 @@
                                             PointerPressed="Tile_PointerPressed">
                                         <StackPanel Spacing="8" VerticalAlignment="Center">
                                             <Border Width="44" Height="44" CornerRadius="12" Background="{DynamicResource LightUpAccentSoftBrush}" HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemGlyphConverter}}" Foreground="{DynamicResource LightUpAccentBrush}" FontSize="19" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <fluent:FluentIcon Icon="{Binding Kind, Converter={StaticResource TileItemIconConverter}}" Width="19" Height="19" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <TextBlock Text="{Binding Title}" Foreground="{DynamicResource LightUpTextBrush}" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemLabelConverter}}" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" TextAlignment="Center"/>
@@ -114,6 +128,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+                    <TextBlock Grid.Row="0" Text="{Binding StatusText}" Foreground="{DynamicResource LightUpWarningBrush}" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,140,2"/>
                 </Grid>
             </Grid>
         </Grid>

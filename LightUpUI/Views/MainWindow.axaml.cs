@@ -2,6 +2,8 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using LightUpUI.Models;
+using LightUpUI.Presentation;
 using LightUpUI.Services;
 using LightUpUI.ViewModels;
 
@@ -47,10 +49,33 @@ public partial class MainWindow : Window
 
     private void Close_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Hide();
 
+    private void ClearQuery_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        ViewModel.ClearQueryCommand.Execute(null);
+        FocusQueryBox();
+    }
+
+    private void Result_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not Control control || control.DataContext is not LauncherItem item)
+            return;
+
+        if (!LauncherInteractionPolicy.ShouldSelectOnClick(e.ClickCount))
+            return;
+
+        ViewModel.SelectedItem = item;
+        if (LauncherInteractionPolicy.ShouldLaunchOnClick(e.ClickCount))
+            ViewModel.InvokeSelectedCommand.Execute(null);
+
+        e.Handled = true;
+    }
+
     private void UpdateTopmostButton()
     {
         if (TopmostButton is not null)
-            TopmostButton.Content = Topmost ? "📌" : "📍";
+            TopmostIcon.Icon = Topmost
+                ? FluentIcons.Common.Icon.Pin
+                : FluentIcons.Common.Icon.PinOff;
     }
 
     private MainViewModel ViewModel => (MainViewModel)DataContext!;

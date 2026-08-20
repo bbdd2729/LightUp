@@ -6,13 +6,25 @@ namespace LightUpTest.Presentation;
 public sealed class LauncherItemVisualsTests
 {
     [Theory]
-    [InlineData(LauncherItemKind.Application, "▣")]
-    [InlineData(LauncherItemKind.Shortcut, "↗")]
-    [InlineData(LauncherItemKind.PathExecutable, "⌘")]
-    [InlineData(LauncherItemKind.Action, "✦")]
-    public void Kind_gets_a_consistent_glyph(LauncherItemKind kind, string expectedGlyph)
+    [InlineData(LauncherItemKind.Application)]
+    [InlineData(LauncherItemKind.Shortcut)]
+    [InlineData(LauncherItemKind.PathExecutable)]
+    [InlineData(LauncherItemKind.Action)]
+    public void Kind_gets_a_fluent_vector_icon(LauncherItemKind kind)
     {
-        Assert.Equal(expectedGlyph, LauncherItemVisuals.GetGlyph(kind));
+        var icon = LauncherItemVisuals.GetIcon(kind);
+
+        Assert.NotEqual(default, icon);
+    }
+
+    [Fact]
+    public void Every_supported_kind_has_a_distinct_icon_geometry()
+    {
+        var iconData = Enum.GetValues<LauncherItemKind>()
+            .Select(LauncherItemVisuals.GetIcon)
+            .ToArray();
+
+        Assert.Equal(iconData.Length, new HashSet<FluentIcons.Common.Icon>(iconData).Count);
     }
 
     [Theory]
