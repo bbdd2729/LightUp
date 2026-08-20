@@ -21,7 +21,12 @@ public partial class MainWindow : Window
         UpdateTopmostButton();
     }
 
-    public void FocusQueryBox() => QueryBox.Focus();
+    public void FocusQueryBox()
+    {
+        TryFocusQueryBox(this.FindControl<TextBox>("QueryBox"));
+    }
+
+    public static bool TryFocusQueryBox(Control? queryBox) => queryBox?.Focus() == true;
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
