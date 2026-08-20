@@ -50,6 +50,8 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private SearchLauncherMode _searchMode = SearchLauncherMode.Full;
 
+    public string SearchModeLabel => SearchMode == SearchLauncherMode.Simple ? "简约模式" : "完整模式";
+
     public ObservableCollection<LauncherItem> Results { get; } = [];
 
     partial void OnQueryTextChanged(string value)
@@ -59,9 +61,13 @@ public partial class MainViewModel : ViewModelBase
 
     partial void OnSearchModeChanged(SearchLauncherMode value)
     {
+        OnPropertyChanged(nameof(SearchModeLabel));
         if (!string.IsNullOrWhiteSpace(QueryText))
             _ = SearchAsync(QueryText);
     }
+
+    [RelayCommand]
+    private void ClearQuery() => QueryText = string.Empty;
 
     public void ResetForActivation()
     {

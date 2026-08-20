@@ -21,6 +21,22 @@ public sealed class MainViewModelDefaultResultsTests
         Assert.Equal(string.Empty, searchService.LastQuery);
     }
 
+    [Fact]
+    public void Search_mode_label_and_clear_command_are_user_facing_state()
+    {
+        var viewModel = new MainViewModel(new FakeSearchService([]), new FakeProcessLauncher(), new FakeWindowHost())
+        {
+            QueryText = "notepad",
+            SearchMode = SearchLauncherMode.Simple
+        };
+
+        Assert.Equal("简约模式", viewModel.SearchModeLabel);
+
+        viewModel.ClearQueryCommand.Execute(null);
+
+        Assert.Equal(string.Empty, viewModel.QueryText);
+    }
+
     private sealed class FakeSearchService(IReadOnlyList<LauncherItem> results) : ISearchService
     {
         public string? LastQuery { get; private set; }
