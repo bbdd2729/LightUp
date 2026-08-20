@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LightUpUI.ViewModels"
+        xmlns:tiles="using:LightUpUI.Models.Tiles"
+        xmlns:presentation="using:LightUpUI.Presentation"
         xmlns:fluent="using:FluentIcons.Avalonia"
         xmlns:icon="using:FluentIcons.Common"
         x:Class="LightUpUI.Views.TileLauncherWindow"
@@ -84,7 +86,7 @@
                                  SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
                                  Background="Transparent" BorderThickness="0">
                             <ListBox.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="tiles:TileCategory">
                                     <Border Padding="10,8" CornerRadius="8" Margin="0,2">
                                     <TextBlock Text="{Binding Name}" Foreground="{DynamicResource LightUpTextBrush}"/>
                                     </Border>
@@ -116,12 +118,12 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="tiles:TileItem">
                                     <Border Margin="5" Padding="12" CornerRadius="12" Background="{DynamicResource LightUpSurfaceBrush}"
                                             PointerPressed="Tile_PointerPressed">
                                         <StackPanel Spacing="8" VerticalAlignment="Center">
                                             <Border Width="44" Height="44" CornerRadius="12" Background="{DynamicResource LightUpAccentSoftBrush}" HorizontalAlignment="Center">
-                                                <fluent:FluentIcon Icon="{Binding Kind, Converter={StaticResource TileItemIconConverter}}" Width="19" Height="19" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource TileItemIconConverter}}" IconSize="{x:Static presentation:LauncherItemVisuals.ResultIconSize}" Width="20" Height="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <TextBlock Text="{Binding Title}" Foreground="{DynamicResource LightUpTextBrush}" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemLabelConverter}}" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" TextAlignment="Center"/>

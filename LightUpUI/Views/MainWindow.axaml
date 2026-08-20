@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LightUpUI.ViewModels"
+        xmlns:models="using:LightUpUI.Models"
+        xmlns:presentation="using:LightUpUI.Presentation"
         xmlns:fluent="using:FluentIcons.Avalonia"
         xmlns:icon="using:FluentIcons.Common"
         x:Class="LightUpUI.Views.MainWindow"
@@ -91,11 +93,11 @@
                         </Style>
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="models:LauncherItem">
                             <Border Padding="12,9" CornerRadius="10" PointerPressed="Result_PointerPressed">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                                     <Border Width="40" Height="40" CornerRadius="11" Background="{DynamicResource LightUpAccentSoftBrush}">
-                                        <fluent:FluentIcon Icon="{Binding Kind, Converter={StaticResource LauncherItemIconConverter}}" Width="18" Height="18" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource LauncherItemIconConverter}}" IconSize="{x:Static presentation:LauncherItemVisuals.ResultIconSize}" Width="20" Height="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                         <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>

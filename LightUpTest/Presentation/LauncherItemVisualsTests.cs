@@ -27,6 +27,12 @@ public sealed class LauncherItemVisualsTests
         Assert.Equal(iconData.Length, new HashSet<FluentIcons.Common.Icon>(iconData).Count);
     }
 
+    [Fact]
+    public void Result_icons_use_the_fixed_20_pixel_fluent_grid()
+    {
+        Assert.Equal(FluentIcons.Common.IconSize.Size20, LauncherItemVisuals.ResultIconSize);
+    }
+
     [Theory]
     [InlineData(LauncherItemKind.Application, "应用")]
     [InlineData(LauncherItemKind.Shortcut, "快捷方式")]

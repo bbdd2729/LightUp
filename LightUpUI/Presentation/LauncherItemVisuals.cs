@@ -6,6 +6,8 @@ namespace LightUpUI.Presentation;
 
 public static class LauncherItemVisuals
 {
+    public static IconSize ResultIconSize => IconSize.Size20;
+
     public static Icon GetIcon(LauncherItemKind kind) => kind switch
     {
         LauncherItemKind.Application => Icon.AppGeneric,
