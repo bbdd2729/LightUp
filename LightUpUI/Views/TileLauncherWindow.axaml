@@ -505,6 +505,7 @@
                                     Background="{DynamicResource LightUpSurfaceStrongBrush}"
                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
                                     BorderThickness="1"
+                                    DragDrop.AllowDrop="True"
                                     PointerPressed="Tile_PointerPressed">
                                         <Border.ContextMenu>
                                             <ContextMenu Classes="launcher-context-menu">

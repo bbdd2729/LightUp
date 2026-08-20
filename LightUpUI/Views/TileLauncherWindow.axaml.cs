@@ -9,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using LightUpUI.Models.Tiles;
 using LightUpUI.Presentation;
 using LightUpUI.Services;
@@ -36,6 +37,9 @@ public partial class TileLauncherWindow : Window
         AddHandler(DragDrop.DragOverEvent, Category_DragOver, RoutingStrategies.Bubble);
         AddHandler(DragDrop.DragLeaveEvent, Category_DragLeave, RoutingStrategies.Bubble);
         AddHandler(DragDrop.DropEvent, Category_Drop, RoutingStrategies.Bubble);
+        AddHandler(DragDrop.DragOverEvent, Tile_DragOver, RoutingStrategies.Bubble);
+        AddHandler(DragDrop.DragLeaveEvent, Tile_DragLeave, RoutingStrategies.Bubble);
+        AddHandler(DragDrop.DropEvent, Tile_Drop, RoutingStrategies.Bubble);
         UpdateTopmostButton();
         UpdateSearchWidth();
         UpdateWorkspaceLayout();
@@ -98,19 +102,22 @@ public partial class TileLauncherWindow : Window
 
     private void Window_DragOver(object? sender, DragEventArgs e)
     {
-        e.DragEffects = e.DataTransfer.Contains(DataFormat.File)
-            ? DragDropEffects.Copy
-            : DragDropEffects.None;
+        if (!e.DataTransfer.Contains(DataFormat.File))
+            return;
+
+        e.DragEffects = DragDropEffects.Copy;
         e.Handled = true;
     }
 
     private async void Window_Drop(object? sender, DragEventArgs e)
     {
+        var files = e.DataTransfer.TryGetFiles();
+        if (files is null)
+            return;
+
         try
         {
-            var files = e.DataTransfer.TryGetFiles();
-            if (files is not null)
-                await AddFilesAsync(files);
+            await AddFilesAsync(files);
         }
         catch (Exception exception)
         {
@@ -238,9 +245,30 @@ public partial class TileLauncherWindow : Window
     private static TileCategory? GetDropCategory(object? sender)
         => (sender as Control)?.DataContext as TileCategory;
 
+    private static TileItem? GetDropTile(object? sender)
+        => (sender as Control)?.DataContext as TileItem;
+
+    private static Control? FindDropTarget<T>(object? source, string className)
+        where T : class
+    {
+        for (var visual = source as Visual; visual is not null; visual = visual.GetVisualParent())
+        {
+            if (visual is Control control
+                && control.DataContext is T
+                && control.Classes.Contains(className))
+                return control;
+        }
+
+        return null;
+    }
+
+    private static Control? FindCategoryDropTarget(object? source)
+        => FindDropTarget<TileCategory>(source, "category-item")
+           ?? FindDropTarget<TileCategory>(source, "category-top-item");
+
     private void Category_DragOver(object? sender, DragEventArgs e)
     {
-        var target = e.Source as Control;
+        var target = FindCategoryDropTarget(e.Source);
         var category = GetDropCategory(target);
         if (category is null || !TryGetDraggedTileId(e, out _))
             return;
@@ -252,12 +280,13 @@ public partial class TileLauncherWindow : Window
 
     private void Category_DragLeave(object? sender, DragEventArgs e)
     {
-        (e.Source as Control)?.Classes.Remove("category-drop-target");
+        FindCategoryDropTarget(e.Source)?.Classes.Remove("category-drop-target");
     }
 
     private async void Category_Drop(object? sender, DragEventArgs e)
     {
-        if (GetDropCategory(e.Source) is not TileCategory category
+        var target = FindCategoryDropTarget(e.Source);
+        if (GetDropCategory(target) is not TileCategory category
             || !TryGetDraggedTileId(e, out var tileId))
             return;
 
@@ -267,7 +296,44 @@ public partial class TileLauncherWindow : Window
         }
         finally
         {
-            (e.Source as Control)?.Classes.Remove("category-drop-target");
+            target?.Classes.Remove("category-drop-target");
+            e.Handled = true;
+        }
+    }
+
+    private void Tile_DragOver(object? sender, DragEventArgs e)
+    {
+        var target = FindDropTarget<TileItem>(e.Source, "tile-card");
+        if (target is null || !TryGetDraggedTileId(e, out _))
+            return;
+
+        target.Classes.Add("category-drop-target");
+        e.DragEffects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    private void Tile_DragLeave(object? sender, DragEventArgs e)
+    {
+        FindDropTarget<TileItem>(e.Source, "tile-card")?.Classes.Remove("category-drop-target");
+    }
+
+    private async void Tile_Drop(object? sender, DragEventArgs e)
+    {
+        var target = FindDropTarget<TileItem>(e.Source, "tile-card");
+        if (target is null
+            || GetDropTile(target) is not TileItem targetItem
+            || !TryGetDraggedTileId(e, out var tileId))
+            return;
+
+        try
+        {
+            var dropPosition = e.GetPosition(target);
+            var insertAfterTarget = dropPosition.Y >= target.Bounds.Height / 2;
+            await ViewModel.MoveTileByIdWithinCategoryAsync(tileId, targetItem.Id, insertAfterTarget);
+        }
+        finally
+        {
+            target.Classes.Remove("category-drop-target");
             e.Handled = true;
         }
     }

@@ -545,6 +545,49 @@ public partial class TileLauncherViewModel : ViewModelBase
         return MoveItemAsync(item, destination, cancellationToken);
     }
 
+    public async Task MoveTileByIdWithinCategoryAsync(
+        string tileId,
+        string targetTileId,
+        bool insertAfterTarget,
+        CancellationToken cancellationToken = default)
+    {
+        var category = Categories.FirstOrDefault(candidate =>
+            candidate.Items.Any(item => item.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase)));
+        if (category is null)
+        {
+            StatusText = "找不到要排序的入口";
+            return;
+        }
+
+        var item = category.Items.First(candidate =>
+            candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
+        var target = category.Items.FirstOrDefault(candidate =>
+            candidate.Id.Equals(targetTileId, StringComparison.OrdinalIgnoreCase));
+        if (target is null)
+        {
+            StatusText = "排序目标不存在或不在当前分类";
+            return;
+        }
+
+        if (ReferenceEquals(item, target))
+        {
+            StatusText = "入口无需调整顺序";
+            return;
+        }
+
+        category.Items.Remove(item);
+        var targetIndex = category.Items.IndexOf(target);
+        category.Items.Insert(targetIndex + (insertAfterTarget ? 1 : 0), item);
+        ResetItemSortOrder(category.Items);
+        if (ReferenceEquals(SelectedCategory, category))
+            RefreshVisibleItems();
+
+        SelectedItem = item;
+        NotifyItemOrderChanged();
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = $"已调整顺序：“{item.Title}”";
+    }
+
     [RelayCommand]
     private Task MoveSelectedItemAsync()
     {
