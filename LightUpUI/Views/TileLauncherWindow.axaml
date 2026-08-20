@@ -593,7 +593,7 @@
                         </Border>
                     </Grid>
 
-                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12" MinHeight="22">
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" MinHeight="22">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Info}"
                                                 Width="13"
@@ -606,7 +606,42 @@
                                        IsVisible="{CompiledBinding HasStatus}"
                                        TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="5"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{CompiledBinding HasSelectedItem}">
+                            <TextBlock Text="移动至"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Width="108"
+                                      Height="28"
+                                      ItemsSource="{CompiledBinding Categories}"
+                                      SelectedItem="{CompiledBinding MoveDestinationCategory, Mode=TwoWay}"
+                                      FontSize="10.5"
+                                      Padding="6,3"
+                                      ToolTip.Tip="选择目标分类"
+                                      AutomationProperties.Name="移动目标分类"
+                                      KeyboardNavigation.TabIndex="4">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="tiles:TileCategory">
+                                        <TextBlock Text="{CompiledBinding Name}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding MoveSelectedItemCommand}"
+                                    IsEnabled="{CompiledBinding CanMoveSelectedItem}"
+                                    ToolTip.Tip="移动选中的入口"
+                                    AutomationProperties.Name="移动选中入口">
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowRight}"
+                                                    Width="14"
+                                                    Height="14"/>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                             <ProgressBar Width="70" Height="3" IsIndeterminate="True" IsVisible="{CompiledBinding IsSaving}"/>
                             <TextBlock Text="正在保存…"
                                        FontSize="10"

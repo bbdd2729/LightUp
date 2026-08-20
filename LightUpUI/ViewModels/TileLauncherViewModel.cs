@@ -56,6 +56,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     private TileItem? _selectedItem;
 
     [ObservableProperty]
+    private TileCategory? _moveDestinationCategory;
+
+    [ObservableProperty]
     private string _searchText = string.Empty;
 
     [ObservableProperty]
@@ -85,6 +88,8 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public bool HasVisibleItems => VisibleItems.Count > 0;
 
+    public bool HasSelectedItem => SelectedItem is not null;
+
     public bool ShowEmptyState => TileLauncherLayoutPolicy.ShouldShowEmptyState(IsLoading, HasVisibleItems);
 
     public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
@@ -92,6 +97,10 @@ public partial class TileLauncherViewModel : ViewModelBase
     public bool CanEdit => !IsLoading;
 
     public bool CanManageSelectedCategory => SelectedCategory is not null && !IsDefaultCategory(SelectedCategory);
+
+    public bool CanMoveSelectedItem => SelectedItem is not null
+        && MoveDestinationCategory is not null
+        && !ReferenceEquals(SelectedCategory, MoveDestinationCategory);
 
     public bool IsLeftNavigation => CategoryNavigationPlacement == CategoryNavigationPlacement.Left;
 
@@ -344,6 +353,65 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public void RemoveItem(TileItem item) => _ = RemoveItemAsync(item);
 
+    public async Task MoveItemAsync(
+        TileItem item,
+        TileCategory destination,
+        CancellationToken cancellationToken = default)
+    {
+        if (item is null || destination is null)
+        {
+            StatusText = "请选择要移动的入口和目标分类";
+            return;
+        }
+
+        var source = Categories.FirstOrDefault(category => category.Items.Contains(item));
+        if (source is null)
+        {
+            StatusText = "找不到入口所在的分类";
+            return;
+        }
+
+        if (!Categories.Contains(destination))
+        {
+            StatusText = "目标分类不存在";
+            return;
+        }
+
+        if (ReferenceEquals(source, destination))
+        {
+            StatusText = "入口已在当前分类";
+            return;
+        }
+
+        if (destination.Items.Any(existing =>
+                !ReferenceEquals(existing, item)
+                && string.Equals(existing.TargetPath, item.TargetPath, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusText = "目标分类已存在该入口";
+            return;
+        }
+
+        source.Items.Remove(item);
+        ResetItemSortOrder(source.Items);
+        destination.Items.Add(item);
+        ResetItemSortOrder(destination.Items);
+        RefreshVisibleItems();
+        if (await PersistStateAsync(cancellationToken))
+            StatusText = $"已移动“{item.Title}”至“{destination.Name}”";
+    }
+
+    [RelayCommand]
+    private Task MoveSelectedItemAsync()
+    {
+        if (SelectedItem is null || MoveDestinationCategory is null)
+        {
+            StatusText = "请选择目标分类";
+            return Task.CompletedTask;
+        }
+
+        return MoveItemAsync(SelectedItem, MoveDestinationCategory);
+    }
+
     public async Task RemoveItemAsync(
         TileItem item,
         CancellationToken cancellationToken = default)
@@ -401,6 +469,16 @@ public partial class TileLauncherViewModel : ViewModelBase
         if (!IsLoading && !_suppressSelectionPersistence)
             _ = PersistStateAsync(CancellationToken.None);
     }
+
+    partial void OnSelectedItemChanged(TileItem? value)
+    {
+        MoveDestinationCategory = null;
+        OnPropertyChanged(nameof(HasSelectedItem));
+        OnPropertyChanged(nameof(CanMoveSelectedItem));
+    }
+
+    partial void OnMoveDestinationCategoryChanged(TileCategory? value)
+        => OnPropertyChanged(nameof(CanMoveSelectedItem));
 
     partial void OnSearchTextChanged(string value)
     {
@@ -476,6 +554,12 @@ public partial class TileLauncherViewModel : ViewModelBase
             Categories[index] = category;
 
         OnPropertyChanged(nameof(SelectedCategory));
+    }
+
+    private static void ResetItemSortOrder(IList<TileItem> items)
+    {
+        for (var index = 0; index < items.Count; index++)
+            items[index].SortOrder = index;
     }
 
     public void ReportError(string message)

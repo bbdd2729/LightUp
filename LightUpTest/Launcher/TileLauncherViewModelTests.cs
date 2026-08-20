@@ -175,6 +175,85 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task MoveItemAsync_moves_the_item_to_the_destination_and_persists_once()
+    {
+        var first = CreateTile("first");
+        var itemToMove = CreateTile("move");
+        var last = CreateTile("last");
+        first.SortOrder = 4;
+        itemToMove.SortOrder = 8;
+        last.SortOrder = 12;
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作", Items = [first, itemToMove, last] },
+                new TileCategory { Id = "archive", Name = "归档" }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        var destination = viewModel.Categories.Single(category => category.Id == "archive");
+
+        await viewModel.MoveItemAsync(itemToMove, destination, TestContext.Current.CancellationToken);
+
+        var source = viewModel.Categories.Single(category => category.Id == "work");
+        Assert.Equal(["first", "last"], source.Items.Select(item => item.Id));
+        Assert.Equal([0, 1], source.Items.Select(item => item.SortOrder));
+        Assert.Equal(["move"], destination.Items.Select(item => item.Id));
+        Assert.Equal(0, destination.Items[0].SortOrder);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已移动", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task MoveItemAsync_rejects_a_duplicate_target_without_mutating_or_saving()
+    {
+        var itemToMove = CreateTile("same");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作", Items = [itemToMove] },
+                new TileCategory { Id = "archive", Name = "归档", Items = [CreateTile("same")] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        var destination = viewModel.Categories.Single(category => category.Id == "archive");
+
+        await viewModel.MoveItemAsync(itemToMove, destination, TestContext.Current.CancellationToken);
+
+        Assert.Single(viewModel.Categories.Single(category => category.Id == "work").Items);
+        Assert.Single(destination.Items);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("已存在", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task MoveItemAsync_rejects_the_current_category_without_saving()
+    {
+        var item = CreateTile("current");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部" },
+                new TileCategory { Id = "work", Name = "工作", Items = [item] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        var source = viewModel.Categories.Single(category => category.Id == "work");
+
+        await viewModel.MoveItemAsync(item, source, TestContext.Current.CancellationToken);
+
+        Assert.Single(source.Items);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("当前分类", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Selecting_a_category_persists_it_as_the_next_active_category()
     {
         var store = new FakeStateStore(new TileLauncherState
