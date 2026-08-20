@@ -102,18 +102,29 @@ public partial class TileLauncherWindow : Window
 
     private void Window_DragOver(object? sender, DragEventArgs e)
     {
-        if (!e.DataTransfer.Contains(DataFormat.File)
-            && !TileItemFactory.TryCreateUrl(e.DataTransfer.TryGetText(), out _))
+        var kind = TileDropPolicy.Classify(
+            e.DataTransfer.Contains(DataFormat.File),
+            e.DataTransfer.TryGetText());
+        if (kind == TileExternalDropKind.None)
             return;
 
-        e.DragEffects = DragDropEffects.Copy;
+        UpdateExternalDropFeedback(kind);
+        e.DragEffects = kind == TileExternalDropKind.InvalidText
+            ? DragDropEffects.None
+            : DragDropEffects.Copy;
         e.Handled = true;
     }
+
+    private void Window_DragLeave(object? sender, DragEventArgs e) => ClearExternalDropFeedback();
 
     private async void Window_Drop(object? sender, DragEventArgs e)
     {
         var files = e.DataTransfer.TryGetFiles();
-        if (files is not null)
+        var text = e.DataTransfer.TryGetText();
+        var kind = TileDropPolicy.Classify(files is not null, text);
+        ClearExternalDropFeedback();
+
+        if (kind == TileExternalDropKind.File && files is not null)
         {
             try
             {
@@ -131,20 +142,18 @@ public partial class TileLauncherWindow : Window
             return;
         }
 
-        var text = e.DataTransfer.TryGetText();
-        if (Presentation.TileDragPayload.TryParse(text, out _))
+        if (kind == TileExternalDropKind.None)
             return;
 
-        if (!TileItemFactory.TryCreateUrl(text, out var item))
+        if (kind == TileExternalDropKind.InvalidText)
         {
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                ViewModel.ReportError("只能拖入文件、文件夹或有效的 HTTP(S) 地址");
-                e.Handled = true;
-            }
-
+            ViewModel.ReportError(TileDropPolicy.GetFeedback(kind));
+            e.Handled = true;
             return;
         }
+
+        if (!TileItemFactory.TryCreateUrl(text, out var item))
+            return;
 
         try
         {
@@ -332,20 +341,47 @@ public partial class TileLauncherWindow : Window
         }
     }
 
+    private void UpdateExternalDropFeedback(TileExternalDropKind kind)
+    {
+        var overlay = this.FindControl<Border>("ExternalDropOverlay");
+        var message = this.FindControl<TextBlock>("ExternalDropMessage");
+        if (overlay is not null)
+        {
+            overlay.IsVisible = kind != TileExternalDropKind.None;
+            SetClass(overlay, "drop-invalid", kind == TileExternalDropKind.InvalidText);
+        }
+
+        if (message is not null)
+            message.Text = TileDropPolicy.GetFeedback(kind);
+    }
+
+    private void ClearExternalDropFeedback() => UpdateExternalDropFeedback(TileExternalDropKind.None);
+
+    private static void SetClass(Control control, string className, bool enabled)
+    {
+        if (enabled)
+            control.Classes.Add(className);
+        else
+            control.Classes.Remove(className);
+    }
+
     private void Tile_DragOver(object? sender, DragEventArgs e)
     {
         var target = FindDropTarget<TileItem>(e.Source, "tile-card");
         if (target is null || !TryGetDraggedTileId(e, out _))
             return;
 
-        target.Classes.Add("category-drop-target");
+        var insertAfterTarget = e.GetPosition(target).Y >= target.Bounds.Height / 2;
+        SetClass(target, "tile-drop-before", !insertAfterTarget);
+        SetClass(target, "tile-drop-after", insertAfterTarget);
         e.DragEffects = DragDropEffects.Move;
         e.Handled = true;
     }
 
     private void Tile_DragLeave(object? sender, DragEventArgs e)
     {
-        FindDropTarget<TileItem>(e.Source, "tile-card")?.Classes.Remove("category-drop-target");
+        if (FindDropTarget<TileItem>(e.Source, "tile-card") is { } target)
+            ClearTileDropFeedback(target);
     }
 
     private async void Tile_Drop(object? sender, DragEventArgs e)
@@ -364,9 +400,15 @@ public partial class TileLauncherWindow : Window
         }
         finally
         {
-            target.Classes.Remove("category-drop-target");
+            ClearTileDropFeedback(target);
             e.Handled = true;
         }
+    }
+
+    private static void ClearTileDropFeedback(Control target)
+    {
+        target.Classes.Remove("tile-drop-before");
+        target.Classes.Remove("tile-drop-after");
     }
 
     private static TileItem? GetContextTile(object? sender)
