@@ -402,6 +402,29 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task OpenSelectedCommand_rejects_an_unavailable_target_before_launching()
+    {
+        var item = CreateTile("missing.exe");
+        var launcher = new RecordingProcessLauncher();
+        var viewModel = new TileLauncherViewModel(
+            new FakeStateStore(new TileLauncherState
+            {
+                Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            }),
+            launcher,
+            targetHealthService: new FakeTargetHealthService(
+                new TileTargetHealthResult(TileTargetHealth.Missing, "目标不存在：missing.exe")));
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+
+        await viewModel.OpenSelectedCommand.ExecuteAsync(null);
+
+        Assert.Equal(0, launcher.LaunchCount);
+        Assert.Equal("目标不存在：missing.exe", viewModel.StatusText);
+        Assert.True(item.HasTargetIssue);
+    }
+
+    [Fact]
     public async Task SaveSelectedItemNotesAsync_persists_trimmed_notes_and_updates_the_editor()
     {
         var item = CreateTile("notes");
@@ -804,6 +827,22 @@ public sealed class TileLauncherViewModelTests
     {
         public Task<LaunchResult> LaunchAsync(LightUpUI.Models.LauncherItem item, CancellationToken cancellationToken)
             => Task.FromResult(LaunchResult.Success);
+    }
+
+    private sealed class RecordingProcessLauncher : IProcessLauncher
+    {
+        public int LaunchCount { get; private set; }
+
+        public Task<LaunchResult> LaunchAsync(LightUpUI.Models.LauncherItem item, CancellationToken cancellationToken)
+        {
+            LaunchCount++;
+            return Task.FromResult(LaunchResult.Success);
+        }
+    }
+
+    private sealed class FakeTargetHealthService(TileTargetHealthResult result) : ITileTargetHealthService
+    {
+        public TileTargetHealthResult Evaluate(TileItem item) => result;
     }
 
     private sealed class FakePathRevealService(LaunchResult result) : IPathRevealService

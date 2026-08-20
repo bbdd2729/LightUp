@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace LightUpUI.Models.Tiles;
 
@@ -23,4 +24,12 @@ public sealed class TileItem
     public DateTime? LastLaunchedAtUtc { get; set; }
     public string? CustomIconPath { get; set; }
     public string? Notes { get; set; }
+    [JsonIgnore]
+    public TileTargetHealth TargetHealth { get; set; } = TileTargetHealth.Available;
+    [JsonIgnore]
+    public string? TargetHealthMessage { get; set; }
+    [JsonIgnore]
+    public bool IsTargetAvailable => TargetHealth == TileTargetHealth.Available;
+    [JsonIgnore]
+    public bool HasTargetIssue => !IsTargetAvailable;
 }

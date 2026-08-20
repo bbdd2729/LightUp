@@ -21,6 +21,7 @@ public partial class TileLauncherViewModel : ViewModelBase
     private readonly ILauncherStateStore _stateStore;
     private readonly IProcessLauncher _processLauncher;
     private readonly IPathRevealService _pathRevealService;
+    private readonly ITileTargetHealthService _targetHealthService;
     private readonly TileStateSaveCoordinator _saveCoordinator;
     private TileLauncherState _state = new();
     private bool _suppressSelectionPersistence;
@@ -34,11 +35,13 @@ public partial class TileLauncherViewModel : ViewModelBase
         IProcessLauncher processLauncher,
         TileStateSaveCoordinator? saveCoordinator = null,
         CategoryNavigationPlacement categoryNavigationPlacement = CategoryNavigationPlacement.Left,
-        IPathRevealService? pathRevealService = null)
+        IPathRevealService? pathRevealService = null,
+        ITileTargetHealthService? targetHealthService = null)
     {
         _stateStore = stateStore;
         _processLauncher = processLauncher;
         _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
+        _targetHealthService = targetHealthService ?? new TileTargetHealthService();
         _saveCoordinator = saveCoordinator ?? new TileStateSaveCoordinator(stateStore);
         _categoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(categoryNavigationPlacement);
     }
@@ -166,6 +169,9 @@ public partial class TileLauncherViewModel : ViewModelBase
                 category.Items ??= [];
                 if (string.IsNullOrWhiteSpace(category.Id))
                     category.Id = Guid.NewGuid().ToString("N");
+
+                foreach (var item in category.Items)
+                    UpdateTargetHealth(item);
             }
 
             EnsureDefaultCategory(_state.Categories);
@@ -232,6 +238,7 @@ public partial class TileLauncherViewModel : ViewModelBase
                 item.Id = Guid.NewGuid().ToString("N");
             if (string.IsNullOrWhiteSpace(item.Title))
                 item.Title = item.TargetPath;
+            UpdateTargetHealth(item);
             item.SortOrder = category.Items.Count;
             category.Items.Add(item);
             addedCount++;
@@ -795,6 +802,14 @@ public partial class TileLauncherViewModel : ViewModelBase
         if (SelectedItem is null)
             return;
 
+        UpdateTargetHealth(SelectedItem);
+        if (!SelectedItem.IsTargetAvailable)
+        {
+            StatusText = SelectedItem.TargetHealthMessage ?? "目标不可用";
+            RefreshVisibleItems();
+            return;
+        }
+
         IsOpening = true;
         try
         {
@@ -998,4 +1013,11 @@ public partial class TileLauncherViewModel : ViewModelBase
         item.Arguments,
         item.Kind == TileItemKind.Application ? LauncherItemKind.Application : LauncherItemKind.Shortcut,
         IconPath: item.CustomIconPath);
+
+    private void UpdateTargetHealth(TileItem item)
+    {
+        var health = _targetHealthService.Evaluate(item);
+        item.TargetHealth = health.Status;
+        item.TargetHealthMessage = health.Message;
+    }
 }
