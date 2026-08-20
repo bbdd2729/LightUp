@@ -11,6 +11,7 @@ public sealed class SearchLauncherSettingsStore : ISearchLauncherSettingsStore
 {
     private readonly string _filePath;
     private readonly Func<Stream> _openReadStream;
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
     private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -40,29 +41,41 @@ public sealed class SearchLauncherSettingsStore : ISearchLauncherSettingsStore
                     _options,
                     cancellationToken)
                 .ConfigureAwait(false);
-            return settings ?? new SearchLauncherSettings();
+            return SearchLauncherSettingsPolicy.Normalize(settings);
         }
         catch (JsonException)
         {
-            return new SearchLauncherSettings();
+            return SearchLauncherSettingsPolicy.Normalize(null);
         }
         catch (IOException)
         {
-            return new SearchLauncherSettings();
+            return SearchLauncherSettingsPolicy.Normalize(null);
         }
     }
 
     public async Task SaveAsync(SearchLauncherSettings settings, CancellationToken cancellationToken)
     {
-        var directory = Path.GetDirectoryName(_filePath);
-        if (!string.IsNullOrWhiteSpace(directory))
-            Directory.CreateDirectory(directory);
+        await _saveGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var directory = Path.GetDirectoryName(_filePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
 
-        var temporaryPath = _filePath + ".tmp";
-        using (var stream = File.Create(temporaryPath))
-            await JsonSerializer.SerializeAsync(stream, settings, _options, cancellationToken)
-                .ConfigureAwait(false);
+            var temporaryPath = _filePath + ".tmp";
+            using (var stream = File.Create(temporaryPath))
+                await JsonSerializer.SerializeAsync(
+                        stream,
+                        SearchLauncherSettingsPolicy.Normalize(settings),
+                        _options,
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
-        File.Move(temporaryPath, _filePath, overwrite: true);
+            File.Move(temporaryPath, _filePath, overwrite: true);
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
     }
 }

@@ -12,6 +12,7 @@ public sealed class SearchLauncherSettings
     public int MaxResults { get; set; } = 30;
     public bool SearchAllTileCategories { get; set; } = true;
     public CategoryNavigationPlacement CategoryNavigationPlacement { get; set; } = CategoryNavigationPlacement.Left;
+    public LauncherAppearanceSettings Appearance { get; set; } = new();
     public Dictionary<string, PluginSettings> Plugins { get; set; } = [];
 }
 

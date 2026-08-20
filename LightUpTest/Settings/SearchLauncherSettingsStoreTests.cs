@@ -80,6 +80,40 @@ public sealed class SearchLauncherSettingsStoreTests
         }
     }
 
+    [Fact]
+    public async Task LoadAsync_round_trips_window_appearance_and_normalizes_unknown_enums()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var store = new SearchLauncherSettingsStore(filePath);
+
+        try
+        {
+            await File.WriteAllTextAsync(filePath, """
+                {
+                  "mode": 99,
+                  "categoryNavigationPlacement": 99,
+                  "appearance": {
+                    "searchWindow": { "x": 120, "y": 80, "width": 720, "height": 480, "isTopmost": true }
+                  }
+                }
+                """, cancellationToken);
+
+            var loaded = await store.LoadAsync(cancellationToken);
+
+            Assert.Equal(SearchLauncherMode.Full, loaded.Mode);
+            Assert.Equal(CategoryNavigationPlacement.Left, loaded.CategoryNavigationPlacement);
+            Assert.Equal(120, loaded.Appearance.SearchWindow.X);
+            Assert.Equal(720, loaded.Appearance.SearchWindow.Width);
+            Assert.True(loaded.Appearance.SearchWindow.IsTopmost);
+            Assert.NotNull(loaded.Appearance.TileLauncherWindow);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     private sealed class NonPumpingSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback callback, object? state)

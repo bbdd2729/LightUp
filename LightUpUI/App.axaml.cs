@@ -31,7 +31,8 @@ public class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var tileStateStore = new JsonLauncherStateStore();
-            var searchSettings = new SearchLauncherSettingsStore()
+            var settingsStore = new SearchLauncherSettingsStore();
+            var searchSettings = settingsStore
                 .LoadAsync(CancellationToken.None)
                 .GetAwaiter()
                 .GetResult();
@@ -63,10 +64,7 @@ public class App : Application
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
-            tileWindow.Opened += (_, _) => _ = tileWindowHost.EnsureLoadedAsync();
             var hotkeyBindings = new LauncherHotkeyBindings(new WindowsGlobalHotkeyServiceFactory());
-
-            var settingsStore = new SearchLauncherSettingsStore();
             ViewModels.MainViewModel? viewModel = null;
             MainWindow? window = null;
             var settingsViewModel = new ViewModels.SettingsViewModel(
@@ -96,6 +94,24 @@ public class App : Application
             window = new MainWindow(viewModel);
             windowHost.AttachViewModel(viewModel);
             windowHost.Attach(window);
+            var searchWindowStateTracker = new LauncherWindowStateTracker(
+                window,
+                state => searchSettings.Appearance.SearchWindow = state,
+                () => settingsStore.SaveAsync(searchSettings, CancellationToken.None),
+                new Size(180, 180),
+                new Size(1400, 900));
+            var tileWindowStateTracker = new LauncherWindowStateTracker(
+                tileWindow,
+                state => searchSettings.Appearance.TileLauncherWindow = state,
+                () => settingsStore.SaveAsync(searchSettings, CancellationToken.None),
+                new Size(720, 420),
+                new Size(1800, 1200));
+            window.Opened += (_, _) => searchWindowStateTracker.Restore(searchSettings.Appearance.SearchWindow);
+            tileWindow.Opened += (_, _) =>
+            {
+                tileWindowStateTracker.Restore(searchSettings.Appearance.TileLauncherWindow);
+                _ = tileWindowHost.EnsureLoadedAsync();
+            };
             hotkeyBindings.SearchHotkeyPressed += (_, _) =>
                 Dispatcher.UIThread.Post(windowHost.Toggle);
             hotkeyBindings.TileLauncherHotkeyPressed += (_, _) =>
@@ -127,7 +143,11 @@ public class App : Application
 
             desktop.Exit += (_, _) =>
             {
+                searchWindowStateTracker.FlushAsync().GetAwaiter().GetResult();
+                tileWindowStateTracker.FlushAsync().GetAwaiter().GetResult();
                 hotkeyBindings.Dispose();
+                searchWindowStateTracker.Dispose();
+                tileWindowStateTracker.Dispose();
             };
         }
 
