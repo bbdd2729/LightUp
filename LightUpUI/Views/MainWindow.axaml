@@ -59,7 +59,7 @@
                     <Border Grid.Column="0" Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpAccentSoftBrush}">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Search}" Width="16" Height="16" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
-                    <TextBox Grid.Column="1" x:Name="QueryBox"
+                    <TextBox Grid.Column="1" x:Name="QueryBox" Classes="launcher-query"
                              Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="搜索应用、程序或快捷方式..."
                              Background="Transparent" BorderThickness="0"

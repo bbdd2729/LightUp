@@ -9,12 +9,30 @@
         WindowStartupLocation="CenterOwner">
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
         <StackPanel Spacing="4">
-            <TextBlock Text="设置" FontSize="24" FontWeight="SemiBold"/>
-            <TextBlock Text="配置搜索模式和磁贴启动器的导航布局。" Opacity="0.65" FontSize="12"/>
+            <TextBlock Text="设置" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>
+            <TextBlock Text="配置搜索模式和磁贴启动器的导航布局。" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="12"/>
         </StackPanel>
-        <Border Grid.Row="1" Padding="16" Background="#12000000" CornerRadius="10">
+        <Border Grid.Row="1" Padding="16" Background="{DynamicResource LightUpSurfaceBrush}" BorderBrush="{DynamicResource LightUpBorderBrush}" BorderThickness="1" CornerRadius="10">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Spacing="14">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="外观主题" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{CompiledBinding ThemeModes}"
+                              SelectedItem="{CompiledBinding SelectedThemeMode, Mode=TwoWay}"/>
+                    <TextBlock Text="System：跟随 Windows。Light 和 Dark：固定应用窗口与搜索栏的明暗主题。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="强调色" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{CompiledBinding ColorPalettes}"
+                              SelectedItem="{CompiledBinding SelectedColorPalette, Mode=TwoWay}"/>
+                    <TextBox Text="{CompiledBinding CustomAccentColor, Mode=TwoWay}"
+                             IsVisible="{CompiledBinding IsCustomAccentColorVisible}"
+                             PlaceholderText="#4CC2FF"
+                             ToolTip.Tip="选择 Custom 时生效，支持 #RRGGBB 或 #AARRGGBB"/>
+                    <TextBlock Text="提供多组预设颜色；选择 Custom 时输入自定义颜色值。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
                 <StackPanel Spacing="8">
                 <TextBlock Text="搜索模式" FontWeight="SemiBold"/>
                 <ComboBox ItemsSource="{Binding SearchModes}"

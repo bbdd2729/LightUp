@@ -14,6 +14,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly ISearchLauncherSettingsStore _settingsStore;
     private readonly SearchLauncherSettings _settings;
     private readonly Action<SearchLauncherMode> _applySearchMode;
+    private readonly Action<LauncherAppearanceSettings> _applyAppearance;
     private readonly Action<CategoryNavigationPlacement> _applyCategoryNavigationPlacement;
     private readonly Action<TileDensity> _applyTileDensity;
     private readonly Action<int> _applyMaxResults;
@@ -24,6 +25,7 @@ public partial class SettingsViewModel : ViewModelBase
         ISearchLauncherSettingsStore settingsStore,
         SearchLauncherSettings settings,
         Action<SearchLauncherMode> applySearchMode,
+        Action<LauncherAppearanceSettings>? applyAppearance = null,
         Action<CategoryNavigationPlacement>? applyCategoryNavigationPlacement = null,
         Action<TileDensity>? applyTileDensity = null,
         Action<int>? applyMaxResults = null,
@@ -33,12 +35,16 @@ public partial class SettingsViewModel : ViewModelBase
         _settingsStore = settingsStore;
         _settings = settings;
         _applySearchMode = applySearchMode;
+        _applyAppearance = applyAppearance ?? (_ => { });
         _applyCategoryNavigationPlacement = applyCategoryNavigationPlacement ?? (_ => { });
         _applyTileDensity = applyTileDensity ?? (_ => { });
         _applyMaxResults = applyMaxResults ?? (_ => { });
         _applySearchAllTileCategories = applySearchAllTileCategories ?? (_ => { });
         _applyHotkeys = applyHotkeys ?? ((_, _) => null);
         _selectedSearchMode = settings.Mode;
+        _selectedThemeMode = ThemePalettePolicy.NormalizeThemeMode(settings.Appearance.ThemeMode);
+        _selectedColorPalette = ThemePalettePolicy.NormalizeColorPalette(settings.Appearance.ColorPalette);
+        _customAccentColor = ThemePalettePolicy.NormalizeCustomAccentColor(settings.Appearance.CustomAccentColor);
         _selectedMaxResults = SearchResultLimitPolicy.Normalize(settings.MaxResults);
         _searchAllTileCategories = settings.SearchAllTileCategories;
         _searchHotkey = settings.Hotkey;
@@ -49,12 +55,25 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     public Array SearchModes { get; } = Enum.GetValues<SearchLauncherMode>();
+    public Array ThemeModes { get; } = Enum.GetValues<LauncherThemeMode>();
+    public Array ColorPalettes { get; } = Enum.GetValues<LauncherColorPalette>();
     public Array CategoryNavigationPlacements { get; } = Enum.GetValues<CategoryNavigationPlacement>();
     public Array TileDensities { get; } = Enum.GetValues<TileDensity>();
     public int[] ResultLimits { get; } = [10, 20, 30, 50, 100];
 
     [ObservableProperty]
     private SearchLauncherMode _selectedSearchMode;
+
+    [ObservableProperty]
+    private LauncherThemeMode _selectedThemeMode;
+
+    [ObservableProperty]
+    private LauncherColorPalette _selectedColorPalette;
+
+    [ObservableProperty]
+    private string _customAccentColor;
+
+    public bool IsCustomAccentColorVisible => SelectedColorPalette == LauncherColorPalette.Custom;
 
     [ObservableProperty]
     private CategoryNavigationPlacement _selectedCategoryNavigationPlacement;
@@ -77,6 +96,9 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = string.Empty;
 
+    partial void OnSelectedColorPaletteChanged(LauncherColorPalette value)
+        => OnPropertyChanged(nameof(IsCustomAccentColorVisible));
+
     [RelayCommand]
     public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
@@ -84,6 +106,9 @@ public partial class SettingsViewModel : ViewModelBase
             return;
 
         _settings.Mode = SelectedSearchMode;
+        _settings.Appearance.ThemeMode = ThemePalettePolicy.NormalizeThemeMode(SelectedThemeMode);
+        _settings.Appearance.ColorPalette = ThemePalettePolicy.NormalizeColorPalette(SelectedColorPalette);
+        _settings.Appearance.CustomAccentColor = ThemePalettePolicy.NormalizeCustomAccentColor(CustomAccentColor);
         _settings.CategoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(
             SelectedCategoryNavigationPlacement);
         _settings.Appearance.TileDensity = TileDensityPolicy.Normalize(SelectedTileDensity);
@@ -93,6 +118,7 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.TileLauncherHotkey = tileLauncherHotkey;
         await _settingsStore.SaveAsync(_settings, cancellationToken);
         _applySearchMode(SelectedSearchMode);
+        _applyAppearance(_settings.Appearance);
         _applyCategoryNavigationPlacement(_settings.CategoryNavigationPlacement);
         _applyTileDensity(_settings.Appearance.TileDensity);
         _applyMaxResults(_settings.MaxResults);

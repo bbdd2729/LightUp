@@ -121,7 +121,7 @@
                                             Height="15"
                                             Foreground="{DynamicResource LightUpAccentBrush}"
                                             VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1"
+                        <TextBox Grid.Column="1" Classes="launcher-query"
                                  x:Name="SearchBox"
                                  Text="{CompiledBinding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  PlaceholderText="搜索当前分类的磁贴"

@@ -14,5 +14,6 @@ public sealed class MainWindowSearchStyleTests
         Assert.Contains("CaretBrush=\"{DynamicResource LightUpAccentBrush}\"", markup);
         Assert.DoesNotContain("Foreground=\"White\"", markup);
         Assert.DoesNotContain("CaretBrush=\"White\"", markup);
+        Assert.Contains("Classes=\"launcher-query\"", markup);
     }
 }

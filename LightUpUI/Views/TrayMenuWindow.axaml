@@ -5,12 +5,11 @@
         xmlns:icon="using:FluentIcons.Common"
         x:Class="LightUpUI.Views.TrayMenuWindow"
         x:DataType="vm:TrayMenuViewModel"
-        Width="304"
-        Height="304"
-        MinWidth="304"
-        MaxWidth="304"
-        MinHeight="304"
-        MaxHeight="304"
+        Width="352"
+        MinWidth="352"
+        MaxWidth="352"
+        SizeToContent="Height"
+        MaxHeight="640"
         WindowDecorations="None"
         ShowInTaskbar="False"
         Topmost="True"
@@ -28,6 +27,7 @@
         <Border.BoxShadow>
             <BoxShadows>0 14 38 0 #90000000</BoxShadows>
         </Border.BoxShadow>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
             <StackPanel Spacing="2" Margin="4,2,4,0">
                 <TextBlock Text="LightUp" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource LightUpTextBrush}"/>
@@ -79,5 +79,6 @@
                 </StackPanel>
             </Button>
         </Grid>
+        </ScrollViewer>
     </Border>
 </Window>

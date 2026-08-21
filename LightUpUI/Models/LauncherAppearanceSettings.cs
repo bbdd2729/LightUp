@@ -4,6 +4,12 @@ using LightUpUI.Models.Tiles;
 
 public sealed class LauncherAppearanceSettings
 {
+    public LauncherThemeMode ThemeMode { get; set; } = LauncherThemeMode.Dark;
+
+    public LauncherColorPalette ColorPalette { get; set; } = LauncherColorPalette.Ocean;
+
+    public string CustomAccentColor { get; set; } = ThemePalettePolicy.DefaultCustomAccentColor;
+
     public TileDensity TileDensity { get; set; } = TileDensity.Compact;
 
     public LauncherWindowState SearchWindow { get; set; } = new()

@@ -46,6 +46,7 @@ public class App : Application
             var searchSettings = await StartupSettingsLoader.LoadAsync(
                 settingsStore,
                 CancellationToken.None);
+            LauncherThemeService.Apply(searchSettings.Appearance);
             var tileProvider = new TileSearchProvider(tileStateStore)
             {
                 SearchAllTileCategories = searchSettings.SearchAllTileCategories
@@ -82,6 +83,7 @@ public class App : Application
                 settingsStore,
                 searchSettings,
                 mode => viewModel!.SearchMode = mode,
+                applyAppearance: appearance => LauncherThemeService.Apply(appearance),
                 applyCategoryNavigationPlacement: placement => tileViewModel.CategoryNavigationPlacement = placement,
                 applyTileDensity: density => tileViewModel.TileDensity = density,
                 applyMaxResults: maxResults => viewModel!.MaxResults = maxResults,
@@ -222,6 +224,11 @@ public class App : Application
             Icon = new WindowIcon(bitmap),
             ToolTipText = "LightUp 启动器 · 点击打开快捷菜单"
         };
+        trayIcon.Menu = CreateTrayNativeMenu(
+            () => searchHost.Show(),
+            () => tileHost.Show(),
+            openSettings,
+            () => desktop.Shutdown());
         trayIcon.Clicked += (_, _) => quickMenu.Toggle();
         TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
         desktop.Exit += (_, _) =>
@@ -229,5 +236,27 @@ public class App : Application
             quickMenu.Close();
             trayIcon.Dispose();
         };
+    }
+
+    private static NativeMenu CreateTrayNativeMenu(
+        Action openSearch,
+        Action openTiles,
+        Action openSettings,
+        Action exitApplication)
+    {
+        var menu = new NativeMenu();
+        menu.Items.Add(CreateNativeMenuItem("打开搜索", openSearch));
+        menu.Items.Add(CreateNativeMenuItem("打开磁贴启动器", openTiles));
+        menu.Items.Add(CreateNativeMenuItem("设置", openSettings));
+        menu.Items.Add(new NativeMenuItemSeparator());
+        menu.Items.Add(CreateNativeMenuItem("退出 LightUp", exitApplication));
+        return menu;
+    }
+
+    private static NativeMenuItem CreateNativeMenuItem(string header, Action action)
+    {
+        var item = new NativeMenuItem(header);
+        item.Click += (_, _) => action();
+        return item;
     }
 }

@@ -18,10 +18,12 @@
         <SolidColorBrush x:Key="LightUpTextMutedBrush" Color="#A8C1CBD6"/>
         <SolidColorBrush x:Key="LightUpTextFaintBrush" Color="#7596A6B5"/>
         <SolidColorBrush x:Key="LightUpAccentBrush" Color="#4CC2FF"/>
+        <SolidColorBrush x:Key="LightUpAccentForegroundBrush" Color="#FF08131C"/>
         <SolidColorBrush x:Key="LightUpAccentSoftBrush" Color="#304CC2FF"/>
         <SolidColorBrush x:Key="LightUpSelectionBrush" Color="#3A4CC2FF"/>
         <SolidColorBrush x:Key="LightUpHoverBrush" Color="#20FFFFFF"/>
         <SolidColorBrush x:Key="LightUpDangerBrush" Color="#FFE66D75"/>
+        <SolidColorBrush x:Key="LightUpDangerSoftBrush" Color="#20E66D75"/>
         <SolidColorBrush x:Key="LightUpSuccessBrush" Color="#FF76E3A1"/>
         <SolidColorBrush x:Key="LightUpWarningBrush" Color="#FFFFD166"/>
     </Application.Resources>
@@ -55,7 +57,7 @@
         </Style>
         <Style Selector="Button.launcher-primary:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpAccentBrush}"/>
-            <Setter Property="Foreground" Value="#FF08131C"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpAccentForegroundBrush}"/>
         </Style>
         <Style Selector="Button.launcher-primary:pressed">
             <Setter Property="Opacity" Value="0.78"/>
@@ -109,7 +111,23 @@
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
         <Style Selector="Button.tray-menu-exit:pointerover">
-            <Setter Property="Background" Value="#20E66D75"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
+        </Style>
+        <Style Selector="TextBox.launcher-query">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource LightUpSelectionBrush}"/>
+            <Setter Property="SelectionForegroundBrush" Value="{DynamicResource LightUpTextBrush}"/>
+        </Style>
+        <Style Selector="TextBox.launcher-query:focus">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+        </Style>
+        <Style Selector="TextBox.launcher-query:pointerover">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
         </Style>
     </Application.Styles>
 </Application>

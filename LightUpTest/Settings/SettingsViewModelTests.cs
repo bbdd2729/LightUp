@@ -59,6 +59,43 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task SaveAsync_persists_theme_and_custom_accent_and_notifies_the_host()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        LauncherAppearanceSettings? appliedAppearance = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyAppearance: appearance => appliedAppearance = appearance);
+        viewModel.SelectedThemeMode = LauncherThemeMode.Light;
+        viewModel.SelectedColorPalette = LauncherColorPalette.Custom;
+        viewModel.CustomAccentColor = "#12ABEF";
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(LauncherThemeMode.Light, store.Settings.Appearance.ThemeMode);
+        Assert.Equal(LauncherColorPalette.Custom, store.Settings.Appearance.ColorPalette);
+        Assert.Equal("#12ABEF", store.Settings.Appearance.CustomAccentColor);
+        Assert.Same(store.Settings.Appearance, appliedAppearance);
+    }
+
+    [Fact]
+    public void Custom_accent_input_is_visible_only_for_the_custom_palette()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        var viewModel = new SettingsViewModel(store, store.Settings, _ => { });
+
+        Assert.False(viewModel.IsCustomAccentColorVisible);
+
+        viewModel.SelectedColorPalette = LauncherColorPalette.Custom;
+        Assert.True(viewModel.IsCustomAccentColorVisible);
+
+        viewModel.SelectedColorPalette = LauncherColorPalette.Teal;
+        Assert.False(viewModel.IsCustomAccentColorVisible);
+    }
+
+    [Fact]
     public async Task SaveAsync_normalizes_the_result_limit_and_notifies_the_search_host()
     {
         var store = new FakeSettingsStore(new SearchLauncherSettings());

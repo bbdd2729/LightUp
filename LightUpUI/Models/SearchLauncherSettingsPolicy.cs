@@ -15,6 +15,10 @@ public static class SearchLauncherSettingsPolicy
             ? settings.CategoryNavigationPlacement
             : CategoryNavigationPlacement.Left;
         settings.Appearance ??= new LauncherAppearanceSettings();
+        settings.Appearance.ThemeMode = ThemePalettePolicy.NormalizeThemeMode(settings.Appearance.ThemeMode);
+        settings.Appearance.ColorPalette = ThemePalettePolicy.NormalizeColorPalette(settings.Appearance.ColorPalette);
+        settings.Appearance.CustomAccentColor = ThemePalettePolicy.NormalizeCustomAccentColor(
+            settings.Appearance.CustomAccentColor);
         settings.Appearance.TileDensity = TileDensityPolicy.Normalize(settings.Appearance.TileDensity);
         settings.MaxResults = SearchResultLimitPolicy.Normalize(settings.MaxResults);
         settings.Hotkey = string.IsNullOrWhiteSpace(settings.Hotkey) ? "alt+space" : settings.Hotkey;

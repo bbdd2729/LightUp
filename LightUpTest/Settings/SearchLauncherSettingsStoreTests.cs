@@ -114,6 +114,37 @@ public sealed class SearchLauncherSettingsStoreTests
         }
     }
 
+    [Fact]
+    public async Task LoadAsync_normalizes_theme_and_palette_settings()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var store = new SearchLauncherSettingsStore(filePath);
+
+        try
+        {
+            await File.WriteAllTextAsync(filePath, """
+                {
+                  "appearance": {
+                    "themeMode": 99,
+                    "colorPalette": 99,
+                    "customAccentColor": "invalid"
+                  }
+                }
+                """, cancellationToken);
+
+            var loaded = await store.LoadAsync(cancellationToken);
+
+            Assert.Equal(LauncherThemeMode.Dark, loaded.Appearance.ThemeMode);
+            Assert.Equal(LauncherColorPalette.Ocean, loaded.Appearance.ColorPalette);
+            Assert.Equal(ThemePalettePolicy.DefaultCustomAccentColor, loaded.Appearance.CustomAccentColor);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     private sealed class NonPumpingSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback callback, object? state)
