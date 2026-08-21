@@ -17,6 +17,9 @@ public sealed class TileSearchProvider(ILauncherStateStore stateStore) : ISearch
         CancellationToken cancellationToken)
     {
         var state = await stateStore.LoadAsync(cancellationToken);
+        var stateChanged = TileLauncherStatePolicy.NormalizeForStorage(state);
+        if (stateChanged)
+            await stateStore.SaveAsync(state, cancellationToken);
         var normalizedQuery = query.Trim();
 
         IReadOnlyList<TileCategory> categories = !SearchAllTileCategories

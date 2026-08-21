@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LightUpUI.Models.Tiles;
 
 namespace LightUpUI.Services;
 
@@ -17,6 +18,7 @@ public sealed class TileUsageService(
             return;
 
         var state = await stateStore.LoadAsync(cancellationToken);
+        TileLauncherStatePolicy.NormalizeForStorage(state);
         var item = state.Categories
             .SelectMany(category => category.Items)
             .FirstOrDefault(candidate => candidate.Id.Equals(itemId, StringComparison.OrdinalIgnoreCase));

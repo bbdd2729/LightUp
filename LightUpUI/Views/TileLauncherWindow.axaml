@@ -849,7 +849,7 @@
                             <ComboBox Width="108"
                                       x:Name="MoveCategoryBox"
                                       Height="28"
-                                      ItemsSource="{CompiledBinding Categories}"
+                                      ItemsSource="{CompiledBinding MoveDestinationCategories}"
                                       SelectedItem="{CompiledBinding MoveDestinationCategory, Mode=TwoWay}"
                                       FontSize="10.5"
                                       Padding="6,3"

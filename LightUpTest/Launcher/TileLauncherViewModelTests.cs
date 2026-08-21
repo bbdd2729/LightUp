@@ -33,6 +33,68 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task LoadAsync_migrates_legacy_all_tiles_to_uncategorized_and_exposes_an_aggregate_all_view()
+    {
+        var legacyTile = CreateTile("legacy");
+        legacyTile.LaunchCount = 7;
+        legacyTile.Notes = "keep me";
+        var workTile = CreateTile("work");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "all",
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部", Items = [legacyTile] },
+                new TileCategory { Id = "work", Name = "工作", Items = [workTile] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        Assert.Equal(["all", "uncategorized", "work"], viewModel.Categories.Select(category => category.Id));
+        Assert.Equal(["legacy", "work"], viewModel.VisibleItems.Select(item => item.Id));
+        var uncategorized = viewModel.Categories.Single(category => category.Id == "uncategorized");
+        Assert.Same(legacyTile, uncategorized.Items.Single());
+        Assert.Equal(7, uncategorized.Items[0].LaunchCount);
+        Assert.Equal("keep me", uncategorized.Items[0].Notes);
+        Assert.Equal("all", viewModel.SelectedCategory?.Id);
+    }
+
+    [Fact]
+    public async Task AddItem_while_all_is_selected_writes_to_uncategorized_without_persisting_virtual_all()
+    {
+        var store = new FakeStateStore(CreateDefaultState());
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.AddItemsAsync([CreateTile("new")], TestContext.Current.CancellationToken);
+
+        Assert.Equal(["new"], viewModel.Categories.Single(category => category.Id == "uncategorized").Items.Select(item => item.Id));
+        Assert.Equal(["uncategorized"], store.State.Categories.Select(category => category.Id));
+        Assert.Equal(["new"], viewModel.VisibleItems.Select(item => item.Id));
+    }
+
+    [Fact]
+    public async Task All_category_does_not_allow_item_reordering()
+    {
+        var first = CreateTile("first");
+        var second = CreateTile("second");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "all",
+            Categories = [new TileCategory { Id = "work", Name = "工作", Items = [first, second] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = viewModel.VisibleItems[0];
+
+        await viewModel.MoveSelectedItemWithinCategoryAsync(1, TestContext.Current.CancellationToken);
+
+        Assert.Equal(["first", "second"], viewModel.VisibleItems.Select(item => item.Id));
+        Assert.Equal(0, store.SaveCount);
+        Assert.False(viewModel.CanMoveSelectedItemUp);
+        Assert.False(viewModel.CanMoveSelectedItemDown);
+        Assert.Contains("全部", viewModel.StatusText);
+    }
+
+    [Fact]
     public void Category_navigation_flags_follow_the_configured_placement()
     {
         var viewModel = new TileLauncherViewModel(
@@ -135,6 +197,31 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task Uncategorized_category_is_system_managed_and_cannot_be_deleted_or_renamed()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类" }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.EditedCategoryName = "改名失败";
+
+        await viewModel.RenameSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(viewModel.CanManageSelectedCategory);
+        Assert.False(viewModel.CanMoveSelectedCategoryUp);
+        Assert.False(viewModel.CanMoveSelectedCategoryDown);
+        Assert.Equal("未分类", viewModel.SelectedCategory?.Name);
+        Assert.Equal(0, store.SaveCount);
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("不能删除", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task RemoveSelectedCategory_moves_its_unique_tiles_to_default_and_persists_once()
     {
         var allItem = CreateTile("existing");
@@ -145,7 +232,7 @@ public sealed class TileLauncherViewModelTests
             SelectedCategoryId = "work",
             Categories =
             [
-                new TileCategory { Id = "all", Name = "全部", Items = [allItem] },
+                new TileCategory { Id = "uncategorized", Name = "未分类", Items = [allItem] },
                 new TileCategory { Id = "work", Name = "工作", Items = [workItem, duplicateItem] }
             ]
         });
@@ -153,12 +240,12 @@ public sealed class TileLauncherViewModelTests
 
         await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
 
-        Assert.Single(viewModel.Categories);
-        Assert.Equal("all", viewModel.SelectedCategory?.Id);
+        Assert.Equal(2, viewModel.Categories.Count);
+        Assert.Equal("uncategorized", viewModel.SelectedCategory?.Id);
         Assert.Equal(["existing", "work"], viewModel.SelectedCategory!.Items.Select(item => item.Id));
-        Assert.Equal("all", store.State.SelectedCategoryId);
+        Assert.Equal("uncategorized", store.State.SelectedCategoryId);
         Assert.Equal(1, store.SaveCount);
-        Assert.Contains("已移至“全部”", viewModel.StatusText);
+        Assert.Contains("已移至“未分类”", viewModel.StatusText);
     }
 
     [Fact]
@@ -260,7 +347,8 @@ public sealed class TileLauncherViewModelTests
         item.Title = "旧名称";
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = item;
@@ -281,7 +369,8 @@ public sealed class TileLauncherViewModelTests
         item.Title = "保留名称";
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = item;
@@ -302,7 +391,8 @@ public sealed class TileLauncherViewModelTests
         var last = CreateTile("last");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [first, removed, last] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [first, removed, last] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = removed;
@@ -328,7 +418,8 @@ public sealed class TileLauncherViewModelTests
         var item = CreateTile("remove-by-id");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
 
@@ -345,7 +436,8 @@ public sealed class TileLauncherViewModelTests
         var removed = CreateTile("remove");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [removed] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [removed] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = removed;
@@ -432,7 +524,8 @@ public sealed class TileLauncherViewModelTests
         item.LaunchCount = 12;
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = new TileLauncherViewModel(
             store,
@@ -467,7 +560,8 @@ public sealed class TileLauncherViewModelTests
         var item = CreateTile("missing.exe");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
 
@@ -484,7 +578,8 @@ public sealed class TileLauncherViewModelTests
         var item = CreateTile("notes");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = item;
@@ -505,7 +600,8 @@ public sealed class TileLauncherViewModelTests
         item.Notes = "旧备注";
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = item;
@@ -575,7 +671,8 @@ public sealed class TileLauncherViewModelTests
         var last = CreateTile("last");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [first, selected, last] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [first, selected, last] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = selected;
@@ -595,7 +692,8 @@ public sealed class TileLauncherViewModelTests
         var item = CreateTile("first");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
         viewModel.SelectedItem = item;
@@ -643,7 +741,8 @@ public sealed class TileLauncherViewModelTests
         var last = CreateTile("last");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [first, dragged, target, last] }]
+            SelectedCategoryId = "work",
+            Categories = [new TileCategory { Id = "work", Name = "工作", Items = [first, dragged, target, last] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
 
@@ -666,7 +765,8 @@ public sealed class TileLauncherViewModelTests
         var item = CreateTile("self");
         var store = new FakeStateStore(new TileLauncherState
         {
-            Categories = [new TileCategory { Id = "all", Name = "全部", Items = [item] }]
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
 
@@ -762,8 +862,8 @@ public sealed class TileLauncherViewModelTests
             [
                 new TileCategory
                 {
-                    Id = "all",
-                    Name = "全部",
+                    Id = "uncategorized",
+                    Name = "未分类",
                     Items = [CreateTile("same")]
                 }
             ]

@@ -71,6 +71,26 @@ public sealed class TileSearchProviderTests
     }
 
     [Fact]
+    public async Task SearchAsync_aggregates_legacy_all_and_real_categories_without_persisting_virtual_category()
+    {
+        var state = new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory { Id = "all", Name = "全部", Items = [new TileItem { Id = "legacy", Title = "Legacy", TargetPath = "legacy.exe" }] },
+                new TileCategory { Id = "work", Name = "工作", Items = [new TileItem { Id = "work", Title = "Work", TargetPath = "work.exe" }] }
+            ]
+        };
+        var provider = new TileSearchProvider(new FakeStateStore(state));
+
+        var results = await provider.SearchAsync("", TestContext.Current.CancellationToken);
+
+        Assert.Equal(["legacy", "work"], results.Select(item => item.Id));
+        Assert.DoesNotContain(state.Categories, category => category.Id == "all");
+        Assert.Contains(state.Categories, category => category.Id == "uncategorized");
+    }
+
+    [Fact]
     public async Task SearchAsync_uses_only_the_selected_category_when_cross_category_search_is_disabled()
     {
         var state = new TileLauncherState

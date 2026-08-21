@@ -15,8 +15,8 @@ namespace LightUpUI.ViewModels;
 
 public partial class TileLauncherViewModel : ViewModelBase
 {
-    public const string DefaultCategoryId = "all";
-    public const string DefaultCategoryName = "全部";
+    public const string DefaultCategoryId = TileLauncherStatePolicy.AllCategoryId;
+    public const string DefaultCategoryName = TileLauncherStatePolicy.AllCategoryName;
 
     private readonly ILauncherStateStore _stateStore;
     private readonly IProcessLauncher _processLauncher;
@@ -49,6 +49,8 @@ public partial class TileLauncherViewModel : ViewModelBase
     }
 
     public ObservableCollection<TileCategory> Categories { get; } = [];
+    public IEnumerable<TileCategory> MoveDestinationCategories
+        => Categories.Where(category => !IsDefaultCategory(category));
     public ObservableCollection<TileItem> VisibleItems { get; } = [];
 
     [ObservableProperty]
@@ -127,7 +129,7 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public bool CanEdit => !IsLoading;
 
-    public bool CanManageSelectedCategory => SelectedCategory is not null && !IsDefaultCategory(SelectedCategory);
+    public bool CanManageSelectedCategory => SelectedCategory is not null && !IsSystemCategory(SelectedCategory);
 
     public bool CanMoveSelectedCategoryUp => GetSelectedCategoryIndex() > 1;
 
@@ -135,6 +137,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     {
         get
         {
+            if (SelectedCategory is null || IsSystemCategory(SelectedCategory))
+                return false;
+
             var index = GetSelectedCategoryIndex();
             return index >= 1 && index < Categories.Count - 1;
         }
@@ -144,12 +149,17 @@ public partial class TileLauncherViewModel : ViewModelBase
         && MoveDestinationCategory is not null
         && !ReferenceEquals(SelectedCategory, MoveDestinationCategory);
 
-    public bool CanMoveSelectedItemUp => GetSelectedItemIndex() > 0;
+    public bool CanMoveSelectedItemUp => SelectedCategory is not null
+        && !IsDefaultCategory(SelectedCategory)
+        && GetSelectedItemIndex() > 0;
 
     public bool CanMoveSelectedItemDown
     {
         get
         {
+            if (SelectedCategory is null || IsDefaultCategory(SelectedCategory))
+                return false;
+
             var index = GetSelectedItemIndex();
             return index >= 0 && index < VisibleItems.Count - 1;
         }
@@ -184,18 +194,20 @@ public partial class TileLauncherViewModel : ViewModelBase
                     UpdateTargetHealth(item);
             }
 
-            EnsureDefaultCategory(_state.Categories);
+            var stateChanged = TileLauncherStatePolicy.NormalizeForStorage(_state);
 
             Categories.Clear();
+            Categories.Add(TileLauncherStatePolicy.CreateAggregateCategory(_state.Categories));
             foreach (var category in _state.Categories
-                         .OrderBy(category => IsDefaultCategory(category) ? 0 : 1)
-                         .ThenBy(category => category.SortOrder))
+                         .OrderBy(category => category.SortOrder))
                 Categories.Add(category);
 
             SelectedCategory = Categories.FirstOrDefault(category =>
                     category.Id.Equals(_state.SelectedCategoryId, StringComparison.OrdinalIgnoreCase))
                 ?? Categories[0];
             StatusText = string.Empty;
+            if (stateChanged)
+                await PersistStateAsync(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -204,7 +216,12 @@ public partial class TileLauncherViewModel : ViewModelBase
         catch (Exception exception)
         {
             Categories.Clear();
-            Categories.Add(CreateDefaultCategory());
+            Categories.Add(TileLauncherStatePolicy.CreateAggregateCategory([]));
+            Categories.Add(new TileCategory
+            {
+                Id = TileLauncherStatePolicy.UncategorizedCategoryId,
+                Name = TileLauncherStatePolicy.UncategorizedCategoryName
+            });
             SelectedCategory = Categories[0];
             StatusText = $"加载失败：{exception.Message}";
         }
@@ -221,7 +238,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         IEnumerable<TileItem> items,
         CancellationToken cancellationToken = default)
     {
-        var category = SelectedCategory;
+        var category = GetWriteCategory(SelectedCategory);
         if (category is null)
         {
             StatusText = "请先选择一个分类";
@@ -315,7 +332,7 @@ public partial class TileLauncherViewModel : ViewModelBase
             return;
         }
 
-        if (IsDefaultCategory(category))
+        if (IsSystemCategory(category))
         {
             StatusText = "“全部”分类不能重命名";
             return;
@@ -358,18 +375,13 @@ public partial class TileLauncherViewModel : ViewModelBase
             return;
         }
 
-        if (IsDefaultCategory(category))
+        if (IsSystemCategory(category))
         {
             StatusText = "“全部”分类不能删除";
             return;
         }
 
-        var defaultCategory = Categories.FirstOrDefault(IsDefaultCategory);
-        if (defaultCategory is null)
-        {
-            defaultCategory = CreateDefaultCategory();
-            Categories.Insert(0, defaultCategory);
-        }
+        var defaultCategory = GetUncategorizedCategory();
 
         var existingPaths = new HashSet<string>(
             defaultCategory.Items
@@ -404,7 +416,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         {
             StatusText = movedCount == 0
                 ? $"已删除分类“{categoryName}”"
-                : $"已删除分类“{categoryName}”，{movedCount} 个入口已移至“全部”";
+                : $"已删除分类“{categoryName}”，{movedCount} 个入口已移至“未分类”";
         }
     }
 
@@ -414,7 +426,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         CancellationToken cancellationToken = default)
     {
         var category = SelectedCategory;
-        if (category is null || IsDefaultCategory(category))
+        if (category is null || IsSystemCategory(category))
         {
             StatusText = "“全部”分类固定在第一位";
             return;
@@ -456,9 +468,12 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     public Task RemoveTileByIdAsync(string tileId, CancellationToken cancellationToken = default)
     {
-        var item = Categories
-            .SelectMany(category => category.Items)
-            .FirstOrDefault(candidate => candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
+        var category = Categories
+            .Where(category => !IsDefaultCategory(category))
+            .FirstOrDefault(category => category.Items.Any(item =>
+                item.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase)));
+        var item = category?.Items.First(candidate =>
+            candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
         if (item is null)
         {
             StatusText = "找不到要移除的入口";
@@ -480,7 +495,9 @@ public partial class TileLauncherViewModel : ViewModelBase
             return;
         }
 
-        var category = Categories.FirstOrDefault(candidate =>
+        var category = Categories
+            .Where(candidate => !IsDefaultCategory(candidate))
+            .FirstOrDefault(candidate =>
             candidate.Items.Any(item => item.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase)));
         if (category is null)
         {
@@ -566,14 +583,14 @@ public partial class TileLauncherViewModel : ViewModelBase
             return;
         }
 
-        var source = Categories.FirstOrDefault(category => category.Items.Contains(item));
+        var source = FindOwningCategory(item);
         if (source is null)
         {
             StatusText = "找不到入口所在的分类";
             return;
         }
 
-        if (!Categories.Contains(destination))
+        if (!Categories.Contains(destination) || IsDefaultCategory(destination))
         {
             StatusText = "目标分类不存在";
             return;
@@ -608,6 +625,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         CancellationToken cancellationToken = default)
     {
         var item = Categories
+            .Where(category => !IsDefaultCategory(category))
             .SelectMany(category => category.Items)
             .FirstOrDefault(candidate => candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
         if (item is null)
@@ -626,7 +644,15 @@ public partial class TileLauncherViewModel : ViewModelBase
         bool insertAfterTarget,
         CancellationToken cancellationToken = default)
     {
-        var category = Categories.FirstOrDefault(candidate =>
+        if (SelectedCategory is not null && IsDefaultCategory(SelectedCategory))
+        {
+            StatusText = "“全部”只用于汇总显示，不能调整入口顺序";
+            return;
+        }
+
+        var category = Categories
+            .Where(candidate => !IsDefaultCategory(candidate))
+            .FirstOrDefault(candidate =>
             candidate.Items.Any(item => item.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase)));
         if (category is null)
         {
@@ -693,6 +719,12 @@ public partial class TileLauncherViewModel : ViewModelBase
         if (item is null || category is null)
         {
             StatusText = "请先选择一个入口";
+            return;
+        }
+
+        if (IsDefaultCategory(category))
+        {
+            StatusText = "“全部”只用于汇总显示，不能调整入口顺序";
             return;
         }
 
@@ -816,7 +848,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         TileItem item,
         CancellationToken cancellationToken = default)
     {
-        var category = Categories.FirstOrDefault(candidate => candidate.Items.Contains(item));
+        var category = FindOwningCategory(item);
         if (category is null)
             return;
 
@@ -934,7 +966,11 @@ public partial class TileLauncherViewModel : ViewModelBase
         }
 
         var query = SearchText.Trim();
-        foreach (var item in SelectedCategory.Items
+        var items = IsDefaultCategory(SelectedCategory)
+            ? TileLauncherStatePolicy.CreateAggregateCategory(
+                Categories.Where(category => !IsDefaultCategory(category))).Items
+            : SelectedCategory.Items;
+        foreach (var item in items
                      .OrderBy(item => item.SortOrder)
                      .Where(item => query.Length == 0
                          || item.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
@@ -972,26 +1008,33 @@ public partial class TileLauncherViewModel : ViewModelBase
     }
 
     private static bool IsDefaultCategory(TileCategory category)
-        => category.Id.Equals(DefaultCategoryId, StringComparison.OrdinalIgnoreCase);
+        => TileLauncherStatePolicy.IsAllCategory(category);
 
-    private static TileCategory CreateDefaultCategory() => new()
-    {
-        Id = DefaultCategoryId,
-        Name = DefaultCategoryName
-    };
+    private static bool IsSystemCategory(TileCategory category)
+        => TileLauncherStatePolicy.IsAllCategory(category)
+            || TileLauncherStatePolicy.IsUncategorizedCategory(category);
 
-    private static void EnsureDefaultCategory(ICollection<TileCategory> categories)
+    private TileCategory GetUncategorizedCategory()
     {
-        var defaultCategory = categories.FirstOrDefault(IsDefaultCategory);
-        if (defaultCategory is null)
+        var category = Categories.FirstOrDefault(TileLauncherStatePolicy.IsUncategorizedCategory);
+        if (category is not null)
+            return category;
+
+        category = new TileCategory
         {
-            categories.Add(CreateDefaultCategory());
-            return;
-        }
-
-        defaultCategory.Id = DefaultCategoryId;
-        defaultCategory.Name = DefaultCategoryName;
+            Id = TileLauncherStatePolicy.UncategorizedCategoryId,
+            Name = TileLauncherStatePolicy.UncategorizedCategoryName,
+            SortOrder = Categories.Count
+        };
+        Categories.Add(category);
+        return category;
     }
+
+    private TileCategory GetWriteCategory(TileCategory? category)
+        => category is not null && !IsDefaultCategory(category) ? category : GetUncategorizedCategory();
+
+    private TileCategory? FindOwningCategory(TileItem item)
+        => Categories.FirstOrDefault(category => !IsDefaultCategory(category) && category.Items.Contains(item));
 
     private void NotifyCategoryChanged(TileCategory category)
     {
@@ -1031,7 +1074,9 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     private async Task<bool> PersistStateAsync(CancellationToken cancellationToken)
     {
-        _state.Categories = Categories.ToList();
+        _state.Categories = Categories
+            .Where(category => !IsDefaultCategory(category))
+            .ToList();
         _state.SelectedCategoryId = SelectedCategory?.Id ?? "all";
         _pendingSaveCount++;
         IsSaving = true;
