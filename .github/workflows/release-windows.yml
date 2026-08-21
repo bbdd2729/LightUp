@@ -97,8 +97,17 @@ jobs:
         env:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a $env:RELEASE_TAG -m "Release $env:RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to create release tag '$env:RELEASE_TAG'."
+          }
+
           git push origin $env:RELEASE_TAG
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to push release tag '$env:RELEASE_TAG'."
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
