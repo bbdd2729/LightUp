@@ -10,5 +10,10 @@ public static class LauncherItemActionPolicy
         => !string.IsNullOrWhiteSpace(item.LaunchPath);
 
     public static bool ShouldKeepSearchOpenAfterSuccess(LauncherItem item)
-        => item.Id.Equals("action:copy-calculation", System.StringComparison.OrdinalIgnoreCase);
+        => item.Id.Equals("action:copy-calculation", System.StringComparison.OrdinalIgnoreCase)
+            || IsSearchQueryAction(item);
+
+    public static bool IsSearchQueryAction(LauncherItem item)
+        => item.Id.StartsWith("action:search-query:", System.StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(item.Arguments);
 }

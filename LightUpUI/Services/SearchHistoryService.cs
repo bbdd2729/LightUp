@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using LightUpUI.Models;
 
 namespace LightUpUI.Services;
@@ -17,6 +18,10 @@ public sealed class SearchHistoryService : ISearchHistoryService
         _settingsStore = settingsStore;
         _settings = settings;
     }
+
+    public IReadOnlyList<string> RecentQueries => _settings.SaveQueryHistory
+        ? _settings.QueryHistory
+        : [];
 
     public async Task RecordAsync(string query, CancellationToken cancellationToken)
     {

@@ -34,4 +34,15 @@ public sealed class LauncherItemActionPolicyTests
 
         Assert.Equal(expected, LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item));
     }
+
+    [Fact]
+    public void Search_query_action_requires_a_non_empty_query_argument()
+    {
+        var valid = new LauncherItem(
+            "action:search-query:docs", "Search", "", "lightup:search-query", "docs", LauncherItemKind.Action);
+        var invalid = valid with { Arguments = " " };
+
+        Assert.True(LauncherItemActionPolicy.IsSearchQueryAction(valid));
+        Assert.False(LauncherItemActionPolicy.IsSearchQueryAction(invalid));
+    }
 }

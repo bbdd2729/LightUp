@@ -56,6 +56,7 @@ public class App : Application
             var fullProviders = new List<ISearchProvider>
             {
                 tileProvider,
+                new SearchHistorySearchProvider(searchHistoryService),
                 new EverythingSearchProvider(),
                 new BuiltInActionSearchProvider(),
                 new CalculatorSearchProvider(),

@@ -171,6 +171,14 @@ public partial class MainViewModel : ViewModelBase
             return;
 
         IsSearching = true;
+        if (LauncherItemActionPolicy.IsSearchQueryAction(item))
+        {
+            QueryText = item.Arguments!.Trim();
+            IsSearching = false;
+            StatusText = string.Empty;
+            return;
+        }
+
         var result = await _processLauncher.LaunchAsync(item, CancellationToken.None);
         IsSearching = false;
         if (result.Succeeded)

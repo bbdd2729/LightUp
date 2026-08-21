@@ -52,6 +52,22 @@ public sealed class MainViewModelResultActionTests
     }
 
     [Fact]
+    public async Task Invoking_a_recent_query_suggestion_replaces_the_query_and_keeps_the_launcher_open()
+    {
+        var windowHost = new FakeWindowHost();
+        var history = new FakeSearchHistoryService();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success), history);
+        viewModel.SelectedItem = new LauncherItem(
+            "action:search-query:docs", "再次搜索“docs”", "", "lightup:search-query", "docs", LauncherItemKind.Action);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.Equal("docs", viewModel.QueryText);
+        Assert.False(windowHost.WasHidden);
+        Assert.Null(history.LastQuery);
+    }
+
+    [Fact]
     public async Task RevealSelectedItemAsync_reveals_file_backed_results_without_hiding_the_search_window()
     {
         var revealService = new FakePathRevealService(LaunchResult.Success);
@@ -128,6 +144,8 @@ public sealed class MainViewModelResultActionTests
 
     private sealed class FakeSearchHistoryService : ISearchHistoryService
     {
+        public IReadOnlyList<string> RecentQueries => [];
+
         public string? LastQuery { get; private set; }
 
         public Task RecordAsync(string query, CancellationToken cancellationToken)
