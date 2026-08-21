@@ -21,4 +21,17 @@ public sealed class LauncherItemActionPolicyTests
         Assert.False(item.CanRevealLocation);
         Assert.True(item.CanCopyLaunchPath);
     }
+
+    [Theory]
+    [InlineData("action:copy-calculation", true)]
+    [InlineData("action:web-search", false)]
+    [InlineData("shortcut:notepad", false)]
+    public void Successful_actions_only_keep_the_search_open_when_their_feedback_must_remain_visible(
+        string id,
+        bool expected)
+    {
+        var item = new LauncherItem(id, "Item", "", "path", null, LauncherItemKind.Action);
+
+        Assert.Equal(expected, LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item));
+    }
 }

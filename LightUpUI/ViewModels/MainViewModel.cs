@@ -163,14 +163,20 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task InvokeSelectedAsync()
     {
-        if (SelectedItem is null)
+        var item = SelectedItem;
+        if (item is null)
             return;
 
         IsSearching = true;
-        var result = await _processLauncher.LaunchAsync(SelectedItem, CancellationToken.None);
+        var result = await _processLauncher.LaunchAsync(item, CancellationToken.None);
         IsSearching = false;
         if (result.Succeeded)
-            _windowHost.Hide();
+        {
+            if (LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item))
+                StatusText = $"已复制结果：{item.Arguments}";
+            else
+                _windowHost.Hide();
+        }
         else
             StatusText = result.ErrorMessage ?? "启动失败";
     }

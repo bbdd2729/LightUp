@@ -7,6 +7,35 @@ namespace LightUpTest.Launcher;
 public sealed class MainViewModelResultActionTests
 {
     [Fact]
+    public async Task Invoking_a_calculation_keeps_the_search_open_and_reports_that_the_result_was_copied()
+    {
+        var windowHost = new FakeWindowHost();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success));
+        viewModel.SelectedItem = new LauncherItem(
+            "action:copy-calculation", "2 + 2 = 4", "", "lightup:calculator", "4", LauncherItemKind.Action);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.False(windowHost.WasHidden);
+        Assert.Equal("已复制结果：4", viewModel.StatusText);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
+    public async Task Invoking_a_normal_result_hides_the_search_after_a_successful_launch()
+    {
+        var windowHost = new FakeWindowHost();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success));
+        viewModel.SelectedItem = new LauncherItem(
+            "shortcut:editor", "Editor", "", "C:\\Tools\\editor.lnk", null, LauncherItemKind.Shortcut);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.True(windowHost.WasHidden);
+        Assert.Equal(string.Empty, viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task RevealSelectedItemAsync_reveals_file_backed_results_without_hiding_the_search_window()
     {
         var revealService = new FakePathRevealService(LaunchResult.Success);
