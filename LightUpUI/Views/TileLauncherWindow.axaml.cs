@@ -126,32 +126,29 @@ public partial class TileLauncherWindow : Window
         var kind = TileDropPolicy.Classify(files is not null, text);
         ClearExternalDropFeedback();
 
-        if (kind == TileExternalDropKind.File && files is not null)
+        switch (kind)
         {
-            try
-            {
-                await AddFilesAsync(files);
-            }
-            catch (Exception exception)
-            {
-                ViewModel.ReportError($"添加入口失败：{exception.Message}");
-            }
-            finally
-            {
+            case TileExternalDropKind.File when files is not null:
+                try
+                {
+                    await AddFilesAsync(files);
+                }
+                catch (Exception exception)
+                {
+                    ViewModel.ReportError($"添加入口失败：{exception.Message}");
+                }
+                finally
+                {
+                    e.Handled = true;
+                }
+
+                return;
+            case TileExternalDropKind.None:
+                return;
+            case TileExternalDropKind.InvalidText:
+                ViewModel.ReportError(TileDropPolicy.GetFeedback(kind));
                 e.Handled = true;
-            }
-
-            return;
-        }
-
-        if (kind == TileExternalDropKind.None)
-            return;
-
-        if (kind == TileExternalDropKind.InvalidText)
-        {
-            ViewModel.ReportError(TileDropPolicy.GetFeedback(kind));
-            e.Handled = true;
-            return;
+                return;
         }
 
         if (!TileItemFactory.TryCreateUrl(text, out var item))
@@ -255,13 +252,7 @@ public partial class TileLauncherWindow : Window
 
     private async Task AddFilesAsync(IEnumerable<IStorageItem> files)
     {
-        var items = new List<TileItem>();
-        foreach (var file in files)
-        {
-            var path = file.TryGetLocalPath();
-            if (!string.IsNullOrWhiteSpace(path))
-                items.Add(TileItemFactory.Create(path));
-        }
+        var items = (from file in files select file.TryGetLocalPath() into path where !string.IsNullOrWhiteSpace(path) select TileItemFactory.Create(path)).ToList();
 
         await ViewModel.AddItemsAsync(items);
     }
@@ -278,8 +269,7 @@ public partial class TileLauncherWindow : Window
 
     private async void TileDragHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (sender is not Control control
-            || control.DataContext is not TileItem item
+        if (sender is not Control { DataContext: TileItem item } control
             || !e.GetCurrentPoint(control).Properties.IsLeftButtonPressed)
             return;
 
@@ -304,8 +294,7 @@ public partial class TileLauncherWindow : Window
     {
         for (var visual = source as Visual; visual is not null; visual = visual.GetVisualParent())
         {
-            if (visual is Control control
-                && control.DataContext is T
+            if (visual is Control { DataContext: T } control
                 && control.Classes.Contains(className))
                 return control;
         }
