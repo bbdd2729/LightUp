@@ -415,7 +415,8 @@
                 </Border>
 
                 <Grid Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="10">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <Grid Grid.Row="0" RowDefinitions="Auto,Auto" RowSpacing="8">
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="{CompiledBinding SelectedCategory.Name}"
                                        FontSize="20"
@@ -465,10 +466,11 @@
                                                     Width="14"
                                                     Height="14"/>
                             </Button>
-                            <Button Classes="launcher-chrome"
+                            <Button Classes="launcher-danger"
                                     Command="{CompiledBinding RemoveSelectedCategoryCommand}"
                                     IsEnabled="{CompiledBinding CanManageSelectedCategory}"
-                                    ToolTip.Tip="删除当前分类，入口会移至全部"
+                                    Padding="8,6"
+                                    ToolTip.Tip="按下方策略删除当前分类"
                                     AutomationProperties.Name="删除当前分类">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
                                                     Width="14"
@@ -486,6 +488,70 @@
                                 </StackPanel>
                             </Button>
                         </StackPanel>
+                        </Grid>
+                        <Border Grid.Row="1"
+                                IsVisible="{CompiledBinding CanManageSelectedCategory}"
+                                Background="{DynamicResource LightUpSurfaceBrush}"
+                                BorderBrush="{DynamicResource LightUpBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="8,5">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="删除后处理"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                           VerticalAlignment="Center"/>
+                                <ComboBox Width="106"
+                                          Height="27"
+                                          ItemsSource="{CompiledBinding CategoryRemovalModes}"
+                                          SelectedItem="{CompiledBinding SelectedCategoryRemovalMode, Mode=TwoWay}"
+                                          FontSize="10.5"
+                                          Padding="6,2"
+                                          ToolTip.Tip="选择删除分类后如何处理其中的入口"
+                                          AutomationProperties.Name="删除分类后的入口处理方式">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="tiles:CategoryRemovalModeOption">
+                                            <TextBlock Text="{CompiledBinding DisplayName}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="入口移至"
+                                           IsVisible="{CompiledBinding IsMovingCategoryItems}"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                           VerticalAlignment="Center"/>
+                                <ComboBox Width="126"
+                                          Height="27"
+                                          IsVisible="{CompiledBinding IsMovingCategoryItems}"
+                                          ItemsSource="{CompiledBinding CategoryRemovalDestinationCategories}"
+                                          SelectedItem="{CompiledBinding CategoryRemovalDestinationCategory, Mode=TwoWay}"
+                                          PlaceholderText="未分类（默认）"
+                                          FontSize="10.5"
+                                          Padding="6,2"
+                                          ToolTip.Tip="选择接收当前分类入口的目标分类"
+                                          AutomationProperties.Name="删除分类的入口迁移目标">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="tiles:TileCategory">
+                                            <TextBlock Text="{CompiledBinding Name}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4"
+                                            IsVisible="{CompiledBinding IsDeletingCategoryItems}">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
+                                                        Width="12"
+                                                        Height="12"
+                                                        Foreground="{DynamicResource LightUpDangerBrush}"
+                                                        VerticalAlignment="Center"/>
+                                    <TextBlock Text="分类中的入口将被删除"
+                                               FontSize="10"
+                                               Foreground="{DynamicResource LightUpDangerBrush}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </Grid>
 
                     <Grid Grid.Row="1" ClipToBounds="True">

@@ -62,6 +62,21 @@
         <Style Selector="Button.launcher-primary:pressed">
             <Setter Property="Opacity" Value="0.78"/>
         </Style>
+        <Style Selector="Button.launcher-danger">
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpDangerBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.launcher-danger:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpAccentForegroundBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-danger:pressed">
+            <Setter Property="Opacity" Value="0.78"/>
+        </Style>
         <Style Selector="Border.launcher-search-shell">
             <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>

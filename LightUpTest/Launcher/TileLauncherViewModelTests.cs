@@ -222,7 +222,7 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
-    public async Task RemoveSelectedCategory_moves_its_unique_tiles_to_default_and_persists_once()
+    public async Task RemoveSelectedCategory_moves_its_unique_tiles_to_the_selected_destination_and_persists_once()
     {
         var allItem = CreateTile("existing");
         var workItem = CreateTile("work");
@@ -233,19 +233,99 @@ public sealed class TileLauncherViewModelTests
             Categories =
             [
                 new TileCategory { Id = "uncategorized", Name = "未分类", Items = [allItem] },
-                new TileCategory { Id = "work", Name = "工作", Items = [workItem, duplicateItem] }
+                new TileCategory { Id = "work", Name = "工作", Items = [workItem, duplicateItem] },
+                new TileCategory { Id = "archive", Name = "归档", Items = [CreateTile("existing-archive")] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.CategoryRemovalDestinationCategory = viewModel.Categories.Single(category => category.Id == "archive");
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(3, viewModel.Categories.Count);
+        Assert.Equal("archive", viewModel.SelectedCategory?.Id);
+        Assert.Equal(["existing-archive", "work", "existing"], viewModel.SelectedCategory!.Items.Select(item => item.Id));
+        Assert.Equal([0, 1, 2], viewModel.SelectedCategory.Items.Select(item => item.SortOrder));
+        Assert.Equal("archive", store.State.SelectedCategoryId);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已移至“归档”", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RemoveSelectedCategory_uses_uncategorized_as_the_default_move_destination()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "work", Name = "工作", Items = [CreateTile("item")] }
             ]
         });
         var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
 
         await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(2, viewModel.Categories.Count);
+        var uncategorized = viewModel.Categories.Single(category => category.Id == "uncategorized");
         Assert.Equal("uncategorized", viewModel.SelectedCategory?.Id);
-        Assert.Equal(["existing", "work"], viewModel.SelectedCategory!.Items.Select(item => item.Id));
+        Assert.Equal(["item"], uncategorized.Items.Select(item => item.Id));
         Assert.Equal("uncategorized", store.State.SelectedCategoryId);
         Assert.Equal(1, store.SaveCount);
         Assert.Contains("已移至“未分类”", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task RemoveSelectedCategory_with_delete_items_removes_the_category_and_all_its_tiles()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "uncategorized", Name = "未分类" },
+                new TileCategory { Id = "work", Name = "工作", Items = [CreateTile("first"), CreateTile("second")] },
+                new TileCategory { Id = "archive", Name = "归档" }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.CategoryRemovalMode = CategoryRemovalMode.DeleteItems;
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(viewModel.Categories, category => category.Id == "work");
+        Assert.DoesNotContain(store.State.Categories, category => category.Id == "work");
+        Assert.Equal("uncategorized", viewModel.SelectedCategory?.Id);
+        Assert.Equal("uncategorized", store.State.SelectedCategoryId);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("及其中 2 个入口", viewModel.StatusText);
+    }
+
+    [Theory]
+    [InlineData("all")]
+    [InlineData("work")]
+    [InlineData("missing")]
+    public async Task RemoveSelectedCategory_rejects_an_invalid_move_destination_without_saving(string destinationId)
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "uncategorized", Name = "未分类" },
+                new TileCategory { Id = "work", Name = "工作", Items = [CreateTile("item")] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.CategoryRemovalDestinationCategory = destinationId == "missing"
+            ? new TileCategory { Id = "missing", Name = "不存在" }
+            : viewModel.Categories.Single(category => category.Id == destinationId);
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+
+        Assert.Contains(viewModel.Categories, category => category.Id == "work");
+        Assert.Single(viewModel.Categories.Single(category => category.Id == "work").Items);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("有效的目标分类", viewModel.StatusText);
     }
 
     [Fact]

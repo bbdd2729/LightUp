@@ -18,6 +18,12 @@ public partial class TileLauncherViewModel : ViewModelBase
     public const string DefaultCategoryId = TileLauncherStatePolicy.AllCategoryId;
     public const string DefaultCategoryName = TileLauncherStatePolicy.AllCategoryName;
 
+    public static IReadOnlyList<CategoryRemovalModeOption> CategoryRemovalModes { get; } =
+    [
+        new(CategoryRemovalMode.MoveItems, "迁移入口"),
+        new(CategoryRemovalMode.DeleteItems, "删除入口")
+    ];
+
     private readonly ILauncherStateStore _stateStore;
     private readonly IProcessLauncher _processLauncher;
     private readonly IPathRevealService _pathRevealService;
@@ -51,6 +57,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     public ObservableCollection<TileCategory> Categories { get; } = [];
     public IEnumerable<TileCategory> MoveDestinationCategories
         => Categories.Where(category => !IsDefaultCategory(category));
+    public IEnumerable<TileCategory> CategoryRemovalDestinationCategories
+        => Categories.Where(category =>
+            !IsDefaultCategory(category) && !ReferenceEquals(category, SelectedCategory));
     public ObservableCollection<TileItem> VisibleItems { get; } = [];
 
     [ObservableProperty]
@@ -72,6 +81,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     private TileCategory? _moveDestinationCategory;
 
     [ObservableProperty]
+    private TileCategory? _categoryRemovalDestinationCategory;
+
+    [ObservableProperty]
     private string _searchText = string.Empty;
 
     [ObservableProperty]
@@ -88,6 +100,32 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _editedTileNotes = string.Empty;
+
+    private CategoryRemovalModeOption _selectedCategoryRemovalMode = CategoryRemovalModes[0];
+
+    public CategoryRemovalModeOption SelectedCategoryRemovalMode
+    {
+        get => _selectedCategoryRemovalMode;
+        set
+        {
+            if (!SetProperty(ref _selectedCategoryRemovalMode, value))
+                return;
+
+            OnPropertyChanged(nameof(CategoryRemovalMode));
+            OnPropertyChanged(nameof(IsMovingCategoryItems));
+            OnPropertyChanged(nameof(IsDeletingCategoryItems));
+        }
+    }
+
+    public CategoryRemovalMode CategoryRemovalMode
+    {
+        get => SelectedCategoryRemovalMode.Mode;
+        set
+        {
+            var option = CategoryRemovalModes.Single(candidate => candidate.Mode == value);
+            SelectedCategoryRemovalMode = option;
+        }
+    }
 
     private CategoryNavigationPlacement _categoryNavigationPlacement;
 
@@ -130,6 +168,10 @@ public partial class TileLauncherViewModel : ViewModelBase
     public bool CanEdit => !IsLoading;
 
     public bool CanManageSelectedCategory => SelectedCategory is not null && !IsSystemCategory(SelectedCategory);
+
+    public bool IsMovingCategoryItems => CategoryRemovalMode == CategoryRemovalMode.MoveItems;
+
+    public bool IsDeletingCategoryItems => CategoryRemovalMode == CategoryRemovalMode.DeleteItems;
 
     public bool CanMoveSelectedCategoryUp => GetSelectedCategoryIndex() > 1;
 
@@ -305,6 +347,7 @@ public partial class TileLauncherViewModel : ViewModelBase
             SortOrder = Categories.Count
         };
         Categories.Add(category);
+        OnPropertyChanged(nameof(CategoryRemovalDestinationCategories));
         _suppressSelectionPersistence = true;
         try
         {
@@ -381,42 +424,50 @@ public partial class TileLauncherViewModel : ViewModelBase
             return;
         }
 
-        var defaultCategory = GetUncategorizedCategory();
-
-        var existingPaths = new HashSet<string>(
-            defaultCategory.Items
-                .Select(item => item.TargetPath)
-                .Where(path => !string.IsNullOrWhiteSpace(path)),
-            StringComparer.OrdinalIgnoreCase);
+        var categoryName = category.Name;
+        var removedItemCount = category.Items.Count;
+        var destination = CategoryRemovalDestinationCategory;
         var movedCount = 0;
-        foreach (var item in category.Items)
+        if (IsMovingCategoryItems)
         {
-            if (!string.IsNullOrWhiteSpace(item.TargetPath) && !existingPaths.Add(item.TargetPath))
-                continue;
+            destination ??= GetUncategorizedCategory();
+            if (!IsValidCategoryRemovalDestination(category, destination))
+            {
+                StatusText = "请选择有效的目标分类";
+                return;
+            }
 
-            item.SortOrder = defaultCategory.Items.Count;
-            defaultCategory.Items.Add(item);
-            movedCount++;
+            movedCount = MoveItemsToCategory(category, destination);
+            NotifyCategoryChanged(destination);
+        }
+        else
+        {
+            category.Items.Clear();
+            _lastRemovedTile = null;
+            NotifyUndoStateChanged();
         }
 
-        var categoryName = category.Name;
         Categories.Remove(category);
+        OnPropertyChanged(nameof(CategoryRemovalDestinationCategories));
+        ReindexCategories();
         _suppressSelectionPersistence = true;
         try
         {
-            SelectedCategory = defaultCategory;
+            SelectedCategory = destination ?? Categories.FirstOrDefault(TileLauncherStatePolicy.IsUncategorizedCategory)
+                ?? Categories[0];
         }
         finally
         {
             _suppressSelectionPersistence = false;
         }
 
-        NotifyCategoryChanged(defaultCategory);
         if (await PersistStateAsync(cancellationToken))
         {
-            StatusText = movedCount == 0
-                ? $"已删除分类“{categoryName}”"
-                : $"已删除分类“{categoryName}”，{movedCount} 个入口已移至“未分类”";
+            StatusText = IsDeletingCategoryItems
+                ? $"已删除分类“{categoryName}”及其中 {removedItemCount} 个入口"
+                : movedCount == 0
+                    ? $"已删除分类“{categoryName}”"
+                    : $"已删除分类“{categoryName}”，{movedCount} 个入口已移至“{destination!.Name}”";
         }
     }
 
@@ -952,6 +1003,8 @@ public partial class TileLauncherViewModel : ViewModelBase
     {
         EditedCategoryName = value?.Name ?? string.Empty;
         OnPropertyChanged(nameof(CanManageSelectedCategory));
+        OnPropertyChanged(nameof(CategoryRemovalDestinationCategories));
+        EnsureCategoryRemovalDestination();
         NotifyCategoryOrderChanged();
         RefreshVisibleItems();
         if (value is null)
@@ -1064,7 +1117,50 @@ public partial class TileLauncherViewModel : ViewModelBase
             SortOrder = Categories.Count
         };
         Categories.Add(category);
+        OnPropertyChanged(nameof(CategoryRemovalDestinationCategories));
         return category;
+    }
+
+    private void EnsureCategoryRemovalDestination()
+    {
+        if (CategoryRemovalDestinationCategory is not null
+            && IsValidCategoryRemovalDestination(SelectedCategory, CategoryRemovalDestinationCategory))
+            return;
+
+        CategoryRemovalDestinationCategory = CategoryRemovalDestinationCategories
+            .FirstOrDefault(TileLauncherStatePolicy.IsUncategorizedCategory)
+            ?? CategoryRemovalDestinationCategories.FirstOrDefault();
+    }
+
+    private bool IsValidCategoryRemovalDestination(
+        TileCategory? source,
+        TileCategory? destination)
+        => source is not null
+            && destination is not null
+            && Categories.Contains(destination)
+            && !ReferenceEquals(source, destination)
+            && !IsDefaultCategory(destination);
+
+    private static int MoveItemsToCategory(TileCategory source, TileCategory destination)
+    {
+        var existingPaths = new HashSet<string>(
+            destination.Items
+                .Select(item => item.TargetPath)
+                .Where(path => !string.IsNullOrWhiteSpace(path)),
+            StringComparer.OrdinalIgnoreCase);
+        var movedCount = 0;
+        foreach (var item in source.Items)
+        {
+            if (!string.IsNullOrWhiteSpace(item.TargetPath) && !existingPaths.Add(item.TargetPath))
+                continue;
+
+            destination.Items.Add(item);
+            movedCount++;
+        }
+
+        source.Items.Clear();
+        ResetItemSortOrder(destination.Items);
+        return movedCount;
     }
 
     private TileCategory GetWriteCategory(TileCategory? category)
