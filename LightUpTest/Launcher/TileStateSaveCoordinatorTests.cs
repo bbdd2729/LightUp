@@ -24,6 +24,7 @@ public sealed class TileStateSaveCoordinatorTests
         store.CompleteCurrentSave();
         await firstSave.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
 
+        await store.WaitForStartedCountAsync(2, cancellationToken);
         Assert.Equal(["first", "second"], store.StartedCategoryNames);
         store.CompleteCurrentSave();
         await secondSave.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
@@ -44,6 +45,7 @@ public sealed class TileStateSaveCoordinatorTests
         store.FailCurrentSave(new IOException("simulated write failure"));
 
         await Assert.ThrowsAsync<IOException>(() => failedSave.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken));
+        await store.WaitForStartedCountAsync(2, cancellationToken);
         Assert.Equal(["failed", "later"], store.StartedCategoryNames);
 
         store.CompleteCurrentSave();
@@ -76,36 +78,89 @@ public sealed class TileStateSaveCoordinatorTests
 
     private sealed class DeferredStateStore : ILauncherStateStore
     {
+        private readonly object _gate = new();
         private readonly List<TaskCompletionSource> _saveCompletions = [];
+        private readonly List<string> _startedCategoryNames = [];
+        private readonly List<TileLauncherState> _savedStates = [];
+        private TaskCompletionSource _saveStarted = CreateSignal();
 
-        public List<string> StartedCategoryNames { get; } = [];
-        public List<TileLauncherState> SavedStates { get; } = [];
+        public IReadOnlyList<string> StartedCategoryNames
+        {
+            get
+            {
+                lock (_gate)
+                    return _startedCategoryNames.ToArray();
+            }
+        }
+
+        public IReadOnlyList<TileLauncherState> SavedStates
+        {
+            get
+            {
+                lock (_gate)
+                    return _savedStates.ToArray();
+            }
+        }
 
         public Task<TileLauncherState> LoadAsync(CancellationToken cancellationToken)
             => Task.FromResult(CreateState("loaded"));
 
         public Task SaveAsync(TileLauncherState state, CancellationToken cancellationToken)
         {
-            SavedStates.Add(state);
-            StartedCategoryNames.Add(state.Categories[0].Name);
             var completion = new TaskCompletionSource(
                 TaskCreationOptions.RunContinuationsAsynchronously);
-            _saveCompletions.Add(completion);
+            lock (_gate)
+            {
+                _savedStates.Add(state);
+                _startedCategoryNames.Add(state.Categories[0].Name);
+                _saveCompletions.Add(completion);
+                _saveStarted.TrySetResult();
+                _saveStarted = CreateSignal();
+            }
             return completion.Task;
+        }
+
+        public async Task WaitForStartedCountAsync(int count, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                Task signal;
+                lock (_gate)
+                {
+                    if (_startedCategoryNames.Count >= count)
+                        return;
+
+                    signal = _saveStarted.Task;
+                }
+
+                await signal.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
+            }
         }
 
         public void CompleteCurrentSave()
         {
-            Assert.NotEmpty(_saveCompletions);
-            _saveCompletions[0].SetResult();
-            _saveCompletions.RemoveAt(0);
+            var completion = TakeCurrentSave();
+            completion.SetResult();
         }
 
         public void FailCurrentSave(Exception exception)
         {
-            Assert.NotEmpty(_saveCompletions);
-            _saveCompletions[0].SetException(exception);
-            _saveCompletions.RemoveAt(0);
+            var completion = TakeCurrentSave();
+            completion.SetException(exception);
         }
+
+        private TaskCompletionSource TakeCurrentSave()
+        {
+            lock (_gate)
+            {
+                Assert.NotEmpty(_saveCompletions);
+                var completion = _saveCompletions[0];
+                _saveCompletions.RemoveAt(0);
+                return completion;
+            }
+        }
+
+        private static TaskCompletionSource CreateSignal()
+            => new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }
