@@ -90,6 +90,25 @@ public sealed class MainViewModelResultActionTests
     }
 
     [Fact]
+    public async Task LaunchSelectedAsAdministratorAsync_hides_after_a_successful_elevated_launch()
+    {
+        var windowHost = new FakeWindowHost();
+        var administratorLauncher = new FakeAdministratorProcessLauncher(LaunchResult.Success);
+        var viewModel = CreateViewModel(
+            windowHost,
+            new FakePathRevealService(LaunchResult.Success),
+            administratorProcessLauncher: administratorLauncher);
+        viewModel.SelectedItem = new LauncherItem(
+            "file:tool", "Tool", "", "C:\\Tools\\tool.exe", null, LauncherItemKind.File);
+
+        await viewModel.LaunchSelectedAsAdministratorCommand.ExecuteAsync(null);
+
+        Assert.Equal("file:tool", administratorLauncher.LastItem?.Id);
+        Assert.True(windowHost.WasHidden);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
     public async Task RevealSelectedItemAsync_reveals_file_backed_results_without_hiding_the_search_window()
     {
         var revealService = new FakePathRevealService(LaunchResult.Success);
@@ -124,8 +143,16 @@ public sealed class MainViewModelResultActionTests
         ILauncherWindowHost windowHost,
         IPathRevealService revealService,
         ISearchHistoryService? history = null,
-        Func<string, Task<LaunchResult>>? copyText = null)
-        => new(new EmptySearchService(), new FakeProcessLauncher(), windowHost, revealService, history, copyText);
+        Func<string, Task<LaunchResult>>? copyText = null,
+        IAdministratorProcessLauncher? administratorProcessLauncher = null)
+        => new(
+            new EmptySearchService(),
+            new FakeProcessLauncher(),
+            windowHost,
+            revealService,
+            history,
+            copyText,
+            administratorProcessLauncher);
 
     private sealed class EmptySearchService : ISearchService
     {
@@ -178,5 +205,18 @@ public sealed class MainViewModelResultActionTests
         }
 
         public Task ClearAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class FakeAdministratorProcessLauncher(LaunchResult result) : IAdministratorProcessLauncher
+    {
+        public LauncherItem? LastItem { get; private set; }
+
+        public Task<LaunchResult> LaunchAsAdministratorAsync(
+            LauncherItem item,
+            CancellationToken cancellationToken)
+        {
+            LastItem = item;
+            return Task.FromResult(result);
+        }
     }
 }

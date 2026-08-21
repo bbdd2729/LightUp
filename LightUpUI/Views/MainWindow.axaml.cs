@@ -146,6 +146,14 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    private async void ContextRunAsAdministrator_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectContextResult(sender) is not null)
+            await ViewModel.LaunchSelectedAsAdministratorAsync();
+
+        e.Handled = true;
+    }
+
     private void UpdateTopmostButton()
     {
         var topmostButton = this.FindControl<Button>("TopmostButton");

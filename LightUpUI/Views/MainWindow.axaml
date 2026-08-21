@@ -114,6 +114,14 @@
                                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
                                             </MenuItem.Icon>
                                         </MenuItem>
+                                        <MenuItem Header="以管理员身份运行"
+                                                  Click="ContextRunAsAdministrator_Click"
+                                                  IsEnabled="{CompiledBinding CanRunAsAdministrator}"
+                                                  AutomationProperties.Name="以管理员身份运行搜索结果">
+                                            <MenuItem.Icon>
+                                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Shield}" Width="14" Height="14"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
                                         <Separator/>
                                         <MenuItem Header="复制路径"
                                                   Click="ContextCopyResultPath_Click"

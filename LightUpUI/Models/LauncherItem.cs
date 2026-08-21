@@ -12,4 +12,5 @@ public sealed record LauncherItem(
 {
     public bool CanRevealLocation => LauncherItemActionPolicy.CanRevealLocation(this);
     public bool CanCopyLaunchPath => LauncherItemActionPolicy.CanCopyLaunchPath(this);
+    public bool CanRunAsAdministrator => LauncherItemActionPolicy.CanRunAsAdministrator(this);
 }

@@ -18,6 +18,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly IPathRevealService _pathRevealService;
     private readonly ISearchHistoryService? _searchHistoryService;
     private readonly Func<string, Task<LaunchResult>> _copyText;
+    private readonly IAdministratorProcessLauncher? _administratorProcessLauncher;
     private CancellationTokenSource? _searchCancellation;
 
     public MainViewModel(
@@ -26,7 +27,8 @@ public partial class MainViewModel : ViewModelBase
         ILauncherWindowHost windowHost,
         IPathRevealService? pathRevealService = null,
         ISearchHistoryService? searchHistoryService = null,
-        Func<string, Task<LaunchResult>>? copyText = null)
+        Func<string, Task<LaunchResult>>? copyText = null,
+        IAdministratorProcessLauncher? administratorProcessLauncher = null)
     {
         _searchService = searchService;
         _processLauncher = processLauncher;
@@ -34,6 +36,7 @@ public partial class MainViewModel : ViewModelBase
         _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
         _searchHistoryService = searchHistoryService;
         _copyText = copyText ?? (_ => Task.FromResult(LaunchResult.Failed("当前环境不支持剪贴板")));
+        _administratorProcessLauncher = administratorProcessLauncher;
     }
 
     public MainViewModel()
@@ -186,17 +189,7 @@ public partial class MainViewModel : ViewModelBase
         IsSearching = false;
         if (result.Succeeded)
         {
-            if (_searchHistoryService is not null)
-            {
-                try
-                {
-                    await _searchHistoryService.RecordAsync(QueryText, CancellationToken.None);
-                }
-                catch
-                {
-                    // A history write must never turn a successful launch into an error.
-                }
-            }
+            await RecordSuccessfulQueryAsync();
 
             if (LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item))
                 StatusText = $"已复制结果：{item.Arguments}";
@@ -284,6 +277,64 @@ public partial class MainViewModel : ViewModelBase
         finally
         {
             IsSearching = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task LaunchSelectedAsAdministratorAsync(CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        if (item is null)
+        {
+            StatusText = "请先选择一个搜索结果";
+            return;
+        }
+
+        var administratorProcessLauncher = _administratorProcessLauncher;
+        if (!item.CanRunAsAdministrator || administratorProcessLauncher is null)
+        {
+            StatusText = "此结果不支持管理员启动";
+            return;
+        }
+
+        IsSearching = true;
+        try
+        {
+            var result = await administratorProcessLauncher.LaunchAsAdministratorAsync(item, cancellationToken);
+            if (result.Succeeded)
+            {
+                await RecordSuccessfulQueryAsync();
+                _windowHost.Hide();
+            }
+            else
+                StatusText = result.ErrorMessage ?? "管理员启动失败";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "管理员启动已取消";
+        }
+        catch (Exception exception)
+        {
+            StatusText = $"管理员启动失败：{exception.Message}";
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    private async Task RecordSuccessfulQueryAsync()
+    {
+        if (_searchHistoryService is null)
+            return;
+
+        try
+        {
+            await _searchHistoryService.RecordAsync(QueryText, CancellationToken.None);
+        }
+        catch
+        {
+            // A history write must never turn a successful launch into an error.
         }
     }
 

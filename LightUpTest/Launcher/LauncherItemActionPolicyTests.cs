@@ -45,4 +45,15 @@ public sealed class LauncherItemActionPolicyTests
         Assert.True(LauncherItemActionPolicy.IsSearchQueryAction(valid));
         Assert.False(LauncherItemActionPolicy.IsSearchQueryAction(invalid));
     }
+
+    [Theory]
+    [InlineData("C:\\Tools\\tool.exe", true)]
+    [InlineData("C:\\Tools\\tool.lnk", true)]
+    [InlineData("C:\\Docs\\readme.txt", false)]
+    public void Administrator_action_is_limited_to_elevatable_file_types(string path, bool expected)
+    {
+        var item = new LauncherItem("item", "Item", "", path, null, LauncherItemKind.File);
+
+        Assert.Equal(expected, LauncherItemActionPolicy.CanRunAsAdministrator(item));
+    }
 }
