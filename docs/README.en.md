@@ -103,22 +103,32 @@ The current plugin host is intentionally basic. It does not yet provide manifest
 - `LightUpUI`: Avalonia UI, ViewModels, services, storage, and Windows integrations.
 - `LightUpTest`: xUnit coverage for search, settings, hotkeys, window behavior, tiles, drag and drop, icons, and target health.
 - `.github/workflows`: Windows build and manual release automation.
-- `docs/AI`: architecture, gap analysis, and implementation notes for maintainers.
 
 The implementation follows MVVM: ViewModels own state and commands, services own persistence/search/hotkey/window/platform behavior, and policy classes contain unit-testable rules.
 
 ## Roadmap
 
-The next work is focused on turning the working core into a more complete desktop product:
+### P0 - Stability
 
-- Repeatable Windows UI smoke coverage for category removal, window lifetime, and tray paths.
-- Drag-in previews, rejected-item details, and native drag-and-drop verification.
-- An asynchronous, cacheable, invalidatable tile icon provider and a fuller custom-icon workflow.
-- A unified search result/action contract, then a real Everything file provider, query prefixes, calculator/URL/system actions, and search history.
-- A stable plugin platform with manifests, diagnostics, and isolation boundaries.
-- Single-instance coordination, startup-on-login, diagnostic logs, and a defined update strategy.
+- [x] Persistence, settings migration, window state, hotkeys, and tray foundations.
+- [x] Tile categories, safe category removal with undo, drag-to-move, target repair, and launch-failure feedback.
+- [ ] Repeatable Windows UI smoke coverage for category removal, window lifetime, and tray paths.
 
-See [docs/AI](AI) for the detailed engineering backlog and design history.
+### P1 - Core experience
+
+- [x] Simple/full search modes, tile sorting, theme settings, and the basic plugin entry point.
+- [ ] Drag-in previews, rejected-item details, and native drag-and-drop verification.
+- [ ] An asynchronous, cacheable, invalidatable tile icon provider and a fuller custom-icon workflow.
+
+### P2 - Search and platform
+
+- [ ] A unified search result/action contract.
+- [ ] A real Everything file provider, query prefixes, calculator/URL/system actions, and search history.
+- [ ] Single-instance coordination, startup-on-login, diagnostic logs, and a defined release/update strategy.
+
+### P3 - Plugin platform
+
+- [ ] A stable plugin platform with manifests, diagnostics, isolation boundaries, and a management UI.
 
 ## Contributing
 
