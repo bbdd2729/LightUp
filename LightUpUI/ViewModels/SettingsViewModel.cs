@@ -50,6 +50,7 @@ public partial class SettingsViewModel : ViewModelBase
         _customAccentColor = ThemePalettePolicy.NormalizeCustomAccentColor(settings.Appearance.CustomAccentColor);
         _selectedMaxResults = SearchResultLimitPolicy.Normalize(settings.MaxResults);
         _searchAllTileCategories = settings.SearchAllTileCategories;
+        _saveQueryHistory = settings.SaveQueryHistory;
         _launchAtStartup = settings.LaunchAtStartup;
         _searchHotkey = settings.Hotkey;
         _tileLauncherHotkey = settings.TileLauncherHotkey;
@@ -92,6 +93,11 @@ public partial class SettingsViewModel : ViewModelBase
     private bool _searchAllTileCategories;
 
     [ObservableProperty]
+    private bool _saveQueryHistory;
+
+    public int QueryHistoryCount => _settings.QueryHistory.Count;
+
+    [ObservableProperty]
     private bool _launchAtStartup;
 
     [ObservableProperty]
@@ -127,6 +133,10 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.Appearance.TileDensity = TileDensityPolicy.Normalize(SelectedTileDensity);
         _settings.MaxResults = SearchResultLimitPolicy.Normalize(SelectedMaxResults);
         _settings.SearchAllTileCategories = SearchAllTileCategories;
+        _settings.SaveQueryHistory = SaveQueryHistory;
+        if (!SaveQueryHistory)
+            _settings.QueryHistory.Clear();
+        OnPropertyChanged(nameof(QueryHistoryCount));
         _settings.LaunchAtStartup = LaunchAtStartup;
         _settings.Hotkey = searchHotkey;
         _settings.TileLauncherHotkey = tileLauncherHotkey;
@@ -138,6 +148,15 @@ public partial class SettingsViewModel : ViewModelBase
         _applyMaxResults(_settings.MaxResults);
         _applySearchAllTileCategories(_settings.SearchAllTileCategories);
         StatusText = "设置已保存";
+    }
+
+    [RelayCommand]
+    public async Task ClearQueryHistoryAsync(CancellationToken cancellationToken = default)
+    {
+        _settings.QueryHistory.Clear();
+        OnPropertyChanged(nameof(QueryHistoryCount));
+        await _settingsStore.SaveAsync(_settings, cancellationToken);
+        StatusText = "搜索历史已清空";
     }
 
     private bool TryApplyHotkeys(out string searchHotkey, out string tileLauncherHotkey)

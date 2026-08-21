@@ -21,6 +21,7 @@ public static class SearchLauncherSettingsPolicy
             settings.Appearance.CustomAccentColor);
         settings.Appearance.TileDensity = TileDensityPolicy.Normalize(settings.Appearance.TileDensity);
         settings.MaxResults = SearchResultLimitPolicy.Normalize(settings.MaxResults);
+        settings.QueryHistory = [.. SearchHistoryPolicy.Normalize(settings.QueryHistory)];
         settings.Hotkey = string.IsNullOrWhiteSpace(settings.Hotkey) ? "alt+space" : settings.Hotkey;
         settings.TileLauncherHotkey = string.IsNullOrWhiteSpace(settings.TileLauncherHotkey)
             ? "alt+shift+space"

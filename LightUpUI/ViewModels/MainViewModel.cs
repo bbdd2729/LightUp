@@ -16,18 +16,21 @@ public partial class MainViewModel : ViewModelBase
     private readonly IProcessLauncher _processLauncher;
     private readonly ILauncherWindowHost _windowHost;
     private readonly IPathRevealService _pathRevealService;
+    private readonly ISearchHistoryService? _searchHistoryService;
     private CancellationTokenSource? _searchCancellation;
 
     public MainViewModel(
         ISearchService searchService,
         IProcessLauncher processLauncher,
         ILauncherWindowHost windowHost,
-        IPathRevealService? pathRevealService = null)
+        IPathRevealService? pathRevealService = null,
+        ISearchHistoryService? searchHistoryService = null)
     {
         _searchService = searchService;
         _processLauncher = processLauncher;
         _windowHost = windowHost;
         _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
+        _searchHistoryService = searchHistoryService;
     }
 
     public MainViewModel()
@@ -172,6 +175,18 @@ public partial class MainViewModel : ViewModelBase
         IsSearching = false;
         if (result.Succeeded)
         {
+            if (_searchHistoryService is not null)
+            {
+                try
+                {
+                    await _searchHistoryService.RecordAsync(QueryText, CancellationToken.None);
+                }
+                catch
+                {
+                    // A history write must never turn a successful launch into an error.
+                }
+            }
+
             if (LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item))
                 StatusText = $"已复制结果：{item.Arguments}";
             else

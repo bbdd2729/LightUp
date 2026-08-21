@@ -52,6 +52,7 @@ public class App : Application
             {
                 SearchAllTileCategories = searchSettings.SearchAllTileCategories
             };
+            var searchHistoryService = new SearchHistoryService(settingsStore, searchSettings);
             var fullProviders = new List<ISearchProvider>
             {
                 tileProvider,
@@ -113,7 +114,11 @@ public class App : Application
             IProcessLauncher processLauncher = new LauncherProcessRouter(
                 launchProcess,
                 actionHost.ExecuteAsync);
-            viewModel = new ViewModels.MainViewModel(searchService, processLauncher, windowHost)
+            viewModel = new ViewModels.MainViewModel(
+                searchService,
+                processLauncher,
+                windowHost,
+                searchHistoryService: searchHistoryService)
             {
                 SearchMode = searchSettings.Mode,
                 MaxResults = searchSettings.MaxResults

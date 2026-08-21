@@ -36,6 +36,22 @@ public sealed class MainViewModelResultActionTests
     }
 
     [Fact]
+    public async Task A_successful_launch_records_the_current_query_without_blocking_hide_behavior()
+    {
+        var windowHost = new FakeWindowHost();
+        var history = new FakeSearchHistoryService();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success), history);
+        viewModel.QueryText = "  report  ";
+        viewModel.SelectedItem = new LauncherItem(
+            "shortcut:editor", "Editor", "", "C:\\Tools\\editor.lnk", null, LauncherItemKind.Shortcut);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.Equal("  report  ", history.LastQuery);
+        Assert.True(windowHost.WasHidden);
+    }
+
+    [Fact]
     public async Task RevealSelectedItemAsync_reveals_file_backed_results_without_hiding_the_search_window()
     {
         var revealService = new FakePathRevealService(LaunchResult.Success);
@@ -66,8 +82,11 @@ public sealed class MainViewModelResultActionTests
         Assert.Contains("没有可打开的位置", viewModel.StatusText);
     }
 
-    private static MainViewModel CreateViewModel(ILauncherWindowHost windowHost, IPathRevealService revealService)
-        => new(new EmptySearchService(), new FakeProcessLauncher(), windowHost, revealService);
+    private static MainViewModel CreateViewModel(
+        ILauncherWindowHost windowHost,
+        IPathRevealService revealService,
+        ISearchHistoryService? history = null)
+        => new(new EmptySearchService(), new FakeProcessLauncher(), windowHost, revealService, history);
 
     private sealed class EmptySearchService : ISearchService
     {
@@ -105,5 +124,18 @@ public sealed class MainViewModelResultActionTests
             LastPath = path;
             return Task.FromResult(result);
         }
+    }
+
+    private sealed class FakeSearchHistoryService : ISearchHistoryService
+    {
+        public string? LastQuery { get; private set; }
+
+        public Task RecordAsync(string query, CancellationToken cancellationToken)
+        {
+            LastQuery = query;
+            return Task.CompletedTask;
+        }
+
+        public Task ClearAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

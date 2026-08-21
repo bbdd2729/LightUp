@@ -69,6 +69,21 @@
                                Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Spacing="8">
+                    <TextBlock Text="搜索历史" FontWeight="SemiBold"/>
+                    <CheckBox Content="保存最近搜索内容"
+                              IsChecked="{CompiledBinding SaveQueryHistory, Mode=TwoWay}"
+                              AutomationProperties.Name="保存最近搜索内容"/>
+                    <TextBlock Text="仅保存在本机设置中，不上传查询内容。当前记录："
+                               Opacity="0.65" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{CompiledBinding QueryHistoryCount}" VerticalAlignment="Center"/>
+                        <Button Content="清空历史"
+                                Command="{CompiledBinding ClearQueryHistoryCommand}"
+                                Padding="12,6"
+                                AutomationProperties.Name="清空搜索历史"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Spacing="8">
                     <TextBlock Text="启动" FontWeight="SemiBold"/>
                     <CheckBox Content="登录 Windows 后自动启动 LightUp"
                               IsChecked="{CompiledBinding LaunchAtStartup, Mode=TwoWay}"
