@@ -415,7 +415,7 @@
                 </Border>
 
                 <Grid Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="10">
-                    <Grid Grid.Row="0" RowDefinitions="Auto,Auto" RowSpacing="8">
+                    <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="{CompiledBinding SelectedCategory.Name}"
@@ -467,7 +467,7 @@
                                                     Height="14"/>
                             </Button>
                             <Button Classes="launcher-danger"
-                                    Command="{CompiledBinding RemoveSelectedCategoryCommand}"
+                                    Command="{CompiledBinding RequestCategoryRemovalCommand}"
                                     IsEnabled="{CompiledBinding CanManageSelectedCategory}"
                                     Padding="8,6"
                                     ToolTip.Tip="按下方策略删除当前分类"
@@ -551,6 +551,43 @@
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
                             </StackPanel>
+                        </Border>
+                        <Border Grid.Row="2"
+                                IsVisible="{CompiledBinding IsCategoryRemovalConfirmationVisible}"
+                                Background="{DynamicResource LightUpDangerSoftBrush}"
+                                BorderBrush="{DynamicResource LightUpDangerBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="8,6">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
+                                                        Width="13"
+                                                        Height="13"
+                                                        Foreground="{DynamicResource LightUpDangerBrush}"
+                                                        VerticalAlignment="Center"/>
+                                    <TextBlock Text="{CompiledBinding CategoryRemovalConfirmationText}"
+                                               FontSize="10.5"
+                                               Foreground="{DynamicResource LightUpTextBrush}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                    <Button Classes="launcher-chrome"
+                                            Command="{CompiledBinding CancelCategoryRemovalCommand}"
+                                            ToolTip.Tip="取消删除分类"
+                                            AutomationProperties.Name="取消删除分类">
+                                        <TextBlock Text="取消" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="launcher-danger"
+                                            Command="{CompiledBinding ConfirmCategoryRemovalCommand}"
+                                            Padding="8,5"
+                                            ToolTip.Tip="确认删除当前分类"
+                                            AutomationProperties.Name="确认删除当前分类">
+                                        <TextBlock Text="确认删除" FontSize="10"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
                         </Border>
                     </Grid>
 
@@ -861,6 +898,16 @@
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="12" Height="12"/>
                                     <TextBlock Text="撤销" FontSize="10"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="launcher-chrome"
+                                    Command="{CompiledBinding UndoLastCategoryRemovalCommand}"
+                                    IsVisible="{CompiledBinding CanUndoLastCategoryRemoval}"
+                                    ToolTip.Tip="撤销删除分类"
+                                    AutomationProperties.Name="撤销删除分类">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="12" Height="12"/>
+                                    <TextBlock Text="撤销分类删除" FontSize="10"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>

@@ -300,6 +300,101 @@ public sealed class TileLauncherViewModelTests
         Assert.Contains("及其中 2 个入口", viewModel.StatusText);
     }
 
+    [Fact]
+    public async Task Category_removal_confirmation_can_be_requested_cancelled_and_confirmed()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "uncategorized", Name = "未分类" },
+                new TileCategory { Id = "work", Name = "工作", Items = [CreateTile("item")] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        viewModel.RequestCategoryRemoval();
+
+        Assert.True(viewModel.IsCategoryRemovalConfirmationVisible);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("请确认", viewModel.StatusText);
+
+        viewModel.CancelCategoryRemoval();
+
+        Assert.False(viewModel.IsCategoryRemovalConfirmationVisible);
+        Assert.Contains(viewModel.Categories, category => category.Id == "work");
+        Assert.Equal(0, store.SaveCount);
+
+        viewModel.RequestCategoryRemoval();
+        await viewModel.ConfirmCategoryRemovalAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(viewModel.IsCategoryRemovalConfirmationVisible);
+        Assert.DoesNotContain(viewModel.Categories, category => category.Id == "work");
+        Assert.True(viewModel.CanUndoLastCategoryRemoval);
+        Assert.Equal(1, store.SaveCount);
+    }
+
+    [Fact]
+    public async Task UndoLastCategoryRemovalAsync_restores_a_moved_category_and_its_original_order()
+    {
+        var first = CreateTile("first");
+        var duplicate = CreateTile("duplicate");
+        first.SortOrder = 4;
+        duplicate.SortOrder = 9;
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "uncategorized", Name = "未分类" },
+                new TileCategory { Id = "work", Name = "工作", SortOrder = 1, Items = [first, duplicate] },
+                new TileCategory { Id = "archive", Name = "归档", SortOrder = 2, Items = [CreateTile("duplicate")] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.CategoryRemovalDestinationCategory = viewModel.Categories.Single(category => category.Id == "archive");
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+        await viewModel.UndoLastCategoryRemovalAsync(TestContext.Current.CancellationToken);
+
+        var restored = viewModel.Categories.Single(category => category.Id == "work");
+        var archive = viewModel.Categories.Single(category => category.Id == "archive");
+        Assert.Equal(["all", "uncategorized", "work", "archive"], viewModel.Categories.Select(category => category.Id));
+        Assert.Equal(["first", "duplicate"], restored.Items.Select(item => item.Id));
+        Assert.Equal([4, 9], restored.Items.Select(item => item.SortOrder));
+        Assert.Equal(["duplicate"], archive.Items.Select(item => item.Id));
+        Assert.Equal("work", viewModel.SelectedCategory?.Id);
+        Assert.False(viewModel.CanUndoLastCategoryRemoval);
+        Assert.Equal(2, store.SaveCount);
+        Assert.Contains("已恢复分类", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task UndoLastCategoryRemovalAsync_restores_items_deleted_with_the_category()
+    {
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "work",
+            Categories =
+            [
+                new TileCategory { Id = "uncategorized", Name = "未分类" },
+                new TileCategory { Id = "work", Name = "工作", Items = [CreateTile("first"), CreateTile("second")] }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+        viewModel.CategoryRemovalMode = CategoryRemovalMode.DeleteItems;
+
+        await viewModel.RemoveSelectedCategoryAsync(TestContext.Current.CancellationToken);
+        await viewModel.UndoLastCategoryRemovalAsync(TestContext.Current.CancellationToken);
+
+        var restored = viewModel.Categories.Single(category => category.Id == "work");
+        Assert.Equal(["first", "second"], restored.Items.Select(item => item.Id));
+        Assert.Equal("work", viewModel.SelectedCategory?.Id);
+        Assert.False(viewModel.CanUndoLastCategoryRemoval);
+        Assert.Equal(2, store.SaveCount);
+    }
+
     [Theory]
     [InlineData("all")]
     [InlineData("work")]
