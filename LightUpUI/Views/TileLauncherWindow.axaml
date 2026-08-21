@@ -280,7 +280,7 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <TextBox Width="128"
+                            <TextBox Classes="launcher-field" Width="128"
                                      Text="{CompiledBinding NewCategoryName, Mode=TwoWay}"
                                      PlaceholderText="新分类"
                                      FontSize="11"
@@ -327,7 +327,7 @@
                         </StackPanel>
 
                         <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                            <TextBox x:Name="NewCategoryBox"
+                            <TextBox Classes="launcher-field" x:Name="NewCategoryBox"
                                      Text="{CompiledBinding NewCategoryName, Mode=TwoWay}"
                                      PlaceholderText="新分类"
                                      FontSize="11"
@@ -442,7 +442,7 @@
                                     AutomationProperties.Name="下移当前分类">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="14" Height="14"/>
                             </Button>
-                            <TextBox x:Name="CategoryNameBox"
+                            <TextBox Classes="launcher-field" x:Name="CategoryNameBox"
                                      Width="112"
                                      Text="{CompiledBinding EditedCategoryName, Mode=TwoWay}"
                                      IsEnabled="{CompiledBinding CanManageSelectedCategory}"
@@ -913,7 +913,7 @@
                                     Spacing="5"
                                     VerticalAlignment="Center"
                                     IsVisible="{CompiledBinding HasSelectedItem}">
-                            <TextBox x:Name="TileTitleBox"
+                            <TextBox Classes="launcher-field" x:Name="TileTitleBox"
                                      Width="120"
                                      Height="28"
                                      Text="{CompiledBinding EditedTileTitle, Mode=TwoWay}"
@@ -937,7 +937,7 @@
                                                     Width="14"
                                                     Height="14"/>
                             </Button>
-                            <TextBox x:Name="TileNotesBox"
+                            <TextBox Classes="launcher-field" x:Name="TileNotesBox"
                                      Width="142"
                                      Height="28"
                                      Text="{CompiledBinding EditedTileNotes, Mode=TwoWay}"
@@ -977,7 +977,7 @@
                                        FontSize="10"
                                        Foreground="{DynamicResource LightUpTextFaintBrush}"
                                        VerticalAlignment="Center"/>
-                            <ComboBox Width="108"
+                            <ComboBox Classes="launcher-field" Width="108"
                                       x:Name="MoveCategoryBox"
                                       Height="28"
                                       ItemsSource="{CompiledBinding MoveDestinationCategories}"

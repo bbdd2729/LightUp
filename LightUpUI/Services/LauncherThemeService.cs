@@ -56,6 +56,8 @@ public static class LauncherThemeService
         SetBrush(application, "LightUpWindowBrush", isLight ? "F7F9FC" : "F0141A27");
         SetBrush(application, "LightUpSurfaceBrush", isLight ? "12000000" : "1AFFFFFF");
         SetBrush(application, "LightUpSurfaceStrongBrush", isLight ? "1E000000" : "24FFFFFF");
+        SetBrush(application, "LightUpInputBrush", isLight ? "0D17212B" : "26FFFFFF");
+        SetBrush(application, "LightUpInputHoverBrush", isLight ? "1417212B" : "32FFFFFF");
         SetBrush(application, "LightUpBorderBrush", isLight ? "24000000" : "32FFFFFF");
         SetBrush(application, "LightUpBorderBrushStrong", isLight ? "45000000" : "5AFFFFFF");
         SetBrush(application, "LightUpTextBrush", isLight ? "FF17212B" : "FFF7FAFC");
@@ -66,6 +68,8 @@ public static class LauncherThemeService
         SetBrush(application, "LightUpAccentSoftBrush", WithAlpha(accent, 0x30));
         SetBrush(application, "LightUpSelectionBrush", WithAlpha(accent, 0x3A));
         SetBrush(application, "LightUpHoverBrush", isLight ? "14000000" : "20FFFFFF");
+        SetBrush(application, "LightUpFocusBrush", accent);
+        SetBrush(application, "LightUpDisabledBrush", isLight ? "8052606D" : "5CC1CBD6");
         SetBrush(application, "LightUpDangerBrush", isLight ? "FFC6284A" : "FFE66D75");
         SetBrush(application, "LightUpDangerSoftBrush", isLight ? "1FC6284A" : "20E66D75");
         SetBrush(application, "LightUpSuccessBrush", isLight ? "FF0E8F5A" : "FF76E3A1");

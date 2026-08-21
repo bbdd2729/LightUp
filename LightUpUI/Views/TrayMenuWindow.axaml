@@ -27,14 +27,16 @@
         <Border.BoxShadow>
             <BoxShadows>0 14 38 0 #90000000</BoxShadows>
         </Border.BoxShadow>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
             <StackPanel Spacing="2" Margin="4,2,4,0">
                 <TextBlock Text="LightUp" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource LightUpTextBrush}"/>
                 <TextBlock Text="快捷操作" FontSize="11" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Spacing="4">
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="4" Margin="0,0,4,0">
                 <Button Classes="tray-menu-item" Command="{Binding OpenSearchCommand}">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                         <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpAccentSoftBrush}">
@@ -71,6 +73,7 @@
                     </Grid>
                 </Button>
             </StackPanel>
+            </ScrollViewer>
 
             <Button Grid.Row="2" Classes="tray-menu-item tray-menu-exit" Command="{Binding ExitApplicationCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
@@ -79,6 +82,5 @@
                 </StackPanel>
             </Button>
         </Grid>
-        </ScrollViewer>
     </Border>
 </Window>
