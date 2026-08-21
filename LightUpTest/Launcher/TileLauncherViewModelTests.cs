@@ -687,8 +687,61 @@ public sealed class TileLauncherViewModelTests
         await viewModel.OpenSelectedCommand.ExecuteAsync(null);
 
         Assert.Equal(0, launcher.LaunchCount);
-        Assert.Equal("目标不存在：missing.exe", viewModel.StatusText);
+        Assert.Contains("目标不存在：missing.exe", viewModel.StatusText);
+        Assert.Contains("重新选择目标", viewModel.StatusText);
         Assert.True(item.HasTargetIssue);
+    }
+
+    [Fact]
+    public async Task OpenSelected_reports_an_actionable_failure_when_the_shell_cannot_start_a_local_target()
+    {
+        var item = CreateTile("C:\\Tools\\broken.exe");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
+        });
+        var viewModel = new TileLauncherViewModel(
+            store,
+            new FixedProcessLauncher(LaunchResult.Failed("Shell 启动失败")),
+            targetHealthService: new FakeTargetHealthService(TileTargetHealthResult.Available));
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+
+        await viewModel.OpenSelectedCommand.ExecuteAsync(null);
+
+        Assert.Contains("Shell 启动失败", viewModel.StatusText);
+        Assert.Contains("重新选择目标", viewModel.StatusText);
+        Assert.False(viewModel.IsOpening);
+    }
+
+    [Fact]
+    public async Task OpenSelected_reports_a_link_specific_action_when_a_url_cannot_start()
+    {
+        var item = new TileItem
+        {
+            Id = "portal",
+            Title = "门户",
+            TargetPath = "https://example.com",
+            Kind = TileItemKind.Url
+        };
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
+        });
+        var viewModel = new TileLauncherViewModel(
+            store,
+            new FixedProcessLauncher(LaunchResult.Failed("浏览器不可用")),
+            targetHealthService: new FakeTargetHealthService(TileTargetHealthResult.Available));
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        viewModel.SelectedItem = item;
+
+        await viewModel.OpenSelectedCommand.ExecuteAsync(null);
+
+        Assert.Contains("浏览器不可用", viewModel.StatusText);
+        Assert.Contains("检查链接", viewModel.StatusText);
+        Assert.Contains("移除入口", viewModel.StatusText);
     }
 
     [Fact]
@@ -1215,6 +1268,12 @@ public sealed class TileLauncherViewModelTests
     {
         public Task<LaunchResult> LaunchAsync(LightUpUI.Models.LauncherItem item, CancellationToken cancellationToken)
             => Task.FromResult(LaunchResult.Success);
+    }
+
+    private sealed class FixedProcessLauncher(LaunchResult result) : IProcessLauncher
+    {
+        public Task<LaunchResult> LaunchAsync(LightUpUI.Models.LauncherItem item, CancellationToken cancellationToken)
+            => Task.FromResult(result);
     }
 
     private sealed class RecordingProcessLauncher : IProcessLauncher

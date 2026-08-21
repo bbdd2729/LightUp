@@ -103,6 +103,23 @@
         <Style Selector="Button.launcher-tile-remove:pressed">
             <Setter Property="Opacity" Value="0.72"/>
         </Style>
+        <Style Selector="Button.launcher-tile-repair">
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpDangerBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="MinWidth" Value="24"/>
+            <Setter Property="MinHeight" Value="24"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="Button.launcher-tile-repair:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpAccentForegroundBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-tile-repair:pressed">
+            <Setter Property="Opacity" Value="0.72"/>
+        </Style>
         <Style Selector="Button.launcher-chrome:focus-visible">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>

@@ -742,24 +742,21 @@
                                                            VerticalAlignment="Center"/>
                                                 </Grid>
                                             </Border>
-                                            <Border Grid.Row="0"
-                                                    Width="20"
-                                                    Height="20"
-                                                    CornerRadius="10"
-                                                    Background="#FFE04F5F"
+                                            <Button Grid.Row="0"
+                                                    Classes="launcher-tile-repair"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Top"
                                                     Margin="0,-5,42,0"
                                                     IsVisible="{CompiledBinding HasTargetIssue}"
                                                     ToolTip.Tip="{CompiledBinding TargetHealthMessage}"
-                                                    AutomationProperties.Name="入口目标不可用">
+                                                    AutomationProperties.Name="重新选择不可用入口的目标"
+                                                    Click="RetargetTile_Click">
                                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}"
                                                                     Width="11"
                                                                     Height="11"
-                                                                    Foreground="#FFFFFFFF"
                                                                     HorizontalAlignment="Center"
                                                                     VerticalAlignment="Center"/>
-                                            </Border>
+                                            </Button>
                                             <StackPanel Grid.Row="1" Spacing="2" VerticalAlignment="Center">
                                                 <TextBlock Text="{CompiledBinding Title}"
                                                            FontSize="12.5"

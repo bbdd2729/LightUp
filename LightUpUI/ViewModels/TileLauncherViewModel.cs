@@ -1095,7 +1095,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         UpdateTargetHealth(SelectedItem);
         if (!SelectedItem.IsTargetAvailable)
         {
-            StatusText = SelectedItem.TargetHealthMessage ?? "目标不可用";
+            StatusText = $"{SelectedItem.TargetHealthMessage ?? "目标不可用"}。请重新选择目标或移除入口";
             RefreshVisibleItems();
             return;
         }
@@ -1104,7 +1104,9 @@ public partial class TileLauncherViewModel : ViewModelBase
         try
         {
             var result = await _processLauncher.LaunchAsync(ToLauncherItem(SelectedItem), CancellationToken.None);
-            StatusText = result.Succeeded ? $"已打开“{SelectedItem.Title}”" : result.ErrorMessage ?? "打开入口失败";
+            StatusText = result.Succeeded
+                ? $"已打开“{SelectedItem.Title}”"
+                : GetLaunchFailureMessage(SelectedItem, result.ErrorMessage);
         }
         catch (Exception exception)
         {
@@ -1370,6 +1372,14 @@ public partial class TileLauncherViewModel : ViewModelBase
         item.Arguments,
         item.Kind == TileItemKind.Application ? LauncherItemKind.Application : LauncherItemKind.Shortcut,
         IconPath: item.CustomIconPath);
+
+    private static string GetLaunchFailureMessage(TileItem item, string? errorMessage)
+    {
+        var message = errorMessage ?? "打开入口失败";
+        return item.Kind == TileItemKind.Url
+            ? $"{message}。请检查链接后重试，或移除入口"
+            : $"{message}。请重新选择目标或移除入口";
+    }
 
     private void UpdateTargetHealth(TileItem item)
     {

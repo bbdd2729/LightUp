@@ -472,6 +472,14 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
+    private async void RetargetTile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { DataContext: TileItem item })
+            await RetargetItemAsync(item);
+
+        e.Handled = true;
+    }
+
     private async void ContextChooseIcon_Click(object? sender, RoutedEventArgs e)
     {
         var item = SelectContextTile(sender);
