@@ -10,15 +10,18 @@ public sealed class LauncherActionHost : ILauncherActionHost
     private readonly ITileLauncherWindowHost _tileHost;
     private readonly Func<Task> _openSettings;
     private readonly IUriLauncher _uriLauncher;
+    private readonly IEverythingLauncher _everythingLauncher;
 
     public LauncherActionHost(
         ITileLauncherWindowHost tileHost,
         Func<Task> openSettings,
-        IUriLauncher? uriLauncher = null)
+        IUriLauncher? uriLauncher = null,
+        IEverythingLauncher? everythingLauncher = null)
     {
         _tileHost = tileHost;
         _openSettings = openSettings;
         _uriLauncher = uriLauncher ?? new WindowsUriLauncher();
+        _everythingLauncher = everythingLauncher ?? new WindowsEverythingLauncher();
     }
 
     public async Task<LaunchResult> ExecuteAsync(LauncherItem item, CancellationToken cancellationToken)
@@ -35,9 +38,7 @@ public sealed class LauncherActionHost : ILauncherActionHost
                     await _openSettings();
                     return LaunchResult.Success;
                 case "action:everything":
-                    return await _uriLauncher.OpenAsync(
-                        "es:" + Uri.EscapeDataString(item.Arguments ?? string.Empty),
-                        cancellationToken);
+                    return await _everythingLauncher.OpenSearchAsync(item.Arguments ?? string.Empty, cancellationToken);
                 case "action:open-url":
                     return await _uriLauncher.OpenAsync(item.Arguments ?? string.Empty, cancellationToken);
                 case "action:web-search":
