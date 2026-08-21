@@ -62,7 +62,9 @@
                     <TextBox Grid.Column="1" x:Name="QueryBox"
                              Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="搜索应用、程序或快捷方式..."
-                             Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="{DynamicResource LightUpTextBrush}"
+                             CaretBrush="{DynamicResource LightUpAccentBrush}"
                              FontSize="17" FontWeight="SemiBold" VerticalContentAlignment="Center"/>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <Border Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="6" Padding="7,4">
