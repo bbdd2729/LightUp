@@ -53,10 +53,31 @@ public sealed class LauncherActionHostTests
         Assert.Equal("report", everythingLauncher.LastQuery);
     }
 
+    [Fact]
+    public async Task Calculation_action_copies_the_formatted_result()
+    {
+        string? copiedText = null;
+        var host = CreateHost(
+            new FakeUriLauncher(LaunchResult.Success),
+            copyText: value =>
+            {
+                copiedText = value;
+                return Task.FromResult(LaunchResult.Success);
+            });
+
+        var result = await host.ExecuteAsync(
+            new LauncherItem("action:copy-calculation", "2 + 2 = 4", "", "lightup:calculator", "4", LauncherItemKind.Action),
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("4", copiedText);
+    }
+
     private static LauncherActionHost CreateHost(
         IUriLauncher uriLauncher,
-        IEverythingLauncher? everythingLauncher = null)
-        => new(new FakeTileLauncherWindowHost(), () => Task.CompletedTask, uriLauncher, everythingLauncher);
+        IEverythingLauncher? everythingLauncher = null,
+        Func<string, Task<LaunchResult>>? copyText = null)
+        => new(new FakeTileLauncherWindowHost(), () => Task.CompletedTask, uriLauncher, everythingLauncher, copyText);
 
     private sealed class FakeUriLauncher(LaunchResult result) : IUriLauncher
     {

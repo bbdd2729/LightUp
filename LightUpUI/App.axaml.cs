@@ -55,6 +55,7 @@ public class App : Application
             {
                 tileProvider,
                 new BuiltInActionSearchProvider(),
+                new CalculatorSearchProvider(),
                 new ShortcutSearchProvider(),
                 new PathExecutableSearchProvider()
             };
@@ -96,7 +97,10 @@ public class App : Application
                 {
                     ShowSettingsWindow(settingsViewModel, window);
                     return Task.CompletedTask;
-                });
+                },
+                copyText: text => window is null
+                    ? Task.FromResult(LaunchResult.Failed("搜索窗口尚未准备完成"))
+                    : window.CopyTextAsync(text));
             IProcessLauncher processLauncher = new LauncherProcessRouter(
                 launchProcess,
                 actionHost.ExecuteAsync);
