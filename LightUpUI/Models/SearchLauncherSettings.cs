@@ -9,6 +9,7 @@ public sealed class SearchLauncherSettings
     public SearchLauncherMode Mode { get; set; } = SearchLauncherMode.Full;
     public string Hotkey { get; set; } = "alt+space";
     public string TileLauncherHotkey { get; set; } = "alt+shift+space";
+    public bool LaunchAtStartup { get; set; }
     public int MaxResults { get; set; } = 30;
     public bool SearchAllTileCategories { get; set; } = true;
     public CategoryNavigationPlacement CategoryNavigationPlacement { get; set; } = CategoryNavigationPlacement.Left;

@@ -69,6 +69,14 @@
                                Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Spacing="8">
+                    <TextBlock Text="启动" FontWeight="SemiBold"/>
+                    <CheckBox Content="登录 Windows 后自动启动 LightUp"
+                              IsChecked="{CompiledBinding LaunchAtStartup, Mode=TwoWay}"
+                              AutomationProperties.Name="登录 Windows 后自动启动 LightUp"/>
+                    <TextBlock Text="仅为当前用户创建启动项，不需要管理员权限。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
                     <TextBlock Text="搜索栏全局快捷键" FontWeight="SemiBold"/>
                     <TextBox Text="{CompiledBinding SearchHotkey, Mode=TwoWay}"
                              PlaceholderText="例如 alt+space"/>

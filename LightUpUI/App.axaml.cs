@@ -43,6 +43,7 @@ public class App : Application
         {
             var tileStateStore = new JsonLauncherStateStore();
             var settingsStore = new SearchLauncherSettingsStore();
+            var startupRegistration = new WindowsStartupRegistrationService();
             var searchSettings = await StartupSettingsLoader.LoadAsync(
                 settingsStore,
                 CancellationToken.None);
@@ -95,6 +96,7 @@ public class App : Application
                 applyTileDensity: density => tileViewModel.TileDensity = density,
                 applyMaxResults: maxResults => viewModel!.MaxResults = maxResults,
                 applySearchAllTileCategories: searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories,
+                applyLaunchAtStartup: startupRegistration.Apply,
                 applyHotkeys: (searchHotkey, tileLauncherHotkey) =>
                     hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error);
             var actionHost = new LauncherActionHost(

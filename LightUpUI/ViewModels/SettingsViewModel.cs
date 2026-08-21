@@ -19,6 +19,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Action<TileDensity> _applyTileDensity;
     private readonly Action<int> _applyMaxResults;
     private readonly Action<bool> _applySearchAllTileCategories;
+    private readonly Func<bool, string?> _applyLaunchAtStartup;
     private readonly Func<string, string, string?> _applyHotkeys;
 
     public SettingsViewModel(
@@ -30,6 +31,7 @@ public partial class SettingsViewModel : ViewModelBase
         Action<TileDensity>? applyTileDensity = null,
         Action<int>? applyMaxResults = null,
         Action<bool>? applySearchAllTileCategories = null,
+        Func<bool, string?>? applyLaunchAtStartup = null,
         Func<string, string, string?>? applyHotkeys = null)
     {
         _settingsStore = settingsStore;
@@ -40,6 +42,7 @@ public partial class SettingsViewModel : ViewModelBase
         _applyTileDensity = applyTileDensity ?? (_ => { });
         _applyMaxResults = applyMaxResults ?? (_ => { });
         _applySearchAllTileCategories = applySearchAllTileCategories ?? (_ => { });
+        _applyLaunchAtStartup = applyLaunchAtStartup ?? (_ => null);
         _applyHotkeys = applyHotkeys ?? ((_, _) => null);
         _selectedSearchMode = settings.Mode;
         _selectedThemeMode = ThemePalettePolicy.NormalizeThemeMode(settings.Appearance.ThemeMode);
@@ -47,6 +50,7 @@ public partial class SettingsViewModel : ViewModelBase
         _customAccentColor = ThemePalettePolicy.NormalizeCustomAccentColor(settings.Appearance.CustomAccentColor);
         _selectedMaxResults = SearchResultLimitPolicy.Normalize(settings.MaxResults);
         _searchAllTileCategories = settings.SearchAllTileCategories;
+        _launchAtStartup = settings.LaunchAtStartup;
         _searchHotkey = settings.Hotkey;
         _tileLauncherHotkey = settings.TileLauncherHotkey;
         _selectedCategoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(
@@ -88,6 +92,9 @@ public partial class SettingsViewModel : ViewModelBase
     private bool _searchAllTileCategories;
 
     [ObservableProperty]
+    private bool _launchAtStartup;
+
+    [ObservableProperty]
     private string _searchHotkey;
 
     [ObservableProperty]
@@ -102,6 +109,12 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
+        var startupError = _applyLaunchAtStartup(LaunchAtStartup);
+        if (!string.IsNullOrWhiteSpace(startupError))
+        {
+            StatusText = startupError;
+            return;
+        }
         if (!TryApplyHotkeys(out var searchHotkey, out var tileLauncherHotkey))
             return;
 
@@ -114,6 +127,7 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.Appearance.TileDensity = TileDensityPolicy.Normalize(SelectedTileDensity);
         _settings.MaxResults = SearchResultLimitPolicy.Normalize(SelectedMaxResults);
         _settings.SearchAllTileCategories = SearchAllTileCategories;
+        _settings.LaunchAtStartup = LaunchAtStartup;
         _settings.Hotkey = searchHotkey;
         _settings.TileLauncherHotkey = tileLauncherHotkey;
         await _settingsStore.SaveAsync(_settings, cancellationToken);
