@@ -339,7 +339,12 @@ public partial class TileLauncherViewModel : ViewModelBase
 
         RefreshVisibleItems();
         if (await PersistStateAsync(cancellationToken))
-            StatusText = $"已添加 {addedCount} 个入口";
+        {
+            var skippedCount = candidates.Length - addedCount;
+            StatusText = skippedCount == 0
+                ? $"已添加 {addedCount} 个入口"
+                : $"已添加 {addedCount} 个入口，跳过 {skippedCount} 个重复入口";
+        }
     }
 
     public void AddCategory(string name) => _ = AddCategoryAsync(name);

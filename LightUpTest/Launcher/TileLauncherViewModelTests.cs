@@ -1165,6 +1165,34 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task AddItemsAsync_reports_added_and_skipped_counts_for_a_mixed_batch()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            Categories =
+            [
+                new TileCategory
+                {
+                    Id = "uncategorized",
+                    Name = "未分类",
+                    Items = [CreateTile("existing")]
+                }
+            ]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, cancellationToken);
+
+        await viewModel.AddItemsAsync(
+            [CreateTile("existing"), CreateTile("new")],
+            cancellationToken);
+
+        Assert.Equal(2, viewModel.VisibleItems.Count);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已添加 1 个入口", viewModel.StatusText);
+        Assert.Contains("跳过 1 个重复入口", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task Empty_state_describes_the_current_filter_and_clears_after_an_add()
     {
         var viewModel = await CreateLoadedViewModelAsync(
