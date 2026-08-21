@@ -14,19 +14,31 @@ public sealed class BuiltInActionSearchProvider : ISearchProvider
     {
         cancellationToken.ThrowIfCancellationRequested();
         var normalizedQuery = query.Trim();
+        if (TryGetPrefixedQuery(normalizedQuery, '!', out var everythingQuery))
+            return Task.FromResult<IReadOnlyList<LauncherItem>>([CreateEverythingAction(normalizedQuery, everythingQuery)]);
+        if (TryGetPrefixedQuery(normalizedQuery, '?', out var webQuery))
+        {
+            return Task.FromResult<IReadOnlyList<LauncherItem>>(
+            [
+                new LauncherItem(
+                    "action:web-search",
+                    $"使用 Bing 搜索“{normalizedQuery}”",
+                    "使用默认浏览器进行网页搜索",
+                    "lightup:web-search",
+                    webQuery,
+                    LauncherItemKind.Action)
+            ]);
+        }
+        if (normalizedQuery.StartsWith('='))
+            return Task.FromResult<IReadOnlyList<LauncherItem>>([]);
+
         var everythingTitle = normalizedQuery.Length == 0
             ? "Everything 搜索"
             : $"Everything 搜索“{normalizedQuery}”";
 
         List<LauncherItem> results =
         [
-            new LauncherItem(
-                "action:everything",
-                everythingTitle,
-                "使用 Everything 搜索本机文件（需安装 Everything）",
-                "lightup:everything",
-                normalizedQuery,
-                LauncherItemKind.Action),
+            CreateEverythingAction(everythingTitle, normalizedQuery),
             new LauncherItem(
                 "action:tiles",
                 "打开磁贴启动器",
@@ -72,6 +84,24 @@ public sealed class BuiltInActionSearchProvider : ISearchProvider
         }
 
         return Task.FromResult<IReadOnlyList<LauncherItem>>(results);
+    }
+
+    private static LauncherItem CreateEverythingAction(string title, string query) => new(
+        "action:everything",
+        title,
+        "使用 Everything 搜索本机文件（需安装 Everything）",
+        "lightup:everything",
+        query,
+        LauncherItemKind.Action);
+
+    private static bool TryGetPrefixedQuery(string query, char prefix, out string value)
+    {
+        value = string.Empty;
+        if (!query.StartsWith(prefix))
+            return false;
+
+        value = query[1..].Trim();
+        return value.Length > 0;
     }
 
     private static bool TryGetHttpUri(string value, out string uri)

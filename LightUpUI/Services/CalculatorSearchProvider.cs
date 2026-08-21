@@ -12,16 +12,20 @@ public sealed class CalculatorSearchProvider : ISearchProvider
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var expression = query.Trim();
+        var originalQuery = query.Trim();
+        var expression = originalQuery.StartsWith('=')
+            ? originalQuery[1..].Trim()
+            : originalQuery;
         if (!CalculatorExpression.TryEvaluate(expression, out var result))
             return Task.FromResult<IReadOnlyList<LauncherItem>>([]);
 
         var formattedResult = CalculatorExpression.Format(result);
+        var titleExpression = originalQuery.StartsWith('=') ? originalQuery : expression;
         IReadOnlyList<LauncherItem> results =
         [
             new LauncherItem(
                 "action:copy-calculation",
-                $"{expression} = {formattedResult}",
+                $"{titleExpression} = {formattedResult}",
                 "按 Enter 复制结果到剪贴板",
                 "lightup:calculator",
                 formattedResult,

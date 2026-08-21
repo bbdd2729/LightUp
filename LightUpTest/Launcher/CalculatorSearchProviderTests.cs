@@ -36,4 +36,15 @@ public sealed class CalculatorSearchProviderTests
 
         Assert.Empty(results);
     }
+
+    [Fact]
+    public async Task Equals_prefix_routes_a_valid_expression_to_the_calculator()
+    {
+        var provider = new CalculatorSearchProvider();
+
+        var result = Assert.Single(await provider.SearchAsync("= (1 + 2) * 3", TestContext.Current.CancellationToken));
+
+        Assert.Equal("9", result.Arguments);
+        Assert.StartsWith("= (1 + 2) * 3", result.Title);
+    }
 }

@@ -51,4 +51,31 @@ public sealed class BuiltInActionSearchProviderTests
         var webSearch = Assert.Single(results, item => item.Id == "action:web-search");
         Assert.Equal("LightUp docs", webSearch.Arguments);
     }
+
+    [Theory]
+    [InlineData("! report", "action:everything", "report")]
+    [InlineData("? LightUp docs", "action:web-search", "LightUp docs")]
+    public async Task Prefix_query_routes_to_its_single_explicit_action(
+        string query,
+        string expectedActionId,
+        string expectedArguments)
+    {
+        var provider = new BuiltInActionSearchProvider();
+
+        var result = Assert.Single(await provider.SearchAsync(query, TestContext.Current.CancellationToken));
+
+        Assert.Equal(expectedActionId, result.Id);
+        Assert.Equal(expectedArguments, result.Arguments);
+        Assert.Contains(query, result.Title);
+    }
+
+    [Fact]
+    public async Task Calculator_prefix_is_reserved_for_the_calculator_provider()
+    {
+        var provider = new BuiltInActionSearchProvider();
+
+        var results = await provider.SearchAsync("= 2 + 2", TestContext.Current.CancellationToken);
+
+        Assert.Empty(results);
+    }
 }
