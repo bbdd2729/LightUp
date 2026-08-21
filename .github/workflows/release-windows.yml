@@ -1,0 +1,111 @@
+name: Release Windows Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without the v prefix, for example 1.0.0 or 1.0.0-beta.1'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark the GitHub Release as a pre-release'
+        required: true
+        default: false
+        type: boolean
+      draft:
+        description: 'Create the GitHub Release as a draft'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-windows
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate version
+        id: version
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          $version = $env:RELEASE_VERSION.Trim()
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$') {
+            throw "Invalid version '$version'. Use semantic versioning without the v prefix, for example 1.0.0 or 1.0.0-beta.1."
+          }
+
+          $tag = "v$version"
+          $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+          if ($LASTEXITCODE -eq 0 -and $remoteTag) {
+            throw "Tag '$tag' already exists on origin."
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore LightUp.slnx --runtime win-x64
+
+      - name: Build
+        run: dotnet build LightUp.slnx --configuration Release --no-restore --verbosity minimal
+
+      - name: Test
+        run: dotnet test LightUpTest/LightUpTest.csproj --configuration Release --no-build --no-restore --verbosity minimal
+
+      - name: Publish Windows package
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $publishDirectory = Join-Path $env:GITHUB_WORKSPACE 'artifacts\LightUp-win-x64'
+          $archivePath = Join-Path $env:GITHUB_WORKSPACE "artifacts\LightUp-win-x64-$env:RELEASE_VERSION.zip"
+
+          New-Item -ItemType Directory -Force -Path $publishDirectory | Out-Null
+          dotnet publish LightUpUI/LightUpUI.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --no-restore `
+            "-p:Version=$env:RELEASE_VERSION" `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=None `
+            --output $publishDirectory
+
+          Copy-Item LICENSE $publishDirectory
+          Compress-Archive -Path (Join-Path $publishDirectory '*') -DestinationPath $archivePath -Force
+
+      - name: Create and push release tag
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git tag -a $env:RELEASE_TAG -m "Release $env:RELEASE_TAG"
+          git push origin $env:RELEASE_TAG
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: LightUp ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          prerelease: ${{ inputs.prerelease }}
+          draft: ${{ inputs.draft }}
+          files: artifacts/LightUp-win-x64-${{ steps.version.outputs.version }}.zip

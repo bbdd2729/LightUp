@@ -1,0 +1,61 @@
+name: Build Windows Package
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore LightUp.slnx --runtime win-x64
+
+      - name: Build
+        run: dotnet build LightUp.slnx --configuration Release --no-restore --verbosity minimal
+
+      - name: Test
+        run: dotnet test LightUpTest/LightUpTest.csproj --configuration Release --no-build --no-restore --verbosity minimal
+
+      - name: Publish Windows package
+        shell: pwsh
+        run: |
+          $publishDirectory = Join-Path $env:GITHUB_WORKSPACE 'artifacts\LightUp-win-x64'
+          $archivePath = Join-Path $env:GITHUB_WORKSPACE 'artifacts\LightUp-win-x64.zip'
+
+          New-Item -ItemType Directory -Force -Path $publishDirectory | Out-Null
+          dotnet publish LightUpUI/LightUpUI.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --no-restore `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=None `
+            --output $publishDirectory
+
+          Copy-Item LICENSE $publishDirectory
+          Compress-Archive -Path (Join-Path $publishDirectory '*') -DestinationPath $archivePath -Force
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightUp-win-x64-${{ github.sha }}
+          path: artifacts/LightUp-win-x64.zip
+          if-no-files-found: error
+          retention-days: 14
