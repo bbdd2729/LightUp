@@ -6,7 +6,9 @@
         Width="520"
         Height="720"
         Title="LightUp 设置"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource LightUpWindowBrush}"
+        Foreground="{DynamicResource LightUpTextBrush}">
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
         <StackPanel Spacing="4">
             <TextBlock Text="设置" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>
@@ -108,7 +110,12 @@
         </Border>
         <DockPanel Grid.Row="2">
             <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Opacity="0.7"/>
-            <Button DockPanel.Dock="Right" Content="保存" Command="{Binding SaveCommand}" Padding="18,8"/>
+            <Button DockPanel.Dock="Right"
+                    Classes="launcher-primary"
+                    Content="保存设置"
+                    Command="{Binding SaveCommand}"
+                    Padding="18,8"
+                    AutomationProperties.Name="保存设置"/>
         </DockPanel>
     </Grid>
 </Window>
