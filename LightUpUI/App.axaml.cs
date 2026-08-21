@@ -77,6 +77,12 @@ public class App : Application
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
+            EventHandler? activationHandler = null;
+            if (Program.InstanceCoordinator is { } instanceCoordinator)
+            {
+                activationHandler = (_, _) => Dispatcher.UIThread.Post(tileWindowHost.Show);
+                instanceCoordinator.ActivationRequested += activationHandler;
+            }
             var hotkeyBindings = new LauncherHotkeyBindings(new WindowsGlobalHotkeyServiceFactory());
             ViewModels.MainViewModel? viewModel = null;
             MainWindow? window = null;
@@ -166,6 +172,8 @@ public class App : Application
                 searchWindowStateTracker.FlushAsync().GetAwaiter().GetResult();
                 tileWindowStateTracker.FlushAsync().GetAwaiter().GetResult();
                 hotkeyBindings.Dispose();
+                if (activationHandler is not null && Program.InstanceCoordinator is { } instanceCoordinator)
+                    instanceCoordinator.ActivationRequested -= activationHandler;
                 searchWindowStateTracker.Dispose();
                 tileWindowStateTracker.Dispose();
             };
