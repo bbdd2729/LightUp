@@ -154,7 +154,7 @@
                 <ProgressBar IsIndeterminate="True" Height="2" VerticalAlignment="Bottom" IsVisible="{Binding IsSearching}"/>
             </Grid>
 
-            <TextBlock Grid.Row="3" Text="↑↓ 选择    Enter 启动    Esc 关闭" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Row="3" Text="↑↓ 选择    Enter 启动    Ctrl+Enter 位置    Shift+Enter 复制路径    Esc 关闭" Foreground="{DynamicResource LightUpTextFaintBrush}" FontSize="10" HorizontalAlignment="Right"/>
         </Grid>
     </Border>
 </Window>

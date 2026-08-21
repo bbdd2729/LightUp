@@ -119,7 +119,10 @@ public class App : Application
                 searchService,
                 processLauncher,
                 windowHost,
-                searchHistoryService: searchHistoryService)
+                searchHistoryService: searchHistoryService,
+                copyText: text => window is null
+                    ? Task.FromResult(LaunchResult.Failed("搜索窗口尚未准备完成"))
+                    : window.CopyTextAsync(text))
             {
                 SearchMode = searchSettings.Mode,
                 MaxResults = searchSettings.MaxResults

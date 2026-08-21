@@ -164,7 +164,7 @@ public partial class MainWindow : Window
 
     private MainViewModel ViewModel => (MainViewModel)DataContext!;
 
-    private void Window_KeyDown(object? sender, KeyEventArgs e)
+    private async void Window_KeyDown(object? sender, KeyEventArgs e)
     {
         switch (e.Key)
         {
@@ -177,7 +177,12 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 break;
             case Key.Enter:
-                ViewModel.InvokeSelectedCommand.Execute(null);
+                if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+                    await ViewModel.RevealSelectedItemAsync();
+                else if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    await ViewModel.CopySelectedPathAsync();
+                else
+                    ViewModel.InvokeSelectedCommand.Execute(null);
                 e.Handled = true;
                 break;
             case Key.Escape:

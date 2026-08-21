@@ -68,6 +68,28 @@ public sealed class MainViewModelResultActionTests
     }
 
     [Fact]
+    public async Task CopySelectedPathAsync_copies_a_file_path_and_keeps_the_launcher_open()
+    {
+        string? copiedPath = null;
+        var viewModel = CreateViewModel(
+            new FakeWindowHost(),
+            new FakePathRevealService(LaunchResult.Success),
+            copyText: path =>
+            {
+                copiedPath = path;
+                return Task.FromResult(LaunchResult.Success);
+            });
+        viewModel.SelectedItem = new LauncherItem(
+            "file:report", "Report", "", "C:\\Docs\\Report.pdf", null, LauncherItemKind.File);
+
+        await viewModel.CopySelectedPathAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("C:\\Docs\\Report.pdf", copiedPath);
+        Assert.Contains("已复制路径", viewModel.StatusText);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
     public async Task RevealSelectedItemAsync_reveals_file_backed_results_without_hiding_the_search_window()
     {
         var revealService = new FakePathRevealService(LaunchResult.Success);
@@ -101,8 +123,9 @@ public sealed class MainViewModelResultActionTests
     private static MainViewModel CreateViewModel(
         ILauncherWindowHost windowHost,
         IPathRevealService revealService,
-        ISearchHistoryService? history = null)
-        => new(new EmptySearchService(), new FakeProcessLauncher(), windowHost, revealService, history);
+        ISearchHistoryService? history = null,
+        Func<string, Task<LaunchResult>>? copyText = null)
+        => new(new EmptySearchService(), new FakeProcessLauncher(), windowHost, revealService, history, copyText);
 
     private sealed class EmptySearchService : ISearchService
     {

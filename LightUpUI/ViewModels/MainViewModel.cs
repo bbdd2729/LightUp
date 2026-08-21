@@ -17,6 +17,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly ILauncherWindowHost _windowHost;
     private readonly IPathRevealService _pathRevealService;
     private readonly ISearchHistoryService? _searchHistoryService;
+    private readonly Func<string, Task<LaunchResult>> _copyText;
     private CancellationTokenSource? _searchCancellation;
 
     public MainViewModel(
@@ -24,13 +25,15 @@ public partial class MainViewModel : ViewModelBase
         IProcessLauncher processLauncher,
         ILauncherWindowHost windowHost,
         IPathRevealService? pathRevealService = null,
-        ISearchHistoryService? searchHistoryService = null)
+        ISearchHistoryService? searchHistoryService = null,
+        Func<string, Task<LaunchResult>>? copyText = null)
     {
         _searchService = searchService;
         _processLauncher = processLauncher;
         _windowHost = windowHost;
         _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
         _searchHistoryService = searchHistoryService;
+        _copyText = copyText ?? (_ => Task.FromResult(LaunchResult.Failed("当前环境不支持剪贴板")));
     }
 
     public MainViewModel()
@@ -238,6 +241,45 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception exception)
         {
             StatusText = $"无法打开所在位置：{exception.Message}";
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopySelectedPathAsync(CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        if (item is null)
+        {
+            StatusText = "请先选择一个搜索结果";
+            return;
+        }
+
+        if (!item.CanCopyLaunchPath)
+        {
+            StatusText = "此结果没有可复制的路径";
+            return;
+        }
+
+        IsSearching = true;
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = await _copyText(item.LaunchPath);
+            StatusText = result.Succeeded
+                ? $"已复制路径：{item.Title}"
+                : result.ErrorMessage ?? "复制路径失败";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "复制路径已取消";
+        }
+        catch (Exception exception)
+        {
+            StatusText = $"复制路径失败：{exception.Message}";
         }
         finally
         {
