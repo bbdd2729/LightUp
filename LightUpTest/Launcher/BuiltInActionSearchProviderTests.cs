@@ -15,6 +15,7 @@ public sealed class BuiltInActionSearchProviderTests
         Assert.Contains(results, item => item.Id == "action:everything");
         Assert.Contains(results, item => item.Id == "action:tiles");
         Assert.Contains(results, item => item.Id == "action:settings");
+        Assert.Contains(results, item => item.Id == "action:windows-settings");
     }
 
     [Fact]
@@ -26,5 +27,28 @@ public sealed class BuiltInActionSearchProviderTests
 
         var everything = Assert.Single(results, item => item.Id == "action:everything");
         Assert.Equal("report", everything.Arguments);
+    }
+
+    [Fact]
+    public async Task Http_query_exposes_a_direct_open_action_without_a_web_search_duplicate()
+    {
+        var provider = new BuiltInActionSearchProvider();
+
+        var results = await provider.SearchAsync("https://example.com/docs", TestContext.Current.CancellationToken);
+
+        var openUrl = Assert.Single(results, item => item.Id == "action:open-url");
+        Assert.Equal("https://example.com/docs", openUrl.Arguments);
+        Assert.DoesNotContain(results, item => item.Id == "action:web-search");
+    }
+
+    [Fact]
+    public async Task Text_query_exposes_a_web_search_action()
+    {
+        var provider = new BuiltInActionSearchProvider();
+
+        var results = await provider.SearchAsync("LightUp docs", TestContext.Current.CancellationToken);
+
+        var webSearch = Assert.Single(results, item => item.Id == "action:web-search");
+        Assert.Equal("LightUp docs", webSearch.Arguments);
     }
 }
