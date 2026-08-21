@@ -72,6 +72,75 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    private static LauncherItem? GetContextResult(object? sender)
+    {
+        if (sender is not MenuItem menuItem)
+            return null;
+
+        if (menuItem.DataContext is LauncherItem item)
+            return item;
+
+        return (menuItem.Parent as ContextMenu)?.PlacementTarget?.DataContext as LauncherItem;
+    }
+
+    private LauncherItem? SelectContextResult(object? sender)
+    {
+        var item = GetContextResult(sender);
+        if (item is not null)
+            ViewModel.SelectedItem = item;
+
+        return item;
+    }
+
+    private void ContextOpenResult_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectContextResult(sender) is not null)
+            ViewModel.InvokeSelectedCommand.Execute(null);
+
+        e.Handled = true;
+    }
+
+    private async void ContextRevealResult_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectContextResult(sender) is not null)
+            await ViewModel.RevealSelectedItemAsync();
+
+        e.Handled = true;
+    }
+
+    private async void ContextCopyResultPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var item = SelectContextResult(sender);
+        if (item is null || !item.CanCopyLaunchPath)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null)
+            {
+                ViewModel.ReportStatus("当前环境不支持剪贴板");
+                return;
+            }
+
+            var data = new DataTransfer();
+            data.Add(DataTransferItem.CreateText(item.LaunchPath));
+            await clipboard.SetDataAsync(data);
+            ViewModel.ReportStatus($"已复制路径：{item.Title}");
+        }
+        catch (Exception exception)
+        {
+            ViewModel.ReportStatus($"复制路径失败：{exception.Message}");
+        }
+        finally
+        {
+            e.Handled = true;
+        }
+    }
+
     private void UpdateTopmostButton()
     {
         var topmostButton = this.FindControl<Button>("TopmostButton");

@@ -97,6 +97,34 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:LauncherItem">
                             <Border Padding="12,9" CornerRadius="10" PointerPressed="Result_PointerPressed">
+                                <Border.ContextMenu>
+                                    <ContextMenu Classes="launcher-context-menu">
+                                        <MenuItem Header="打开"
+                                                  Click="ContextOpenResult_Click"
+                                                  AutomationProperties.Name="打开搜索结果">
+                                            <MenuItem.Icon>
+                                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Open}" Width="14" Height="14"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="打开所在位置"
+                                                  Click="ContextRevealResult_Click"
+                                                  IsEnabled="{CompiledBinding CanRevealLocation}"
+                                                  AutomationProperties.Name="打开搜索结果所在位置">
+                                            <MenuItem.Icon>
+                                                <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <Separator/>
+                                        <MenuItem Header="复制路径"
+                                                  Click="ContextCopyResultPath_Click"
+                                                  IsEnabled="{CompiledBinding CanCopyLaunchPath}"
+                                                  AutomationProperties.Name="复制搜索结果路径">
+                                            <MenuItem.Icon>
+                                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Copy}" Width="14" Height="14"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                    </ContextMenu>
+                                </Border.ContextMenu>
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                                     <Border Width="40" Height="40" CornerRadius="11" Background="{DynamicResource LightUpAccentSoftBrush}">
                                         <Grid>

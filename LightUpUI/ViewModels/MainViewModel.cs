@@ -15,16 +15,19 @@ public partial class MainViewModel : ViewModelBase
     private readonly ISearchService _searchService;
     private readonly IProcessLauncher _processLauncher;
     private readonly ILauncherWindowHost _windowHost;
+    private readonly IPathRevealService _pathRevealService;
     private CancellationTokenSource? _searchCancellation;
 
     public MainViewModel(
         ISearchService searchService,
         IProcessLauncher processLauncher,
-        ILauncherWindowHost windowHost)
+        ILauncherWindowHost windowHost,
+        IPathRevealService? pathRevealService = null)
     {
         _searchService = searchService;
         _processLauncher = processLauncher;
         _windowHost = windowHost;
+        _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
     }
 
     public MainViewModel()
@@ -174,6 +177,47 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand]
     private void Hide() => _windowHost.Hide();
+
+    [RelayCommand]
+    public async Task RevealSelectedItemAsync(CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        if (item is null)
+        {
+            StatusText = "请先选择一个搜索结果";
+            return;
+        }
+
+        if (!item.CanRevealLocation)
+        {
+            StatusText = "此结果没有可打开的位置";
+            return;
+        }
+
+        IsSearching = true;
+        try
+        {
+            var result = await _pathRevealService.RevealAsync(item.LaunchPath, cancellationToken);
+            StatusText = result.Succeeded
+                ? $"已打开所在位置：{item.Title}"
+                : result.ErrorMessage ?? "无法打开所在位置";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "打开所在位置已取消";
+        }
+        catch (Exception exception)
+        {
+            StatusText = $"无法打开所在位置：{exception.Message}";
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    public void ReportStatus(string message)
+        => StatusText = string.IsNullOrWhiteSpace(message) ? "操作失败" : message;
 
     private sealed class NullLauncherWindowHost : ILauncherWindowHost
     {

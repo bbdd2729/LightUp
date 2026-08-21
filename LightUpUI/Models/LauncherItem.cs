@@ -8,4 +8,8 @@ public sealed record LauncherItem(
     string? Arguments,
     LauncherItemKind Kind,
     int Relevance = 0,
-    string? IconPath = null);
+    string? IconPath = null)
+{
+    public bool CanRevealLocation => LauncherItemActionPolicy.CanRevealLocation(this);
+    public bool CanCopyLaunchPath => LauncherItemActionPolicy.CanCopyLaunchPath(this);
+}
