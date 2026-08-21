@@ -579,6 +579,27 @@
                                                         <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
+                                                <MenuItem Header="图标"
+                                                          AutomationProperties.Name="管理磁贴图标">
+                                                    <MenuItem.Icon>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Image}" Width="14" Height="14"/>
+                                                    </MenuItem.Icon>
+                                                    <MenuItem Header="选择自定义图标..."
+                                                              Click="ContextChooseIcon_Click"
+                                                              AutomationProperties.Name="选择磁贴自定义图标">
+                                                        <MenuItem.Icon>
+                                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.ImageAdd}" Width="14" Height="14"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="恢复默认图标"
+                                                              Click="ContextClearIcon_Click"
+                                                              IsEnabled="{CompiledBinding HasCustomIcon}"
+                                                              AutomationProperties.Name="恢复磁贴默认图标">
+                                                        <MenuItem.Icon>
+                                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowReset}" Width="14" Height="14"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </MenuItem>
                                                 <MenuItem Header="移动到分类"
                                                           Click="ContextMove_Click"
                                                           AutomationProperties.Name="移动磁贴入口">

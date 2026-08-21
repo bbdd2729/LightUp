@@ -529,6 +529,43 @@ public partial class TileLauncherViewModel : ViewModelBase
             StatusText = $"已重新定位“{item.Title}”";
     }
 
+    public async Task SetTileCustomIconAsync(
+        string tileId,
+        string? customIconPath,
+        CancellationToken cancellationToken = default)
+    {
+        var category = Categories
+            .Where(candidate => !IsDefaultCategory(candidate))
+            .FirstOrDefault(candidate =>
+                candidate.Items.Any(item => item.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase)));
+        if (category is null)
+        {
+            StatusText = "找不到要设置图标的入口";
+            return;
+        }
+
+        var item = category.Items.First(candidate =>
+            candidate.Id.Equals(tileId, StringComparison.OrdinalIgnoreCase));
+        var normalizedPath = string.IsNullOrWhiteSpace(customIconPath) ? null : customIconPath.Trim();
+        if (string.Equals(item.CustomIconPath, normalizedPath, StringComparison.OrdinalIgnoreCase))
+        {
+            StatusText = normalizedPath is null ? "当前正在使用默认图标" : "自定义图标未变化";
+            return;
+        }
+
+        item.CustomIconPath = normalizedPath;
+        if (SelectedCategory is not null)
+            RefreshVisibleItems();
+
+        SelectedItem = item;
+        if (await PersistStateAsync(cancellationToken))
+        {
+            StatusText = normalizedPath is null
+                ? $"已恢复“{item.Title}”的默认图标"
+                : $"已设置“{item.Title}”的自定义图标";
+        }
+    }
+
     [RelayCommand]
     public async Task UndoLastRemovalAsync(CancellationToken cancellationToken = default)
     {

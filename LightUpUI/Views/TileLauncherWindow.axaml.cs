@@ -472,6 +472,50 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
+    private async void ContextChooseIcon_Click(object? sender, RoutedEventArgs e)
+    {
+        var item = SelectContextTile(sender);
+        if (item is not null)
+            await ChooseCustomIconAsync(item);
+
+        e.Handled = true;
+    }
+
+    private async void ContextClearIcon_Click(object? sender, RoutedEventArgs e)
+    {
+        var item = SelectContextTile(sender);
+        if (item is not null)
+            await ViewModel.SetTileCustomIconAsync(item.Id, null);
+
+        e.Handled = true;
+    }
+
+    private async Task ChooseCustomIconAsync(TileItem item)
+    {
+        try
+        {
+            var file = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                AllowMultiple = false,
+                Title = "选择自定义图标",
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("图标和可执行文件")
+                    {
+                        Patterns = ["*.ico", "*.exe", "*.dll", "*.icl", "*.lnk"]
+                    }
+                ]
+            })).FirstOrDefault();
+            var path = file?.TryGetLocalPath();
+            if (!string.IsNullOrWhiteSpace(path))
+                await ViewModel.SetTileCustomIconAsync(item.Id, path);
+        }
+        catch (Exception exception)
+        {
+            ViewModel.ReportError($"选择自定义图标失败：{exception.Message}");
+        }
+    }
+
     private async Task RetargetItemAsync(TileItem item)
     {
         try

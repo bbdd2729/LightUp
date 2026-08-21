@@ -23,6 +23,8 @@ public sealed class TileItem
     public int LaunchCount { get; set; }
     public DateTime? LastLaunchedAtUtc { get; set; }
     public string? CustomIconPath { get; set; }
+    [JsonIgnore]
+    public bool HasCustomIcon => !string.IsNullOrWhiteSpace(CustomIconPath);
     public string? Notes { get; set; }
     [JsonIgnore]
     public TileTargetHealth TargetHealth { get; set; } = TileTargetHealth.Available;

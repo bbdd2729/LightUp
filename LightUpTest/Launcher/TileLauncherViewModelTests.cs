@@ -573,6 +573,65 @@ public sealed class TileLauncherViewModelTests
     }
 
     [Fact]
+    public async Task SetTileCustomIconAsync_updates_the_icon_path_refreshes_the_selection_and_persists()
+    {
+        var item = CreateTile("app.exe");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.SetTileCustomIconAsync(item.Id, "  C:\\Icons\\app.ico  ", TestContext.Current.CancellationToken);
+
+        Assert.Equal("C:\\Icons\\app.ico", item.CustomIconPath);
+        Assert.True(item.HasCustomIcon);
+        Assert.Same(item, viewModel.SelectedItem);
+        Assert.Contains(item, viewModel.VisibleItems);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("已设置", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task SetTileCustomIconAsync_clears_a_custom_icon_and_persists_the_default_choice()
+    {
+        var item = CreateTile("app.exe");
+        item.CustomIconPath = "C:\\Icons\\app.ico";
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.SetTileCustomIconAsync(item.Id, null, TestContext.Current.CancellationToken);
+
+        Assert.Null(item.CustomIconPath);
+        Assert.False(item.HasCustomIcon);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Contains("默认图标", viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task SetTileCustomIconAsync_rejects_unknown_tiles_without_saving()
+    {
+        var item = CreateTile("app.exe");
+        var store = new FakeStateStore(new TileLauncherState
+        {
+            SelectedCategoryId = "uncategorized",
+            Categories = [new TileCategory { Id = "uncategorized", Name = "未分类", Items = [item] }]
+        });
+        var viewModel = await CreateLoadedViewModelAsync(store, TestContext.Current.CancellationToken);
+
+        await viewModel.SetTileCustomIconAsync("missing", "C:\\Icons\\app.ico", TestContext.Current.CancellationToken);
+
+        Assert.Null(item.CustomIconPath);
+        Assert.Equal(0, store.SaveCount);
+        Assert.Contains("找不到", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task SaveSelectedItemNotesAsync_persists_trimmed_notes_and_updates_the_editor()
     {
         var item = CreateTile("notes");
