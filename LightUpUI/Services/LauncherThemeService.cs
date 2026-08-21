@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -7,11 +8,24 @@ namespace LightUpUI.Services;
 
 public static class LauncherThemeService
 {
+    private static Application? _application;
+    private static LauncherAppearanceSettings? _appearance;
+
     public static void Apply(LauncherAppearanceSettings appearance)
     {
         if (Application.Current is not { } application)
             return;
 
+        if (!ReferenceEquals(_application, application))
+        {
+            if (_application is not null)
+                _application.ActualThemeVariantChanged -= Application_ActualThemeVariantChanged;
+
+            _application = application;
+            application.ActualThemeVariantChanged += Application_ActualThemeVariantChanged;
+        }
+
+        _appearance = appearance;
         var mode = ThemePalettePolicy.NormalizeThemeMode(appearance.ThemeMode);
         application.RequestedThemeVariant = mode switch
         {
@@ -20,11 +34,24 @@ public static class LauncherThemeService
             _ => ThemeVariant.Default
         };
 
+        ApplyResources(application, appearance, mode);
+    }
+
+    private static void Application_ActualThemeVariantChanged(object? sender, EventArgs e)
+    {
+        if (_application is { } application && _appearance is { } appearance)
+            ApplyResources(application, appearance, ThemePalettePolicy.NormalizeThemeMode(appearance.ThemeMode));
+    }
+
+    private static void ApplyResources(
+        Application application,
+        LauncherAppearanceSettings appearance,
+        LauncherThemeMode mode)
+    {
         var accent = ThemePalettePolicy.GetAccentColor(
             appearance.ColorPalette,
             appearance.CustomAccentColor);
-        var isLight = mode == LauncherThemeMode.Light
-            || mode == LauncherThemeMode.System && application.ActualThemeVariant == ThemeVariant.Light;
+        var isLight = ThemePalettePolicy.UsesLightResources(mode, application.ActualThemeVariant);
 
         SetBrush(application, "LightUpWindowBrush", isLight ? "F7F9FC" : "F0141A27");
         SetBrush(application, "LightUpSurfaceBrush", isLight ? "12000000" : "1AFFFFFF");

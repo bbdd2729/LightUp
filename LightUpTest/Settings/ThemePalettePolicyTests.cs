@@ -1,4 +1,5 @@
 using LightUpUI.Models;
+using Avalonia.Styling;
 
 namespace LightUpTest.Settings;
 
@@ -26,5 +27,20 @@ public sealed class ThemePalettePolicyTests
             var color = ThemePalettePolicy.GetAccentColor(palette, "#123456");
             Assert.True(color.A > 0);
         }
+    }
+
+    [Theory]
+    [InlineData(LauncherThemeMode.Light, "Dark", true)]
+    [InlineData(LauncherThemeMode.Dark, "Light", false)]
+    [InlineData(LauncherThemeMode.System, "Light", true)]
+    [InlineData(LauncherThemeMode.System, "Dark", false)]
+    public void Resource_brightness_tracks_the_selected_theme_mode(
+        LauncherThemeMode mode,
+        string actualThemeName,
+        bool expected)
+    {
+        var actualTheme = actualThemeName == "Light" ? ThemeVariant.Light : ThemeVariant.Dark;
+
+        Assert.Equal(expected, ThemePalettePolicy.UsesLightResources(mode, actualTheme));
     }
 }

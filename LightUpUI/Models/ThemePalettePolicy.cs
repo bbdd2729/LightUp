@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace LightUpUI.Models;
 
@@ -63,4 +64,9 @@ public static class ThemePalettePolicy
             _ => Color.Parse("#3B82F6")
         };
     }
+
+    public static bool UsesLightResources(LauncherThemeMode mode, ThemeVariant actualThemeVariant)
+        => NormalizeThemeMode(mode) == LauncherThemeMode.Light
+            || NormalizeThemeMode(mode) == LauncherThemeMode.System
+            && actualThemeVariant == ThemeVariant.Light;
 }
