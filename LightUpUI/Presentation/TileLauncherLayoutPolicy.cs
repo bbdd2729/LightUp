@@ -16,6 +16,11 @@ public static class TileLauncherLayoutPolicy
             ? launcherWidth * SearchWidthRatio
             : 0;
 
+    public static TileDensityMetrics GetDensityMetrics(TileDensity density)
+        => TileDensityPolicy.Normalize(density) == TileDensity.Comfortable
+            ? new TileDensityMetrics(188, 160, 56, 14, 9)
+            : new TileDensityMetrics(TileWidth, TileHeight, TileIconBoxSize, 12, 7);
+
     public static bool ShouldShowEmptyState(bool isLoading, bool hasVisibleItems)
         => !isLoading && !hasVisibleItems;
 

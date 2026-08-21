@@ -15,6 +15,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly SearchLauncherSettings _settings;
     private readonly Action<SearchLauncherMode> _applySearchMode;
     private readonly Action<CategoryNavigationPlacement> _applyCategoryNavigationPlacement;
+    private readonly Action<TileDensity> _applyTileDensity;
     private readonly Action<int> _applyMaxResults;
     private readonly Action<bool> _applySearchAllTileCategories;
     private readonly Func<string, string, string?> _applyHotkeys;
@@ -24,6 +25,7 @@ public partial class SettingsViewModel : ViewModelBase
         SearchLauncherSettings settings,
         Action<SearchLauncherMode> applySearchMode,
         Action<CategoryNavigationPlacement>? applyCategoryNavigationPlacement = null,
+        Action<TileDensity>? applyTileDensity = null,
         Action<int>? applyMaxResults = null,
         Action<bool>? applySearchAllTileCategories = null,
         Func<string, string, string?>? applyHotkeys = null)
@@ -32,6 +34,7 @@ public partial class SettingsViewModel : ViewModelBase
         _settings = settings;
         _applySearchMode = applySearchMode;
         _applyCategoryNavigationPlacement = applyCategoryNavigationPlacement ?? (_ => { });
+        _applyTileDensity = applyTileDensity ?? (_ => { });
         _applyMaxResults = applyMaxResults ?? (_ => { });
         _applySearchAllTileCategories = applySearchAllTileCategories ?? (_ => { });
         _applyHotkeys = applyHotkeys ?? ((_, _) => null);
@@ -42,10 +45,12 @@ public partial class SettingsViewModel : ViewModelBase
         _tileLauncherHotkey = settings.TileLauncherHotkey;
         _selectedCategoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(
             settings.CategoryNavigationPlacement);
+        _selectedTileDensity = TileDensityPolicy.Normalize(settings.Appearance.TileDensity);
     }
 
     public Array SearchModes { get; } = Enum.GetValues<SearchLauncherMode>();
     public Array CategoryNavigationPlacements { get; } = Enum.GetValues<CategoryNavigationPlacement>();
+    public Array TileDensities { get; } = Enum.GetValues<TileDensity>();
     public int[] ResultLimits { get; } = [10, 20, 30, 50, 100];
 
     [ObservableProperty]
@@ -53,6 +58,9 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private CategoryNavigationPlacement _selectedCategoryNavigationPlacement;
+
+    [ObservableProperty]
+    private TileDensity _selectedTileDensity;
 
     [ObservableProperty]
     private int _selectedMaxResults;
@@ -78,6 +86,7 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.Mode = SelectedSearchMode;
         _settings.CategoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(
             SelectedCategoryNavigationPlacement);
+        _settings.Appearance.TileDensity = TileDensityPolicy.Normalize(SelectedTileDensity);
         _settings.MaxResults = SearchResultLimitPolicy.Normalize(SelectedMaxResults);
         _settings.SearchAllTileCategories = SearchAllTileCategories;
         _settings.Hotkey = searchHotkey;
@@ -85,6 +94,7 @@ public partial class SettingsViewModel : ViewModelBase
         await _settingsStore.SaveAsync(_settings, cancellationToken);
         _applySearchMode(SelectedSearchMode);
         _applyCategoryNavigationPlacement(_settings.CategoryNavigationPlacement);
+        _applyTileDensity(_settings.Appearance.TileDensity);
         _applyMaxResults(_settings.MaxResults);
         _applySearchAllTileCategories(_settings.SearchAllTileCategories);
         StatusText = "设置已保存";

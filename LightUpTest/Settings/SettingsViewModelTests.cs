@@ -31,13 +31,31 @@ public sealed class SettingsViewModelTests
             store,
             store.Settings,
             _ => { },
-            placement => appliedPlacement = placement);
+            applyCategoryNavigationPlacement: placement => appliedPlacement = placement);
         viewModel.SelectedCategoryNavigationPlacement = CategoryNavigationPlacement.Top;
 
         await viewModel.SaveAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(CategoryNavigationPlacement.Top, store.Settings.CategoryNavigationPlacement);
         Assert.Equal(CategoryNavigationPlacement.Top, appliedPlacement);
+    }
+
+    [Fact]
+    public async Task SaveAsync_persists_tile_density_and_notifies_the_tile_host()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        TileDensity? appliedDensity = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyTileDensity: density => appliedDensity = density);
+        viewModel.SelectedTileDensity = TileDensity.Comfortable;
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(TileDensity.Comfortable, store.Settings.Appearance.TileDensity);
+        Assert.Equal(TileDensity.Comfortable, appliedDensity);
     }
 
     [Fact]

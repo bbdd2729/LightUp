@@ -223,6 +223,21 @@
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                     <Setter Property="Background" Value="Transparent"/>
                                 </Style>
+                                <Style Selector="ListBox.tile-density-comfortable ListBoxItem">
+                                    <Setter Property="Width" Value="188"/>
+                                    <Setter Property="Height" Value="160"/>
+                                    <Setter Property="Margin" Value="5"/>
+                                </Style>
+                                <Style Selector="ListBox.tile-density-comfortable Border.tile-card">
+                                    <Setter Property="Padding" Value="14"/>
+                                </Style>
+                                <Style Selector="ListBox.tile-density-comfortable Border.tile-card > Grid">
+                                    <Setter Property="RowSpacing" Value="9"/>
+                                </Style>
+                                <Style Selector="ListBox.tile-density-comfortable Border.tile-icon-box">
+                                    <Setter Property="Width" Value="56"/>
+                                    <Setter Property="Height" Value="56"/>
+                                </Style>
                                 <Style Selector="ListBoxItem:pointerover Border.category-top-item">
                                     <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
                                 </Style>
@@ -510,7 +525,8 @@
                             </ListBox.Styles>
                             <ListBox.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"
+                                    <WrapPanel x:Name="TileWrapPanel"
+                                               Orientation="Horizontal"
                                                ItemWidth="156"
                                                ItemHeight="132"/>
                                 </ItemsPanelTemplate>
@@ -581,7 +597,8 @@
                                             </ContextMenu>
                                         </Border.ContextMenu>
                                         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="7">
-                                            <Border Width="44"
+                                            <Border Classes="tile-icon-box"
+                                                    Width="44"
                                                     Height="44"
                                                     CornerRadius="12"
                                                     Background="{DynamicResource LightUpAccentSoftBrush}"

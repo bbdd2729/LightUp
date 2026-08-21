@@ -44,6 +44,7 @@ public partial class TileLauncherWindow : Window
         UpdateTopmostButton();
         UpdateSearchWidth();
         UpdateWorkspaceLayout();
+        UpdateTileDensity();
     }
 
     public void FocusSearchBox()
@@ -583,6 +584,8 @@ public partial class TileLauncherWindow : Window
     {
         if (e.PropertyName == nameof(TileLauncherViewModel.CategoryNavigationPlacement))
             UpdateWorkspaceLayout();
+        else if (e.PropertyName == nameof(TileLauncherViewModel.TileDensity))
+            UpdateTileDensity();
     }
 
     private void UpdateWorkspaceLayout()
@@ -602,6 +605,19 @@ public partial class TileLauncherWindow : Window
         var searchShell = this.FindControl<Control>("SearchShell");
         if (searchShell is not null)
             searchShell.MaxWidth = TileLauncherLayoutPolicy.GetSearchMaxWidth(Bounds.Width);
+    }
+
+    private void UpdateTileDensity()
+    {
+        var metrics = TileLauncherLayoutPolicy.GetDensityMetrics(_viewModel.TileDensity);
+        var tileList = this.FindControl<ListBox>("TileList");
+        var wrapPanel = this.FindControl<WrapPanel>("TileWrapPanel");
+        if (tileList is null || wrapPanel is null)
+            return;
+
+        wrapPanel.ItemWidth = metrics.TileWidth;
+        wrapPanel.ItemHeight = metrics.TileHeight;
+        SetClass(tileList, "tile-density-comfortable", _viewModel.TileDensity == TileDensity.Comfortable);
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

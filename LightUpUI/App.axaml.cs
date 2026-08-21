@@ -70,7 +70,8 @@ public class App : Application
             var tileViewModel = new ViewModels.TileLauncherViewModel(
                 tileStateStore,
                 launchProcess,
-                categoryNavigationPlacement: searchSettings.CategoryNavigationPlacement);
+                categoryNavigationPlacement: searchSettings.CategoryNavigationPlacement,
+                tileDensity: searchSettings.Appearance.TileDensity);
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
@@ -81,9 +82,10 @@ public class App : Application
                 settingsStore,
                 searchSettings,
                 mode => viewModel!.SearchMode = mode,
-                placement => tileViewModel.CategoryNavigationPlacement = placement,
-                maxResults => viewModel!.MaxResults = maxResults,
-                searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories,
+                applyCategoryNavigationPlacement: placement => tileViewModel.CategoryNavigationPlacement = placement,
+                applyTileDensity: density => tileViewModel.TileDensity = density,
+                applyMaxResults: maxResults => viewModel!.MaxResults = maxResults,
+                applySearchAllTileCategories: searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories,
                 applyHotkeys: (searchHotkey, tileLauncherHotkey) =>
                     hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error);
             var actionHost = new LauncherActionHost(

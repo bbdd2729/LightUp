@@ -4,7 +4,7 @@
         x:Class="LightUpUI.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
         Width="520"
-        Height="670"
+        Height="720"
         Title="LightUp 设置"
         WindowStartupLocation="CenterOwner">
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
@@ -27,6 +27,13 @@
                     <ComboBox ItemsSource="{Binding CategoryNavigationPlacements}"
                               SelectedItem="{Binding SelectedCategoryNavigationPlacement, Mode=TwoWay}"/>
                     <TextBlock Text="左侧：分类固定在窗口左边。&#x0a;顶部：分类以横向列表显示，为磁贴区域腾出完整宽度。"
+                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="磁贴密度" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{CompiledBinding TileDensities}"
+                              SelectedItem="{CompiledBinding SelectedTileDensity, Mode=TwoWay}"/>
+                    <TextBlock Text="紧凑：在较小窗口中显示更多入口。&#x0a;舒适：更大的图标和间距，更适合触控与高分辨率屏幕。"
                                Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Spacing="8">

@@ -36,7 +36,8 @@ public partial class TileLauncherViewModel : ViewModelBase
         TileStateSaveCoordinator? saveCoordinator = null,
         CategoryNavigationPlacement categoryNavigationPlacement = CategoryNavigationPlacement.Left,
         IPathRevealService? pathRevealService = null,
-        ITileTargetHealthService? targetHealthService = null)
+        ITileTargetHealthService? targetHealthService = null,
+        TileDensity tileDensity = TileDensity.Compact)
     {
         _stateStore = stateStore;
         _processLauncher = processLauncher;
@@ -44,6 +45,7 @@ public partial class TileLauncherViewModel : ViewModelBase
         _targetHealthService = targetHealthService ?? new TileTargetHealthService();
         _saveCoordinator = saveCoordinator ?? new TileStateSaveCoordinator(stateStore);
         _categoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(categoryNavigationPlacement);
+        _tileDensity = TileDensityPolicy.Normalize(tileDensity);
     }
 
     public ObservableCollection<TileCategory> Categories { get; } = [];
@@ -86,6 +88,14 @@ public partial class TileLauncherViewModel : ViewModelBase
     private string _editedTileNotes = string.Empty;
 
     private CategoryNavigationPlacement _categoryNavigationPlacement;
+
+    private TileDensity _tileDensity;
+
+    public TileDensity TileDensity
+    {
+        get => _tileDensity;
+        set => SetProperty(ref _tileDensity, TileDensityPolicy.Normalize(value));
+    }
 
     public CategoryNavigationPlacement CategoryNavigationPlacement
     {
