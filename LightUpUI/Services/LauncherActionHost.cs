@@ -50,6 +50,10 @@ public sealed class LauncherActionHost : ILauncherActionHost
                         cancellationToken);
                 case "action:windows-settings":
                     return await _uriLauncher.OpenAsync("ms-settings:", cancellationToken);
+                case "action:control-panel":
+                    return await _uriLauncher.OpenAsync("shell:ControlPanelFolder", cancellationToken);
+                case "action:file-explorer":
+                    return await _uriLauncher.OpenAsync("shell:MyComputerFolder", cancellationToken);
                 case "action:copy-calculation":
                     return await _copyText(item.Arguments ?? string.Empty);
                 default:

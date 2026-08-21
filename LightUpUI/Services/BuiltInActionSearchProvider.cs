@@ -56,8 +56,22 @@ public sealed class BuiltInActionSearchProvider : ISearchProvider
             new LauncherItem(
                 "action:windows-settings",
                 "打开 Windows 设置",
-                "打开 Windows 系统设置",
+                "打开 Windows 系统设置 / Windows Settings",
                 "lightup:windows-settings",
+                null,
+                LauncherItemKind.Action),
+            new LauncherItem(
+                "action:control-panel",
+                "打开控制面板",
+                "管理传统 Windows 控制面板 / Control Panel",
+                "lightup:control-panel",
+                null,
+                LauncherItemKind.Action),
+            new LauncherItem(
+                "action:file-explorer",
+                "打开文件资源管理器",
+                "浏览此电脑中的文件 / File Explorer",
+                "lightup:file-explorer",
                 null,
                 LauncherItemKind.Action)
         ];

@@ -9,6 +9,8 @@ public sealed class LauncherActionHostTests
     [InlineData("action:open-url", "https://example.com/docs", "https://example.com/docs")]
     [InlineData("action:web-search", "LightUp docs", "https://www.bing.com/search?q=LightUp%20docs")]
     [InlineData("action:windows-settings", null, "ms-settings:")]
+    [InlineData("action:control-panel", null, "shell:ControlPanelFolder")]
+    [InlineData("action:file-explorer", null, "shell:MyComputerFolder")]
     public async Task Uri_actions_are_delegated_to_the_uri_launcher(
         string actionId,
         string? arguments,

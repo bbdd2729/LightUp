@@ -16,6 +16,21 @@ public sealed class BuiltInActionSearchProviderTests
         Assert.Contains(results, item => item.Id == "action:tiles");
         Assert.Contains(results, item => item.Id == "action:settings");
         Assert.Contains(results, item => item.Id == "action:windows-settings");
+        Assert.Contains(results, item => item.Id == "action:control-panel");
+        Assert.Contains(results, item => item.Id == "action:file-explorer");
+    }
+
+    [Theory]
+    [InlineData("Control Panel", "action:control-panel")]
+    [InlineData("File Explorer", "action:file-explorer")]
+    [InlineData("Windows Settings", "action:windows-settings")]
+    public async Task System_actions_can_be_found_by_their_english_windows_names(string query, string expectedId)
+    {
+        var service = new SearchService([new BuiltInActionSearchProvider()]);
+
+        var results = await service.SearchAsync(query, TestContext.Current.CancellationToken);
+
+        Assert.Contains(results, item => item.Id == expectedId);
     }
 
     [Fact]
