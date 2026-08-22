@@ -60,6 +60,22 @@ public sealed class MainViewModelDefaultResultsTests
     }
 
     [Fact]
+    public void Query_presence_tracks_the_clear_action_availability()
+    {
+        var viewModel = new MainViewModel(new FakeSearchService([]), new FakeProcessLauncher(), new FakeWindowHost());
+
+        Assert.False(viewModel.HasQueryText);
+
+        viewModel.QueryText = "notepad";
+
+        Assert.True(viewModel.HasQueryText);
+
+        viewModel.ClearQueryCommand.Execute(null);
+
+        Assert.False(viewModel.HasQueryText);
+    }
+
+    [Fact]
     public void Empty_state_and_status_bar_are_mutually_exclusive()
     {
         var viewModel = new MainViewModel(new FakeSearchService([]), new FakeProcessLauncher(), new FakeWindowHost());

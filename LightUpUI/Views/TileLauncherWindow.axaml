@@ -530,10 +530,12 @@
                                                         Height="13"
                                                         Foreground="{DynamicResource LightUpDangerBrush}"
                                                         VerticalAlignment="Center"/>
-                                    <TextBlock Text="{CompiledBinding CategoryRemovalConfirmationText}"
+                                            <TextBlock Text="{CompiledBinding CategoryRemovalConfirmationText}"
                                                FontSize="10.5"
                                                Foreground="{DynamicResource LightUpTextBrush}"
                                                VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               MaxLines="2"
                                                TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
@@ -989,12 +991,16 @@
                 <TextBlock Text="单击选择 · 双击打开 · Enter 打开 · Esc 收起"
                            FontSize="10"
                            Foreground="{DynamicResource LightUpTextFaintBrush}"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           MaxLines="1"/>
                 <TextBlock Grid.Column="1"
                            Text="拖放文件或 HTTP(S) 地址也可添加入口"
                            FontSize="10"
                            Foreground="{DynamicResource LightUpTextFaintBrush}"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           MaxLines="1"/>
             </Grid>
 
                     <Border x:Name="ExternalDropOverlay"

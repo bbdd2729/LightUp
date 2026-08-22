@@ -82,10 +82,13 @@ public partial class MainViewModel : ViewModelBase
 
     public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
 
+    public bool HasQueryText => !string.IsNullOrWhiteSpace(QueryText);
+
     public bool ShowStatusBar => HasStatus && !ShowEmptyState;
 
     partial void OnQueryTextChanged(string value)
     {
+        OnPropertyChanged(nameof(HasQueryText));
         _ = SearchAsync(value);
     }
 

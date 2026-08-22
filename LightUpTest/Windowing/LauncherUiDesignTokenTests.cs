@@ -54,6 +54,9 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("ShowStatusBar", markup);
         Assert.Contains("AutomationProperties.Name=\"{CompiledBinding Title}\"", markup);
         Assert.Contains("AutomationProperties.HelpText=\"{CompiledBinding Subtitle}\"", markup);
+        Assert.Contains("IsEnabled=\"{Binding HasQueryText}\"", markup);
+        Assert.Contains("ScrollViewer.BringIntoViewOnFocusChange=\"True\"", markup);
+        Assert.Contains("AutomationProperties.Name=\"切换搜索窗口置顶\"", markup);
     }
 
     [Fact]
@@ -65,6 +68,19 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("LightUpDropBrush", markup);
         Assert.Contains("LightUpDangerSoftBrush", markup);
         Assert.DoesNotContain("#D91B2A3D", markup);
+    }
+
+    [Fact]
+    public void Tile_confirmation_and_footer_hints_have_stable_text_overflow_rules()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "TileLauncherWindow.axaml");
+        var markup = File.ReadAllText(Path.GetFullPath(path));
+
+        Assert.Contains("TextWrapping=\"Wrap\"", markup);
+        Assert.Contains("MaxLines=\"2\"", markup);
+        Assert.Contains("TextTrimming=\"CharacterEllipsis\"", markup);
+        Assert.Contains("Text=\"单击选择 · 双击打开 · Enter 打开 · Esc 收起\"", markup);
+        Assert.Contains("Text=\"拖放文件或 HTTP(S) 地址也可添加入口\"", markup);
     }
 
     [Fact]

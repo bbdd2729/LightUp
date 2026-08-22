@@ -43,13 +43,13 @@
                     </Border>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                    <Button Classes="launcher-chrome" x:Name="TopmostButton" Click="ToggleTopmost_Click" ToolTip.Tip="置顶">
+                    <Button Classes="launcher-chrome" x:Name="TopmostButton" Click="ToggleTopmost_Click" ToolTip.Tip="置顶" AutomationProperties.Name="切换搜索窗口置顶">
                         <fluent:FluentIcon x:Name="TopmostIcon" Icon="{x:Static icon:Icon.Pin}" Width="15" Height="15" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                     </Button>
-                    <Button Classes="launcher-chrome" Click="Collapse_Click" ToolTip.Tip="收起窗口">
+                    <Button Classes="launcher-chrome" Click="Collapse_Click" ToolTip.Tip="收起窗口" AutomationProperties.Name="收起搜索窗口">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowMinimize}" Width="15" Height="15"/>
                     </Button>
-                    <Button Classes="launcher-chrome" Click="Close_Click" ToolTip.Tip="关闭窗口">
+                    <Button Classes="launcher-chrome" Click="Close_Click" ToolTip.Tip="关闭窗口" AutomationProperties.Name="关闭搜索窗口">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}" Width="15" Height="15"/>
                     </Button>
                 </StackPanel>
@@ -70,7 +70,7 @@
                         <Border Classes="launcher-chip" Padding="7,4">
                             <TextBlock Text="{Binding SearchModeLabel}" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="10" VerticalAlignment="Center"/>
                         </Border>
-                        <Button Classes="launcher-chrome" Click="ClearQuery_Click" ToolTip.Tip="清空搜索">
+                        <Button Classes="launcher-chrome" Click="ClearQuery_Click" ToolTip.Tip="清空搜索" AutomationProperties.Name="清空搜索" IsEnabled="{Binding HasQueryText}">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}" Width="13" Height="13"/>
                         </Button>
                     </StackPanel>
@@ -81,7 +81,8 @@
                 <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                          Background="Transparent" BorderThickness="0" Padding="0"
                          KeyboardNavigation.TabIndex="0"
-                         KeyboardNavigation.IsTabStop="True">
+                         KeyboardNavigation.IsTabStop="True"
+                         ScrollViewer.BringIntoViewOnFocusChange="True">
                     <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                             <Setter Property="Padding" Value="0"/>
