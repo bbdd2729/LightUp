@@ -75,4 +75,16 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("AutomationProperties.Name=\"退出 LightUp\"", markup);
         Assert.Contains("KeyboardNavigation.TabIndex=\"3\"", markup);
     }
+
+    [Fact]
+    public void Tray_icon_uses_the_native_context_menu_without_a_left_click_menu_handler()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "App.axaml.cs");
+        var source = File.ReadAllText(Path.GetFullPath(path));
+
+        Assert.Contains("trayIcon.Menu = CreateTrayNativeMenu", source);
+        Assert.Contains("ToolTipText = \"LightUp 启动器 · 右键打开菜单\"", source);
+        Assert.DoesNotContain("trayIcon.Clicked", source);
+        Assert.DoesNotContain("quickMenu", source);
+    }
 }

@@ -244,40 +244,19 @@ public class App : Application
         var iconUri = new Uri("avares://LightUpUI/Assets/avalonia-logo.ico");
         using var stream = AssetLoader.Open(iconUri);
         var bitmap = new Bitmap(stream);
-        TrayMenuWindow? quickMenu = null;
-        var menuViewModel = new TrayMenuViewModel(
-            () =>
-            {
-                quickMenu?.Hide();
-                searchHost.Show();
-            },
-            () =>
-            {
-                quickMenu?.Hide();
-                tileHost.Show();
-            },
-            () =>
-            {
-                quickMenu?.Hide();
-                openSettings();
-            },
-            () => desktop.Shutdown());
-        quickMenu = new TrayMenuWindow(menuViewModel);
         var trayIcon = new TrayIcon
         {
             Icon = new WindowIcon(bitmap),
-            ToolTipText = "LightUp 启动器 · 点击打开快捷菜单"
+            ToolTipText = "LightUp 启动器 · 右键打开菜单"
         };
         trayIcon.Menu = CreateTrayNativeMenu(
             () => searchHost.Show(),
             () => tileHost.Show(),
             openSettings,
             () => desktop.Shutdown());
-        trayIcon.Clicked += (_, _) => quickMenu.Toggle();
         TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
         desktop.Exit += (_, _) =>
         {
-            quickMenu.Close();
             trayIcon.Dispose();
         };
     }
