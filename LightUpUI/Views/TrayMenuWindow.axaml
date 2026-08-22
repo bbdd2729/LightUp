@@ -43,7 +43,7 @@
                         AutomationProperties.Name="打开搜索"
                         KeyboardNavigation.TabIndex="0">
                     <Grid ColumnDefinitions="30,*,92" ColumnSpacing="10">
-                        <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpAccentSoftBrush}">
+                        <Border Width="30" Height="30" Classes="launcher-icon-badge">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Search}" Width="16" Height="16" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
@@ -57,7 +57,7 @@
                         AutomationProperties.Name="打开磁贴启动器"
                         KeyboardNavigation.TabIndex="1">
                     <Grid ColumnDefinitions="30,*,92" ColumnSpacing="10">
-                        <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpSurfaceStrongBrush}">
+                        <Border Width="30" Height="30" Classes="launcher-chip">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Apps}" Width="16" Height="16" Foreground="{DynamicResource LightUpTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
@@ -71,7 +71,7 @@
                         AutomationProperties.Name="打开设置"
                         KeyboardNavigation.TabIndex="2">
                     <Grid ColumnDefinitions="30,*" ColumnSpacing="10">
-                        <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource LightUpSurfaceStrongBrush}">
+                        <Border Width="30" Height="30" Classes="launcher-chip">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Settings}" Width="16" Height="16" Foreground="{DynamicResource LightUpTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">

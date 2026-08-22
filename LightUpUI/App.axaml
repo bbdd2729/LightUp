@@ -11,8 +11,6 @@
         <converters:TileItemNativeIconConverter x:Key="TileItemNativeIconConverter"/>
         <converters:LauncherItemLabelConverter x:Key="LauncherItemLabelConverter"/>
         <SolidColorBrush x:Key="LightUpWindowBrush" Color="#F0141A27"/>
-        <SolidColorBrush x:Key="LightUpSurfaceBrush" Color="#1AFFFFFF"/>
-        <SolidColorBrush x:Key="LightUpSurfaceStrongBrush" Color="#24FFFFFF"/>
         <SolidColorBrush x:Key="LightUpInputBrush" Color="#26FFFFFF"/>
         <SolidColorBrush x:Key="LightUpInputHoverBrush" Color="#32FFFFFF"/>
         <SolidColorBrush x:Key="LightUpDropBrush" Color="#D91B2A3D"/>
@@ -32,6 +30,8 @@
         <SolidColorBrush x:Key="LightUpDangerSoftBrush" Color="#20E66D75"/>
         <SolidColorBrush x:Key="LightUpSuccessBrush" Color="#FF76E3A1"/>
         <SolidColorBrush x:Key="LightUpWarningBrush" Color="#FFFFD166"/>
+        <SolidColorBrush x:Key="LightUpSuccessSoftBrush" Color="#2076E3A1"/>
+        <SolidColorBrush x:Key="LightUpWarningSoftBrush" Color="#20FFD166"/>
 
         <!-- Semi token aliases keep the custom LightUp palette compatible with Semi control themes. -->
         <SolidColorBrush x:Key="SemiColorPrimary" Color="#3B82F6"/>
@@ -144,9 +144,9 @@
             <Setter Property="Opacity" Value="0.78"/>
         </Style>
         <Style Selector="Button.launcher-danger:disabled">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpDisabledBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorDisabledBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorDisabledBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorDisabledText}"/>
             <Setter Property="Opacity" Value="1"/>
         </Style>
         <Style Selector="Border.launcher-search-shell">
@@ -243,9 +243,9 @@
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="Button.launcher-secondary:disabled">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpDisabledBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorDisabledBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorDisabledBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorDisabledText}"/>
             <Setter Property="Opacity" Value="1"/>
         </Style>
         <Style Selector="Button.tray-menu-item">
@@ -409,9 +409,41 @@
             <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="Padding" Value="8,5"/>
         </Style>
+        <Style Selector="Border.launcher-icon-badge">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusExtraSmall}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.feedback-state">
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusExtraSmall}"/>
+        </Style>
+        <Style Selector="Border.feedback-state.feedback-success">
+            <Setter Property="Background" Value="{DynamicResource LightUpSuccessSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpSuccessBrush}"/>
+        </Style>
+        <Style Selector="Border.feedback-state.feedback-warning">
+            <Setter Property="Background" Value="{DynamicResource LightUpWarningSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpWarningBrush}"/>
+        </Style>
+        <Style Selector="Border.feedback-state.feedback-error">
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpDangerBrush}"/>
+        </Style>
+        <Style Selector="Border.feedback-state.feedback-busy">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
+        </Style>
         <Style Selector="Border.result-row">
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.result-row:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="ListBoxItem:focus-visible Border.result-row">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>

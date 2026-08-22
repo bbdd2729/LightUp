@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LightUpUI.Models;
 using LightUpUI.Services;
+using LightUpUI.Presentation;
 
 namespace LightUpUI.ViewModels;
 
@@ -57,6 +58,9 @@ public partial class MainViewModel : ViewModelBase
     private string _statusText = string.Empty;
 
     [ObservableProperty]
+    private FeedbackTone _statusTone = FeedbackTone.Info;
+
+    [ObservableProperty]
     private bool _isLauncherVisible;
 
     [ObservableProperty]
@@ -94,12 +98,14 @@ public partial class MainViewModel : ViewModelBase
 
     partial void OnIsSearchingChanged(bool value)
     {
+        StatusTone = FeedbackTonePolicy.FromStatus(StatusText, value);
         OnPropertyChanged(nameof(ShowEmptyState));
         OnPropertyChanged(nameof(ShowStatusBar));
     }
 
     partial void OnStatusTextChanged(string value)
     {
+        StatusTone = FeedbackTonePolicy.FromStatus(value, IsSearching);
         OnPropertyChanged(nameof(HasStatus));
         OnPropertyChanged(nameof(ShowStatusBar));
     }

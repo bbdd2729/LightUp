@@ -54,8 +54,6 @@ public static class LauncherThemeService
         var isLight = ThemePalettePolicy.UsesLightResources(mode, application.ActualThemeVariant);
 
         SetBrush(application, "LightUpWindowBrush", isLight ? "F7F9FC" : "F0141A27");
-        SetBrush(application, "LightUpSurfaceBrush", isLight ? "12000000" : "1AFFFFFF");
-        SetBrush(application, "LightUpSurfaceStrongBrush", isLight ? "1E000000" : "24FFFFFF");
         SetBrush(application, "LightUpInputBrush", isLight ? "0D17212B" : "26FFFFFF");
         SetBrush(application, "LightUpInputHoverBrush", isLight ? "1417212B" : "32FFFFFF");
         SetBrush(application, "LightUpDropBrush", isLight ? "D9E7F0FF" : "D91B2A3D");
@@ -75,6 +73,8 @@ public static class LauncherThemeService
         SetBrush(application, "LightUpDangerSoftBrush", isLight ? "1FC6284A" : "20E66D75");
         SetBrush(application, "LightUpSuccessBrush", isLight ? "FF0E8F5A" : "FF76E3A1");
         SetBrush(application, "LightUpWarningBrush", isLight ? "FFC27A00" : "FFFFD166");
+        SetBrush(application, "LightUpSuccessSoftBrush", isLight ? "1F0E8F5A" : "2076E3A1");
+        SetBrush(application, "LightUpWarningSoftBrush", isLight ? "1FC27A00" : "20FFD166");
 
         ApplySemiTokens(application, accent, isLight);
     }

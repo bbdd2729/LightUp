@@ -35,11 +35,11 @@
         </Style>
         <Style Selector="Border.tile-card.tile-drop-before">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
-            <Setter Property="BoxShadow" Value="0 -3 0 0 #FF75A3FF"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
         </Style>
         <Style Selector="Border.tile-card.tile-drop-after">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
-            <Setter Property="BoxShadow" Value="0 3 0 0 #FF75A3FF"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
         </Style>
         <Style Selector="Border.external-drop-overlay">
             <Setter Property="Background" Value="{DynamicResource LightUpDropBrush}"/>
@@ -70,7 +70,7 @@
                   Cursor="SizeAll"
                   PointerPressed="TitleBar_PointerPressed">
                 <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                    <Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource LightUpAccentSoftBrush}">
+                    <Border Width="30" Height="30" Classes="launcher-icon-badge">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Apps}"
                                             Width="16"
                                             Height="16"
@@ -90,7 +90,7 @@
                     <Border x:Name="TopmostStatus"
                             IsVisible="False"
                             Background="{DynamicResource LightUpAccentSoftBrush}"
-                            CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
+                            Classes="launcher-chip"
                             Padding="7,3"
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="4">
@@ -239,7 +239,7 @@
                                 <DataTemplate x:DataType="tiles:TileCategory">
                                     <Border Classes="category-top-item"
                                             Padding="10,7"
-                                            CornerRadius="8"
+                                            CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
                                             BorderThickness="1"
                                             BorderBrush="Transparent"
                                             DragDrop.AllowDrop="True">
@@ -851,7 +851,9 @@
                     </Grid>
 
                     <Grid Grid.Row="2" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8" MinHeight="22">
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Border Grid.Row="0" Classes="launcher-status-bar" Padding="6,3" IsVisible="{CompiledBinding HasStatus}">
+                        <Border x:Name="StatusFeedback" Classes="feedback-state">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Info}"
                                                 Width="13"
                                                 Height="13"
@@ -883,6 +885,8 @@
                                 </StackPanel>
                             </Button>
                         </StackPanel>
+                        </Border>
+                        </Border>
                         <StackPanel Grid.Row="1"
                                     Grid.Column="0"
                                     Grid.ColumnSpan="2"

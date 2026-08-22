@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -22,7 +23,10 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
+        viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        Closed += (_, _) => viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         UpdateTopmostButton();
+        UpdateStatusFeedback();
     }
 
     public void FocusQueryBox()
@@ -169,6 +173,24 @@ public partial class MainWindow : Window
         ToolTip.SetTip(topmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
         SetClass(topmostButton, "is-active", Topmost);
         topmostStatus.IsVisible = Topmost;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MainViewModel.StatusTone) or nameof(MainViewModel.StatusText) or nameof(MainViewModel.IsSearching))
+            UpdateStatusFeedback();
+    }
+
+    private void UpdateStatusFeedback()
+    {
+        var feedback = this.FindControl<Border>("StatusFeedback");
+        if (feedback is null)
+            return;
+
+        foreach (var tone in Enum.GetNames<FeedbackTone>())
+            feedback.Classes.Remove($"feedback-{tone.ToLowerInvariant()}");
+
+        feedback.Classes.Add($"feedback-{ViewModel.StatusTone.ToString().ToLowerInvariant()}");
     }
 
     private static void SetClass(Control control, string className, bool enabled)

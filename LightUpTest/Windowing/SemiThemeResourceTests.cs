@@ -162,6 +162,37 @@ public sealed class SemiThemeResourceTests
     }
 
     [Fact]
+    public void Launcher_status_surfaces_use_the_shared_feedback_state_contract()
+    {
+        var appPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "App.axaml");
+        var mainPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "MainWindow.axaml");
+        var tilePath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "TileLauncherWindow.axaml");
+        var appMarkup = File.ReadAllText(Path.GetFullPath(appPath));
+        var mainMarkup = File.ReadAllText(Path.GetFullPath(mainPath));
+        var tileMarkup = File.ReadAllText(Path.GetFullPath(tilePath));
+
+        Assert.Contains("Border.feedback-state", appMarkup);
+        Assert.Contains("feedback-success", appMarkup);
+        Assert.Contains("feedback-warning", appMarkup);
+        Assert.Contains("feedback-error", appMarkup);
+        Assert.Contains("feedback-busy", appMarkup);
+        Assert.Contains("x:Name=\"StatusFeedback\"", mainMarkup);
+        Assert.Contains("x:Name=\"StatusFeedback\"", tileMarkup);
+    }
+
+    [Fact]
+    public void Tile_status_feedback_tracks_loading_and_save_state_changes()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "TileLauncherWindow.axaml.cs");
+        var source = File.ReadAllText(Path.GetFullPath(path));
+
+        Assert.Contains("nameof(TileLauncherViewModel.StatusTone)", source);
+        Assert.Contains("nameof(TileLauncherViewModel.StatusText)", source);
+        Assert.Contains("nameof(TileLauncherViewModel.IsLoading)", source);
+        Assert.Contains("nameof(TileLauncherViewModel.IsSaving)", source);
+    }
+
+    [Fact]
     public void Shared_disabled_states_use_Semi_disabled_tokens()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "App.axaml");
@@ -170,6 +201,16 @@ public sealed class SemiThemeResourceTests
         Assert.Contains("SemiColorDisabledText", markup);
         Assert.Contains("SemiColorDisabledBorder", markup);
         Assert.Contains("SemiColorDisabledBackground", markup);
+    }
+
+    [Fact]
+    public void Application_styles_do_not_reintroduce_legacy_surface_resources()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "App.axaml");
+        var markup = File.ReadAllText(Path.GetFullPath(path));
+
+        Assert.DoesNotContain("LightUpSurfaceBrush", markup);
+        Assert.DoesNotContain("LightUpSurfaceStrongBrush", markup);
     }
 
     [Fact]

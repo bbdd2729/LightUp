@@ -16,7 +16,7 @@
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="16">
         <StackPanel Spacing="4">
             <StackPanel Orientation="Horizontal" Spacing="9">
-                <Border Width="32" Height="32" CornerRadius="9" Background="{DynamicResource LightUpAccentSoftBrush}">
+                <Border Width="32" Height="32" Classes="launcher-icon-badge">
                     <fluent:FluentIcon Icon="{x:Static icon:Icon.Settings}"
                                         Width="17"
                                         Height="17"

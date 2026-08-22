@@ -103,6 +103,9 @@ public partial class TileLauncherViewModel : ViewModelBase
     private string _statusText = string.Empty;
 
     [ObservableProperty]
+    private FeedbackTone _statusTone = FeedbackTone.Info;
+
+    [ObservableProperty]
     private string _newCategoryName = string.Empty;
 
     [ObservableProperty]
@@ -1170,6 +1173,7 @@ public partial class TileLauncherViewModel : ViewModelBase
 
     partial void OnIsLoadingChanged(bool value)
     {
+        StatusTone = FeedbackTonePolicy.FromStatus(StatusText, value || IsSaving);
         NotifyViewStateChanged();
         OnPropertyChanged(nameof(CanEdit));
         OnPropertyChanged(nameof(CanRenameSelectedItem));
@@ -1178,7 +1182,14 @@ public partial class TileLauncherViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanUndoLastCategoryRemoval));
     }
 
-    partial void OnStatusTextChanged(string value) => OnPropertyChanged(nameof(HasStatus));
+    partial void OnStatusTextChanged(string value)
+    {
+        StatusTone = FeedbackTonePolicy.FromStatus(value, IsSaving || IsLoading);
+        OnPropertyChanged(nameof(HasStatus));
+    }
+
+    partial void OnIsSavingChanged(bool value)
+        => StatusTone = FeedbackTonePolicy.FromStatus(StatusText, value || IsLoading);
 
     private void RefreshVisibleItems()
     {

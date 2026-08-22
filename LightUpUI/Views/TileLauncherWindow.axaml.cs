@@ -44,6 +44,7 @@ public partial class TileLauncherWindow : Window
         AddHandler(DragDrop.DragLeaveEvent, Tile_DragLeave, RoutingStrategies.Bubble);
         AddHandler(DragDrop.DropEvent, Tile_Drop, RoutingStrategies.Bubble);
         UpdateTopmostButton();
+        UpdateStatusFeedback();
         UpdateSearchWidth();
         UpdateWorkspaceLayout();
         UpdateTileDensity();
@@ -376,6 +377,18 @@ public partial class TileLauncherWindow : Window
 
     private void ClearExternalDropFeedback() => UpdateExternalDropFeedback(TileExternalDropKind.None);
 
+    private void UpdateStatusFeedback()
+    {
+        var feedback = this.FindControl<Border>("StatusFeedback");
+        if (feedback is null)
+            return;
+
+        foreach (var tone in Enum.GetNames<FeedbackTone>())
+            feedback.Classes.Remove($"feedback-{tone.ToLowerInvariant()}");
+
+        feedback.Classes.Add($"feedback-{ViewModel.StatusTone.ToString().ToLowerInvariant()}");
+    }
+
     private static void SetClass(Control control, string className, bool enabled)
     {
         if (enabled)
@@ -665,6 +678,12 @@ public partial class TileLauncherWindow : Window
             UpdateWorkspaceLayout();
         else if (e.PropertyName == nameof(TileLauncherViewModel.TileDensity))
             UpdateTileDensity();
+
+        if (e.PropertyName is nameof(TileLauncherViewModel.StatusTone)
+            or nameof(TileLauncherViewModel.StatusText)
+            or nameof(TileLauncherViewModel.IsLoading)
+            or nameof(TileLauncherViewModel.IsSaving))
+            UpdateStatusFeedback();
     }
 
     private void UpdateWorkspaceLayout()
