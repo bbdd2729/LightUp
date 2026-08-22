@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="using:LightUpUI.Converters"
+             xmlns:semi="https://irihi.tech/semi"
              x:Class="LightUpUI.App"
              RequestedThemeVariant="Default">
     <Application.Resources>
@@ -31,59 +32,109 @@
         <SolidColorBrush x:Key="LightUpDangerSoftBrush" Color="#20E66D75"/>
         <SolidColorBrush x:Key="LightUpSuccessBrush" Color="#FF76E3A1"/>
         <SolidColorBrush x:Key="LightUpWarningBrush" Color="#FFFFD166"/>
+
+        <!-- Semi token aliases keep the custom LightUp palette compatible with Semi control themes. -->
+        <SolidColorBrush x:Key="SemiColorPrimary" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="SemiColorPrimaryPointerover" Color="#2563EB"/>
+        <SolidColorBrush x:Key="SemiColorPrimaryActive" Color="#1D4ED8"/>
+        <SolidColorBrush x:Key="SemiColorPrimaryDisabled" Color="#6693C5FD"/>
+        <SolidColorBrush x:Key="SemiColorPrimaryLight" Color="#303B82F6"/>
+        <SolidColorBrush x:Key="SemiColorPrimaryLightPointerover" Color="#403B82F6"/>
+        <SolidColorBrush x:Key="SemiColorPrimaryLightActive" Color="#503B82F6"/>
+        <SolidColorBrush x:Key="SemiColorWhite" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorText0" Color="#FFF7FAFC"/>
+        <SolidColorBrush x:Key="SemiColorText1" Color="#C1CBD6"/>
+        <SolidColorBrush x:Key="SemiColorText2" Color="#96A6B5"/>
+        <SolidColorBrush x:Key="SemiColorText3" Color="#708090"/>
+        <SolidColorBrush x:Key="SemiColorBackground0" Color="#F0141A27"/>
+        <SolidColorBrush x:Key="SemiColorBackground1" Color="#1AFFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorBackground2" Color="#24FFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorBackground3" Color="#2EFFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorBackground4" Color="#38FFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorFill0" Color="#1AFFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorFill1" Color="#24FFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorFill2" Color="#32FFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorBorder" Color="#32FFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorFocusBorder" Color="#4CC2FF"/>
+        <SolidColorBrush x:Key="SemiColorDisabledText" Color="#5CC1CBD6"/>
+        <SolidColorBrush x:Key="SemiColorDisabledBorder" Color="#26FFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorDisabledBackground" Color="#0DFFFFFF"/>
+        <SolidColorBrush x:Key="SemiColorDisabledFill" Color="#14FFFFFF"/>
     </Application.Resources>
 
     <Application.Styles>
-        <FluentTheme DensityStyle="Compact" />
+        <semi:SemiTheme Locale="zh-CN" />
+        <semi:SemiPopupAnimations />
         <Style Selector="Button.launcher-chrome">
+            <Setter Property="Theme" Value="{DynamicResource BorderlessButton}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextMutedBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontWeight" Value="{DynamicResource SemiFontWeightRegular}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="MinWidth" Value="36"/>
             <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.launcher-chrome:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
         </Style>
         <Style Selector="Button.launcher-chrome:pressed">
-            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightActive}"/>
         </Style>
         <Style Selector="Button.launcher-chrome.is-active">
-            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpAccentBrush}"/>
         </Style>
         <Style Selector="Button.launcher-chrome.is-active:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
         </Style>
         <Style Selector="Button.launcher-primary">
-            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+            <Setter Property="Theme" Value="{DynamicResource SolidButton}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimary}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorWhite}"/>
+            <Setter Property="FontWeight" Value="{DynamicResource SemiFontWeightBold}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.launcher-primary:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpAccentBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpAccentForegroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryPointerover}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorWhite}"/>
         </Style>
         <Style Selector="Button.launcher-primary:pressed">
             <Setter Property="Opacity" Value="0.78"/>
         </Style>
+        <Style Selector="Button.launcher-primary.launcher-icon-button">
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.launcher-primary:disabled">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryDisabled}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorWhite}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
         <Style Selector="Button.launcher-danger">
-            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
+            <Setter Property="Theme" Value="{DynamicResource OutlineButton}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpDangerBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="FontWeight" Value="{DynamicResource SemiFontWeightBold}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.launcher-danger:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpDangerBrush}"/>
@@ -92,25 +143,52 @@
         <Style Selector="Button.launcher-danger:pressed">
             <Setter Property="Opacity" Value="0.78"/>
         </Style>
-        <Style Selector="Border.launcher-search-shell">
-            <Setter Property="Background" Value="{DynamicResource LightUpInputBrush}"/>
+        <Style Selector="Button.launcher-danger:disabled">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpDisabledBrush}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="Border.launcher-search-shell">
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
         </Style>
         <Style Selector="Border.launcher-search-shell:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpInputHoverBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
+        </Style>
+        <Style Selector="Border.launcher-panel">
+            <Setter Property="Theme" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
+        </Style>
+        <Style Selector="Border.launcher-chip">
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusExtraSmall}"/>
+        </Style>
+        <Style Selector="Border.tile-card">
+            <Setter Property="Theme" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
         </Style>
         <Style Selector="Button.launcher-search-clear">
             <Setter Property="MinWidth" Value="26"/>
             <Setter Property="MinHeight" Value="26"/>
         </Style>
         <Style Selector="Button.launcher-tile-remove">
+            <Setter Property="Theme" Value="{DynamicResource BorderlessButton}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextFaintBrush}"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusExtraSmall}"/>
             <Setter Property="MinWidth" Value="26"/>
             <Setter Property="MinHeight" Value="26"/>
             <Setter Property="Padding" Value="0"/>
@@ -123,11 +201,12 @@
             <Setter Property="Opacity" Value="0.72"/>
         </Style>
         <Style Selector="Button.launcher-tile-repair">
+            <Setter Property="Theme" Value="{DynamicResource OutlineButton}"/>
             <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpDangerBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
-            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="MinWidth" Value="24"/>
             <Setter Property="MinHeight" Value="24"/>
             <Setter Property="Padding" Value="0"/>
@@ -144,134 +223,190 @@
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
         <Style Selector="Button.launcher-secondary">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceStrongBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Theme" Value="{DynamicResource OutlineButton}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
+            <Setter Property="FontWeight" Value="{DynamicResource SemiFontWeightBold}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.launcher-secondary:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
         </Style>
         <Style Selector="Button.launcher-secondary:focus-visible">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
+        <Style Selector="Button.launcher-secondary:disabled">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpDisabledBrush}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
         <Style Selector="Button.tray-menu-item">
+            <Setter Property="Theme" Value="{DynamicResource BorderlessButton}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="MinHeight" Value="56"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.tray-menu-item:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
         </Style>
         <Style Selector="Button.tray-menu-item:pressed">
-            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightActive}"/>
         </Style>
         <Style Selector="Button.tray-menu-item:focus-visible">
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
         <Style Selector="Button.tray-menu-exit:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
         </Style>
         <Style Selector="ContextMenu.launcher-context-menu">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceStrongBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground2}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="4"/>
         </Style>
         <Style Selector="ContextMenu.launcher-context-menu MenuItem">
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="10,7"/>
         </Style>
         <Style Selector="ContextMenu.launcher-context-menu MenuItem:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
         </Style>
         <Style Selector="ContextMenu.launcher-context-menu MenuItem:disabled">
             <Setter Property="Foreground" Value="{DynamicResource LightUpDisabledBrush}"/>
         </Style>
         <Style Selector="TextBox.launcher-query">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
             <Setter Property="CaretBrush" Value="{DynamicResource LightUpAccentBrush}"/>
-            <Setter Property="SelectionBrush" Value="{DynamicResource LightUpSelectionBrush}"/>
-            <Setter Property="SelectionForegroundBrush" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource SemiColorPrimaryLightActive}"/>
+            <Setter Property="SelectionForegroundBrush" Value="{DynamicResource SemiColorText0}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="TextBox.launcher-query:focus">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
             <Setter Property="CaretBrush" Value="{DynamicResource LightUpAccentBrush}"/>
         </Style>
         <Style Selector="TextBox.launcher-query:pointerover">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
         </Style>
         <Style Selector="TextBox.launcher-field">
-            <Setter Property="Background" Value="{DynamicResource LightUpInputBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
             <Setter Property="CaretBrush" Value="{DynamicResource LightUpAccentBrush}"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="TextBox.launcher-field:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpInputHoverBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
         </Style>
         <Style Selector="TextBox.launcher-field:focus">
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="TextBox.launcher-field:disabled">
+            <Setter Property="Background" Value="{DynamicResource SemiColorDisabledBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorDisabledBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorDisabledText}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="TextBox.launcher-field:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="ComboBox.launcher-field">
-            <Setter Property="Background" Value="{DynamicResource LightUpInputBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="ComboBox.launcher-field:pointerover">
-            <Setter Property="Background" Value="{DynamicResource LightUpInputHoverBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
         </Style>
         <Style Selector="ComboBox.launcher-field:focus-visible">
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
+        <Style Selector="ComboBox.launcher-field:disabled">
+            <Setter Property="Background" Value="{DynamicResource SemiColorDisabledBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorDisabledBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorDisabledText}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
+        </Style>
+        <Style Selector="ComboBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
+        </Style>
         <Style Selector="CheckBox.launcher-field">
-            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
             <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="CheckBox.launcher-field:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorDisabledText}"/>
+        </Style>
+        <Style Selector="ListBoxItem:focus-visible">
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ProgressBar">
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorPrimary}"/>
         </Style>
         <Style Selector="Border.launcher-settings-section">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Theme" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="Padding" Value="14"/>
         </Style>
         <Style Selector="Border.launcher-empty-state">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Theme" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="Padding" Value="20"/>
         </Style>
         <Style Selector="Border.launcher-status-bar">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="Theme" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource SemiBorderRadiusSmall}"/>
             <Setter Property="Padding" Value="8,5"/>
         </Style>
         <Style Selector="Border.result-row">

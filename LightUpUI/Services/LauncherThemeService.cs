@@ -75,6 +75,38 @@ public static class LauncherThemeService
         SetBrush(application, "LightUpDangerSoftBrush", isLight ? "1FC6284A" : "20E66D75");
         SetBrush(application, "LightUpSuccessBrush", isLight ? "FF0E8F5A" : "FF76E3A1");
         SetBrush(application, "LightUpWarningBrush", isLight ? "FFC27A00" : "FFFFD166");
+
+        ApplySemiTokens(application, accent, isLight);
+    }
+
+    private static void ApplySemiTokens(Application application, Color accent, bool isLight)
+    {
+        SetBrush(application, "SemiColorPrimary", accent);
+        SetBrush(application, "SemiColorPrimaryPointerover", Scale(accent, isLight ? 0.84 : 1.16));
+        SetBrush(application, "SemiColorPrimaryActive", Scale(accent, isLight ? 0.70 : 1.28));
+        SetBrush(application, "SemiColorPrimaryDisabled", WithAlpha(accent, isLight ? (byte)0x66 : (byte)0x70));
+        SetBrush(application, "SemiColorPrimaryLight", WithAlpha(accent, isLight ? (byte)0x18 : (byte)0x30));
+        SetBrush(application, "SemiColorPrimaryLightPointerover", WithAlpha(accent, isLight ? (byte)0x28 : (byte)0x40));
+        SetBrush(application, "SemiColorPrimaryLightActive", WithAlpha(accent, isLight ? (byte)0x38 : (byte)0x50));
+
+        SetBrush(application, "SemiColorText0", isLight ? "FF17212B" : "FFF7FAFC");
+        SetBrush(application, "SemiColorText1", isLight ? "FF52606D" : "FFC1CBD6");
+        SetBrush(application, "SemiColorText2", isLight ? "FF718096" : "FF96A6B5");
+        SetBrush(application, "SemiColorText3", isLight ? "FF9AA6B2" : "FF708090");
+        SetBrush(application, "SemiColorBackground0", isLight ? "FFF7F9FC" : "F0141A27");
+        SetBrush(application, "SemiColorBackground1", isLight ? "FFFFFFFF" : "1AFFFFFF");
+        SetBrush(application, "SemiColorBackground2", isLight ? "FFF1F4F8" : "24FFFFFF");
+        SetBrush(application, "SemiColorBackground3", isLight ? "FFE8EDF3" : "2EFFFFFF");
+        SetBrush(application, "SemiColorBackground4", isLight ? "FFDDE5ED" : "38FFFFFF");
+        SetBrush(application, "SemiColorFill0", isLight ? "0D17212B" : "1AFFFFFF");
+        SetBrush(application, "SemiColorFill1", isLight ? "1417212B" : "24FFFFFF");
+        SetBrush(application, "SemiColorFill2", isLight ? "1E17212B" : "32FFFFFF");
+        SetBrush(application, "SemiColorBorder", isLight ? "24000000" : "32FFFFFF");
+        SetBrush(application, "SemiColorFocusBorder", accent);
+        SetBrush(application, "SemiColorDisabledText", isLight ? "8052606D" : "5CC1CBD6");
+        SetBrush(application, "SemiColorDisabledBorder", isLight ? "18000000" : "26FFFFFF");
+        SetBrush(application, "SemiColorDisabledBackground", isLight ? "0D17212B" : "0DFFFFFF");
+        SetBrush(application, "SemiColorDisabledFill", isLight ? "1417212B" : "14FFFFFF");
     }
 
     private static void SetBrush(Application application, string key, string color)
@@ -92,4 +124,14 @@ public static class LauncherThemeService
 
     private static Color WithAlpha(Color color, byte alpha)
         => Color.FromArgb(alpha, color.R, color.G, color.B);
+
+    private static Color Scale(Color color, double factor)
+        => Color.FromArgb(
+            color.A,
+            Clamp(color.R * factor),
+            Clamp(color.G * factor),
+            Clamp(color.B * factor));
+
+    private static byte Clamp(double value)
+        => (byte)Math.Clamp((int)Math.Round(value), 0, 255);
 }
