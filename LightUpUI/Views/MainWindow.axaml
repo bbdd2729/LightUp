@@ -134,8 +134,8 @@
                                         </MenuItem>
                                     </ContextMenu>
                                 </Border.ContextMenu>
-                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                    <Border Width="40" Height="40" CornerRadius="11" Background="{DynamicResource LightUpAccentSoftBrush}">
+                                <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" Width="40" Height="40" CornerRadius="11" Background="{DynamicResource LightUpAccentSoftBrush}">
                                         <Grid>
                                             <fluent:FluentIcon Icon="{CompiledBinding Kind, Converter={StaticResource LauncherItemIconConverter}}" IconSize="{x:Static presentation:LauncherItemVisuals.ResultIconSize}" Width="20" Height="20" Foreground="{DynamicResource LightUpAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             <Image Source="{CompiledBinding Converter={StaticResource LauncherItemNativeIconConverter}}"
@@ -146,7 +146,7 @@
                                                    VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <StackPanel Grid.Column="1" MinWidth="0" VerticalAlignment="Center" Spacing="2">
                                         <TextBlock Text="{Binding Title}"
                                                    FontSize="13.5"
                                                    FontWeight="SemiBold"
@@ -155,7 +155,7 @@
                                                    MaxLines="1"/>
                                         <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{DynamicResource LightUpTextMutedBrush}" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
-                                    <Border Grid.Column="2" Background="{DynamicResource LightUpSurfaceStrongBrush}" CornerRadius="6" Padding="7,3" VerticalAlignment="Center">
+                                    <Border Grid.Column="2" MinWidth="48" MaxWidth="82" Background="{DynamicResource LightUpSurfaceStrongBrush}" CornerRadius="6" Padding="7,3" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Kind, Converter={StaticResource LauncherItemLabelConverter}}"
                                                    Foreground="{DynamicResource LightUpTextFaintBrush}"
                                                    FontSize="9"

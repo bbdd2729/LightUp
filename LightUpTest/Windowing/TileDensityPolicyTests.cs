@@ -38,6 +38,32 @@ public sealed class TileDensityPolicyTests
         var markup = File.ReadAllText(Path.GetFullPath(path));
 
         Assert.Contains("ListBox.tile-density-comfortable ListBoxItem", markup);
+        Assert.Contains("ListBox.tile-density-comfortable Border.tile-card", markup);
+        Assert.Contains("ListBox.tile-density-comfortable Border.tile-icon-box", markup);
         Assert.Contains("x:Name=\"TileWrapPanel\"", markup);
+    }
+
+    [Fact]
+    public void Category_navigation_does_not_inherit_tile_density_styles()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "TileLauncherWindow.axaml");
+        var markup = File.ReadAllText(Path.GetFullPath(path));
+        var tileListIndex = markup.IndexOf("x:Name=\"TileList\"", StringComparison.Ordinal);
+
+        Assert.True(tileListIndex > 0);
+        Assert.DoesNotContain("tile-density-comfortable", markup[..tileListIndex]);
+    }
+
+    [Fact]
+    public void Tile_editor_uses_shared_field_style_without_fixed_short_heights()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "TileLauncherWindow.axaml");
+        var markup = File.ReadAllText(Path.GetFullPath(path));
+
+        Assert.Contains("x:Name=\"TileTitleBox\"", markup);
+        Assert.Contains("x:Name=\"TileNotesBox\"", markup);
+        Assert.Contains("x:Name=\"MoveCategoryBox\"", markup);
+        Assert.DoesNotContain("Height=\"27\"", markup);
+        Assert.DoesNotContain("Height=\"28\"", markup);
     }
 }
