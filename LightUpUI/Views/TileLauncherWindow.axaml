@@ -95,8 +95,8 @@
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Pin}"
-                                                Width="11"
-                                                Height="11"
+                                                Width="16"
+                                                Height="16"
                                                 Foreground="{DynamicResource LightUpAccentBrush}"/>
                             <TextBlock Text="已置顶"
                                        FontSize="9"
@@ -117,8 +117,8 @@
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                         <fluent:FluentIcon Grid.Column="0"
                                             Icon="{x:Static icon:Icon.Search}"
-                                            Width="15"
-                                            Height="15"
+                                            Width="16"
+                                            Height="16"
                                             Foreground="{DynamicResource LightUpAccentBrush}"
                                             VerticalAlignment="Center"/>
                         <TextBox Grid.Column="1" Classes="launcher-query"
@@ -134,8 +134,8 @@
                                 ToolTip.Tip="清空搜索"
                                 AutomationProperties.Name="清空磁贴搜索">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}"
-                                                Width="13"
-                                                Height="13"/>
+                                                Width="16"
+                                                Height="16"/>
                         </Button>
                     </Grid>
                 </Border>
@@ -155,24 +155,24 @@
                             AutomationProperties.Name="切换窗口置顶">
                         <fluent:FluentIcon x:Name="TopmostIcon"
                                             Icon="{x:Static icon:Icon.PinOff}"
-                                            Width="15"
-                                            Height="15"/>
+                                            Width="16"
+                                            Height="16"/>
                     </Button>
                     <Button Classes="launcher-chrome"
                             Click="Collapse_Click"
                             ToolTip.Tip="收起窗口"
                             AutomationProperties.Name="收起磁贴启动器">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowMinimize}"
-                                            Width="15"
-                                            Height="15"/>
+                                            Width="16"
+                                            Height="16"/>
                     </Button>
                     <Button Classes="launcher-chrome"
                             Click="Close_Click"
                             ToolTip.Tip="关闭窗口"
                             AutomationProperties.Name="关闭磁贴启动器">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}"
-                                            Width="15"
-                                            Height="15"/>
+                                            Width="16"
+                                            Height="16"/>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -246,8 +246,8 @@
                                             DragDrop.AllowDrop="True">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
-                                                                Width="14"
-                                                                Height="14"
+                                                                Width="16"
+                                                                Height="16"
                                                                 Foreground="{DynamicResource LightUpTextMutedBrush}"
                                                                 VerticalAlignment="Center"/>
                                             <TextBlock Text="{CompiledBinding Name}"
@@ -275,8 +275,8 @@
                                     ToolTip.Tip="添加分类"
                                     AutomationProperties.Name="添加分类">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}"
-                                                    Width="14"
-                                                    Height="14"/>
+                                                    Width="16"
+                                                    Height="16"/>
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -316,8 +316,8 @@
                                     ToolTip.Tip="添加分类"
                                     AutomationProperties.Name="添加分类">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}"
-                                                    Width="14"
-                                                    Height="14"/>
+                                                    Width="16"
+                                                    Height="16"/>
                             </Button>
                         </Grid>
 
@@ -363,8 +363,8 @@
                                             DragDrop.AllowDrop="True">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
-                                                                Width="15"
-                                                                Height="15"
+                                                                Width="16"
+                                                                Height="16"
                                                                 Foreground="{DynamicResource LightUpTextMutedBrush}"
                                                                 VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="1"
@@ -407,14 +407,14 @@
                                     IsEnabled="{CompiledBinding CanMoveSelectedCategoryUp}"
                                     ToolTip.Tip="上移当前分类"
                                     AutomationProperties.Name="上移当前分类">
-                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowUp}" Width="14" Height="14"/>
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowUp}" Width="16" Height="16"/>
                             </Button>
                             <Button Classes="launcher-chrome"
                                     Command="{CompiledBinding MoveSelectedCategoryDownCommand}"
                                     IsEnabled="{CompiledBinding CanMoveSelectedCategoryDown}"
                                     ToolTip.Tip="下移当前分类"
                                     AutomationProperties.Name="下移当前分类">
-                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="14" Height="14"/>
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="16" Height="16"/>
                             </Button>
                             <TextBox Classes="launcher-field" x:Name="CategoryNameBox"
                                      Width="112"
@@ -432,8 +432,8 @@
                                     ToolTip.Tip="保存分类名称"
                                     AutomationProperties.Name="保存分类名称">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}"
-                                                    Width="14"
-                                                    Height="14"/>
+                                                    Width="16"
+                                                    Height="16"/>
                             </Button>
                             <Button Classes="launcher-danger"
                                     Command="{CompiledBinding RequestCategoryRemovalCommand}"
@@ -442,8 +442,8 @@
                                     ToolTip.Tip="按下方策略删除当前分类"
                                     AutomationProperties.Name="删除当前分类">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
-                                                    Width="14"
-                                                    Height="14"/>
+                                                    Width="16"
+                                                    Height="16"/>
                             </Button>
                             <Button Classes="launcher-primary"
                                     Click="Add_Click"
@@ -452,7 +452,7 @@
                                     ToolTip.Tip="选择文件或文件夹"
                                     AutomationProperties.Name="添加入口">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="16" Height="16"/>
                                     <TextBlock Text="添加入口" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
@@ -504,8 +504,8 @@
                                             Spacing="4"
                                             IsVisible="{CompiledBinding IsDeletingCategoryItems}">
                                     <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
-                                                        Width="12"
-                                                        Height="12"
+                                                        Width="16"
+                                                        Height="16"
                                                         Foreground="{DynamicResource LightUpDangerBrush}"
                                                         VerticalAlignment="Center"/>
                                     <TextBlock Text="分类中的入口将被删除"
@@ -526,8 +526,8 @@
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
-                                                        Width="13"
-                                                        Height="13"
+                                                        Width="16"
+                                                        Height="16"
                                                         Foreground="{DynamicResource LightUpDangerBrush}"
                                                         VerticalAlignment="Center"/>
                                             <TextBlock Text="{CompiledBinding CategoryRemovalConfirmationText}"
@@ -635,28 +635,28 @@
                                                           Click="ContextOpen_Click"
                                                           AutomationProperties.Name="打开磁贴入口">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Open}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Open}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="重命名"
                                                           Click="ContextRename_Click"
                                                           AutomationProperties.Name="重命名磁贴入口">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="编辑备注"
                                                           Click="ContextNotes_Click"
                                                           AutomationProperties.Name="编辑磁贴备注">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="打开所在位置"
                                                           Click="ContextReveal_Click"
                                                           AutomationProperties.Name="打开磁贴所在位置">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="重新选择目标"
@@ -664,19 +664,19 @@
                                                           IsEnabled="{CompiledBinding HasTargetIssue}"
                                                           AutomationProperties.Name="重新选择磁贴目标">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.FolderOpen}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="图标"
                                                           AutomationProperties.Name="管理磁贴图标">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Image}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Image}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                     <MenuItem Header="选择自定义图标..."
                                                               Click="ContextChooseIcon_Click"
                                                               AutomationProperties.Name="选择磁贴自定义图标">
                                                         <MenuItem.Icon>
-                                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.ImageAdd}" Width="14" Height="14"/>
+                                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.ImageAdd}" Width="16" Height="16"/>
                                                         </MenuItem.Icon>
                                                     </MenuItem>
                                                     <MenuItem Header="恢复默认图标"
@@ -684,7 +684,7 @@
                                                               IsEnabled="{CompiledBinding HasCustomIcon}"
                                                               AutomationProperties.Name="恢复磁贴默认图标">
                                                         <MenuItem.Icon>
-                                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowReset}" Width="14" Height="14"/>
+                                                            <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowReset}" Width="16" Height="16"/>
                                                         </MenuItem.Icon>
                                                     </MenuItem>
                                                 </MenuItem>
@@ -692,7 +692,7 @@
                                                           Click="ContextMove_Click"
                                                           AutomationProperties.Name="移动磁贴入口">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowRight}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowRight}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <Separator/>
@@ -700,7 +700,7 @@
                                                           Click="ContextRemove_Click"
                                                           AutomationProperties.Name="移除磁贴入口">
                                                     <MenuItem.Icon>
-                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}" Width="14" Height="14"/>
+                                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}" Width="16" Height="16"/>
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                             </ContextMenu>
@@ -737,8 +737,8 @@
                                                     AutomationProperties.Name="重新选择不可用入口的目标"
                                                     Click="RetargetTile_Click">
                                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Dismiss}"
-                                                                    Width="11"
-                                                                    Height="11"
+                                                                    Width="16"
+                                                                    Height="16"
                                                                     HorizontalAlignment="Center"
                                                                     VerticalAlignment="Center"/>
                                             </Button>
@@ -782,8 +782,8 @@
                                                         AutomationProperties.Name="拖动磁贴入口"
                                                         Cursor="SizeAll">
                                                     <fluent:FluentIcon Icon="{x:Static icon:Icon.Drag}"
-                                                                        Width="13"
-                                                                        Height="13"
+                                                                        Width="16"
+                                                                        Height="16"
                                                                         Foreground="{DynamicResource LightUpTextMutedBrush}"
                                                                         HorizontalAlignment="Center"
                                                                         VerticalAlignment="Center"/>
@@ -795,8 +795,8 @@
                                                         ToolTip.Tip="移除入口"
                                                         AutomationProperties.Name="移除入口">
                                                     <fluent:FluentIcon Icon="{x:Static icon:Icon.Delete}"
-                                                                        Width="12"
-                                                                        Height="12"/>
+                                                                        Width="16"
+                                                                        Height="16"/>
                                                 </Button>
                                             </Grid>
                                         </Grid>
@@ -835,7 +835,7 @@
                                         Padding="13,8"
                                         HorizontalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="14" Height="14"/>
+                                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}" Width="16" Height="16"/>
                                         <TextBlock Text="选择入口"/>
                                     </StackPanel>
                                 </Button>
@@ -861,8 +861,8 @@
                         <Border x:Name="StatusFeedback" Classes="feedback-state">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Info}"
-                                                Width="13"
-                                                Height="13"
+                                                Width="16"
+                                                Height="16"
                                                 Foreground="{DynamicResource LightUpTextFaintBrush}"
                                                 IsVisible="{CompiledBinding HasStatus}"/>
                             <TextBlock Text="{CompiledBinding StatusText}"
@@ -876,7 +876,7 @@
                                     ToolTip.Tip="撤销移除"
                                     AutomationProperties.Name="撤销移除入口">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="12" Height="12"/>
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="16" Height="16"/>
                                     <TextBlock Text="撤销" FontSize="10"/>
                                 </StackPanel>
                             </Button>
@@ -886,7 +886,7 @@
                                     ToolTip.Tip="撤销删除分类"
                                     AutomationProperties.Name="撤销删除分类">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="12" Height="12"/>
+                                    <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowLeft}" Width="16" Height="16"/>
                                     <TextBlock Text="撤销分类删除" FontSize="10"/>
                                 </StackPanel>
                             </Button>
@@ -914,8 +914,8 @@
                                     ToolTip.Tip="保存入口名称"
                                     AutomationProperties.Name="保存入口名称">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}"
-                                                    Width="14"
-                                                    Height="14"/>
+                                                    Width="16"
+                                                    Height="16"/>
                             </Button>
                             <TextBox Classes="launcher-field" x:Name="TileNotesBox"
                                      Width="142"
@@ -930,21 +930,21 @@
                                     IsEnabled="{CompiledBinding CanEditSelectedItemNotes}"
                                     ToolTip.Tip="保存入口备注"
                                     AutomationProperties.Name="保存入口备注">
-                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="14" Height="14"/>
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.Edit}" Width="16" Height="16"/>
                             </Button>
                             <Button Classes="launcher-chrome"
                                     Command="{CompiledBinding MoveSelectedItemUpCommand}"
                                     IsEnabled="{CompiledBinding CanMoveSelectedItemUp}"
                                     ToolTip.Tip="上移选中入口"
                                     AutomationProperties.Name="上移选中入口">
-                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowUp}" Width="14" Height="14"/>
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowUp}" Width="16" Height="16"/>
                             </Button>
                             <Button Classes="launcher-chrome"
                                     Command="{CompiledBinding MoveSelectedItemDownCommand}"
                                     IsEnabled="{CompiledBinding CanMoveSelectedItemDown}"
                                     ToolTip.Tip="下移选中入口"
                                     AutomationProperties.Name="下移选中入口">
-                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="14" Height="14"/>
+                                <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowDown}" Width="16" Height="16"/>
                             </Button>
                             <TextBlock Text="移动至"
                                        FontSize="10"
@@ -972,8 +972,8 @@
                                     ToolTip.Tip="移动选中的入口"
                                     AutomationProperties.Name="移动选中入口">
                                 <fluent:FluentIcon Icon="{x:Static icon:Icon.ArrowRight}"
-                                                    Width="14"
-                                                    Height="14"/>
+                                                    Width="16"
+                                                    Height="16"/>
                             </Button>
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">

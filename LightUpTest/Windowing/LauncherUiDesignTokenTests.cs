@@ -1,9 +1,42 @@
+using System.Globalization;
 using System.IO;
+using System.Xml.Linq;
 
 namespace LightUpTest.Windowing;
 
 public sealed class LauncherUiDesignTokenTests
 {
+    [Fact]
+    public void Fluent_icons_have_at_least_the_standard_sixteen_pixel_box()
+    {
+        var viewsPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views");
+
+        foreach (var path in Directory.EnumerateFiles(Path.GetFullPath(viewsPath), "*.axaml"))
+        {
+            var document = XDocument.Load(path);
+            var icons = document
+                .Descendants()
+                .Where(element => element.Name.LocalName == "FluentIcon")
+                .ToArray();
+
+            foreach (var icon in icons)
+            {
+                var width = icon.Attribute("Width")?.Value;
+                var height = icon.Attribute("Height")?.Value;
+
+                Assert.True(
+                    double.TryParse(width, NumberStyles.Float, CultureInfo.InvariantCulture, out var widthValue),
+                    $"{Path.GetFileName(path)} contains a FluentIcon without a numeric Width.");
+                Assert.True(
+                    double.TryParse(height, NumberStyles.Float, CultureInfo.InvariantCulture, out var heightValue),
+                    $"{Path.GetFileName(path)} contains a FluentIcon without a numeric Height.");
+                Assert.True(
+                    widthValue >= 16 && heightValue >= 16,
+                    $"{Path.GetFileName(path)} contains a FluentIcon smaller than 16x16: {width}x{height}.");
+            }
+        }
+    }
+
     [Fact]
     public void App_declares_shared_input_focus_and_secondary_control_styles()
     {
