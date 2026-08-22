@@ -80,7 +80,9 @@
 
             <Grid Grid.Row="2">
                 <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                         Background="Transparent" BorderThickness="0" Padding="0">
+                         Background="Transparent" BorderThickness="0" Padding="0"
+                         KeyboardNavigation.TabIndex="0"
+                         KeyboardNavigation.IsTabStop="True">
                     <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                             <Setter Property="Padding" Value="0"/>
@@ -90,14 +92,19 @@
                         <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
                             <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
                         </Style>
-                        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Style Selector="ListBoxItem:selected Border.result-row">
                             <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                            <Setter Property="BorderThickness" Value="1"/>
                         </Style>
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:LauncherItem">
-                            <Border MinHeight="58" Padding="12,9" CornerRadius="10" PointerPressed="Result_PointerPressed">
+                            <Border Classes="result-row"
+                                    MinHeight="58"
+                                    Padding="12,9"
+                                    CornerRadius="10"
+                                    PointerPressed="Result_PointerPressed">
                                 <Border.ContextMenu>
                                     <ContextMenu Classes="launcher-context-menu">
                                         <MenuItem Header="打开"

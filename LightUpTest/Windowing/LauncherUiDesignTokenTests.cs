@@ -19,6 +19,7 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("Border.launcher-settings-section", markup);
         Assert.Contains("ContextMenu.launcher-context-menu", markup);
         Assert.Contains("Button.launcher-chrome.is-active", markup);
+        Assert.Contains("Button.launcher-tile-remove:pointerover", markup);
     }
 
     [Fact]
@@ -70,5 +71,8 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("<ScrollViewer Grid.Row=\"1\"", markup);
         Assert.Contains("<Button Grid.Row=\"2\" Classes=\"tray-menu-item tray-menu-exit\"", markup);
         Assert.Contains("MinHeight\" Value=\"56\"", File.ReadAllText(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "App.axaml"))));
+        Assert.Contains("ColumnDefinitions=\"30,*,92\"", markup);
+        Assert.Contains("AutomationProperties.Name=\"退出 LightUp\"", markup);
+        Assert.Contains("KeyboardNavigation.TabIndex=\"3\"", markup);
     }
 }

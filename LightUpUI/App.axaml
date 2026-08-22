@@ -116,7 +116,7 @@
             <Setter Property="Padding" Value="0"/>
         </Style>
         <Style Selector="Button.launcher-tile-remove:pointerover">
-            <Setter Property="Background" Value="#20E66D75"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
         </Style>
         <Style Selector="Button.launcher-tile-remove:pressed">
@@ -273,6 +273,14 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="7"/>
             <Setter Property="Padding" Value="8,5"/>
+        </Style>
+        <Style Selector="Border.result-row">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="ListBoxItem:focus-visible Border.result-row">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
     </Application.Styles>
 </Application>

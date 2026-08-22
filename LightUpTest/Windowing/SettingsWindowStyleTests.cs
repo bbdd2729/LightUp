@@ -14,6 +14,10 @@ public sealed class SettingsWindowStyleTests
         Assert.Contains("Foreground=\"{DynamicResource LightUpTextBrush}\"", markup);
         Assert.Contains("Classes=\"launcher-primary\"", markup);
         Assert.Contains("AutomationProperties.Name=\"保存设置\"", markup);
+        Assert.Contains("AutomationProperties.Name=\"外观主题\"", markup);
+        Assert.Contains("KeyboardNavigation.TabIndex=\"13\"", markup);
+        Assert.Contains("IsDefault=\"True\"", markup);
+        Assert.Contains("ScrollViewer.BringIntoViewOnFocusChange=\"True\"", markup);
         Assert.DoesNotContain("Background=\"White\"", markup);
     }
 }
