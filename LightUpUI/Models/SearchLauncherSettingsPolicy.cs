@@ -26,6 +26,10 @@ public static class SearchLauncherSettingsPolicy
         settings.TileLauncherHotkey = string.IsNullOrWhiteSpace(settings.TileLauncherHotkey)
             ? "alt+shift+space"
             : settings.TileLauncherHotkey;
+        settings.TrayIconLeftClickAction = settings.TrayIconLeftClickAction is
+            TrayIconLeftClickAction.Search or TrayIconLeftClickAction.Tiles
+            ? settings.TrayIconLeftClickAction
+            : TrayIconLeftClickAction.Search;
         settings.TileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
             settings.TileCornerTriggerDelayMilliseconds);
         settings.Plugins ??= [];

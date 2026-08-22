@@ -81,6 +81,30 @@ public sealed class SearchLauncherSettingsStoreTests
     }
 
     [Fact]
+    public async Task SaveAsync_round_trips_the_tray_left_click_action()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var store = new SearchLauncherSettingsStore(filePath);
+
+        try
+        {
+            await store.SaveAsync(new SearchLauncherSettings
+            {
+                TrayIconLeftClickAction = TrayIconLeftClickAction.Tiles
+            }, cancellationToken);
+
+            var loaded = await store.LoadAsync(cancellationToken);
+
+            Assert.Equal(TrayIconLeftClickAction.Tiles, loaded.TrayIconLeftClickAction);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public async Task LoadAsync_round_trips_window_appearance_and_normalizes_unknown_enums()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -93,6 +117,7 @@ public sealed class SearchLauncherSettingsStoreTests
                 {
                   "mode": 99,
                   "categoryNavigationPlacement": 99,
+                  "trayIconLeftClickAction": 99,
                   "appearance": {
                     "searchWindow": { "x": 120, "y": 80, "width": 720, "height": 480, "isTopmost": true }
                   }
@@ -103,6 +128,7 @@ public sealed class SearchLauncherSettingsStoreTests
 
             Assert.Equal(SearchLauncherMode.Full, loaded.Mode);
             Assert.Equal(CategoryNavigationPlacement.Left, loaded.CategoryNavigationPlacement);
+            Assert.Equal(TrayIconLeftClickAction.Search, loaded.TrayIconLeftClickAction);
             Assert.Equal(120, loaded.Appearance.SearchWindow.X);
             Assert.Equal(720, loaded.Appearance.SearchWindow.Width);
             Assert.True(loaded.Appearance.SearchWindow.IsTopmost);

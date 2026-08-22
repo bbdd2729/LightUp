@@ -185,6 +185,7 @@ public partial class App : Application
             CreateTrayIcon(
                 desktop,
                 surfaceCoordinator,
+                () => searchSettings.TrayIconLeftClickAction,
                 () =>
                 {
                     ShowSettingsWindow(settingsViewModel, window);
@@ -238,6 +239,7 @@ public partial class App : Application
     private void CreateTrayIcon(
         IClassicDesktopStyleApplicationLifetime desktop,
         LauncherSurfaceCoordinator surfaceCoordinator,
+        Func<TrayIconLeftClickAction> getLeftClickAction,
         Action openSettings)
     {
         if (!OperatingSystem.IsWindows())
@@ -249,13 +251,20 @@ public partial class App : Application
         var trayIcon = new TrayIcon
         {
             Icon = new WindowIcon(bitmap),
-            ToolTipText = "LightUp 启动器 · 右键打开菜单"
+            ToolTipText = "LightUp 启动器 · 左键打开入口，右键打开菜单"
         };
         trayIcon.Menu = CreateTrayNativeMenu(
             surfaceCoordinator.ShowSearch,
             surfaceCoordinator.ShowTiles,
             openSettings,
             () => desktop.Shutdown());
+        trayIcon.Clicked += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            if (getLeftClickAction() == TrayIconLeftClickAction.Tiles)
+                surfaceCoordinator.ShowTiles();
+            else
+                surfaceCoordinator.ShowSearch();
+        });
         TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
         desktop.Exit += (_, _) =>
         {

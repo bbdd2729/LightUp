@@ -232,6 +232,22 @@
                                  PlaceholderText="例如 alt+shift+space"
                                  AutomationProperties.Name="磁贴启动器全局快捷键"
                                  KeyboardNavigation.TabIndex="16"/>
+                        <TextBlock Text="左键点击托盘图标" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}" Margin="0,4,0,0"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding TrayIconLeftClickActions}"
+                                  SelectedItem="{CompiledBinding SelectedTrayIconLeftClickAction, Mode=TwoWay}"
+                                  AutomationProperties.Name="左键点击托盘图标动作"
+                                  KeyboardNavigation.TabIndex="17">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource TrayIconLeftClickActionLabelConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Text="右键始终打开系统菜单；左键按此选项直接打开一个入口。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
                         <TextBlock Text="支持 Ctrl、Alt、Shift、Win 与字母、数字、F1-F24、Space、Enter、Tab、Esc；两个入口不能重复。"
                                    FontSize="12"
                                    Foreground="{DynamicResource LightUpTextMutedBrush}"
@@ -259,7 +275,7 @@
                         Command="{CompiledBinding SaveCommand}"
                         Padding="18,8"
                         AutomationProperties.Name="保存设置"
-                        KeyboardNavigation.TabIndex="17"
+                        KeyboardNavigation.TabIndex="18"
                         IsDefault="True"/>
             </Grid>
         </Border>

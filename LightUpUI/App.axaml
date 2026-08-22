@@ -10,6 +10,7 @@
         <converters:LauncherItemNativeIconConverter x:Key="LauncherItemNativeIconConverter"/>
         <converters:TileItemNativeIconConverter x:Key="TileItemNativeIconConverter"/>
         <converters:LauncherItemLabelConverter x:Key="LauncherItemLabelConverter"/>
+        <converters:TrayIconLeftClickActionLabelConverter x:Key="TrayIconLeftClickActionLabelConverter"/>
         <SolidColorBrush x:Key="LightUpWindowBrush" Color="#F0141A27"/>
         <SolidColorBrush x:Key="LightUpInputBrush" Color="#26FFFFFF"/>
         <SolidColorBrush x:Key="LightUpInputHoverBrush" Color="#32FFFFFF"/>

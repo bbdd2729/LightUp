@@ -23,6 +23,20 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task SaveAsync_persists_the_tray_left_click_action()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        var viewModel = new SettingsViewModel(store, store.Settings, _ => { })
+        {
+            SelectedTrayIconLeftClickAction = TrayIconLeftClickAction.Tiles
+        };
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(TrayIconLeftClickAction.Tiles, store.Settings.TrayIconLeftClickAction);
+    }
+
+    [Fact]
     public async Task SaveAsync_persists_category_navigation_placement_and_notifies_the_tile_host()
     {
         var store = new FakeSettingsStore(new SearchLauncherSettings());

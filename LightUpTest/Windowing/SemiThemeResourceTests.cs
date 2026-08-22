@@ -112,7 +112,7 @@ public sealed class SemiThemeResourceTests
             .Select(match => int.Parse(match.Groups["index"].Value))
             .ToArray();
 
-        Assert.Equal(Enumerable.Range(0, 18), indexes);
+        Assert.Equal(Enumerable.Range(0, 19), indexes);
     }
 
     [Fact]

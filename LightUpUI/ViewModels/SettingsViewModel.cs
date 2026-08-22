@@ -57,6 +57,7 @@ public partial class SettingsViewModel : ViewModelBase
         _launchAtStartup = settings.LaunchAtStartup;
         _searchHotkey = settings.Hotkey;
         _tileLauncherHotkey = settings.TileLauncherHotkey;
+        _selectedTrayIconLeftClickAction = settings.TrayIconLeftClickAction;
         _enableTileCornerTrigger = settings.EnableTileCornerTrigger;
         _tileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
             settings.TileCornerTriggerDelayMilliseconds);
@@ -72,6 +73,7 @@ public partial class SettingsViewModel : ViewModelBase
     public Array ColorPalettes { get; } = Enum.GetValues<LauncherColorPalette>();
     public Array CategoryNavigationPlacements { get; } = Enum.GetValues<CategoryNavigationPlacement>();
     public Array TileDensities { get; } = Enum.GetValues<TileDensity>();
+    public Array TrayIconLeftClickActions { get; } = Enum.GetValues<TrayIconLeftClickAction>();
     public int[] ResultLimits { get; } = [10, 20, 30, 50, 100];
     public int[] TileCornerTriggerDelays { get; } = [300, 500, 700, 1000, 1500, 2000, 3000];
 
@@ -114,6 +116,9 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _tileLauncherHotkey;
+
+    [ObservableProperty]
+    private TrayIconLeftClickAction _selectedTrayIconLeftClickAction;
 
     [ObservableProperty]
     private bool _enableTileCornerTrigger;
@@ -161,6 +166,7 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.LaunchAtStartup = LaunchAtStartup;
         _settings.Hotkey = searchHotkey;
         _settings.TileLauncherHotkey = tileLauncherHotkey;
+        _settings.TrayIconLeftClickAction = SelectedTrayIconLeftClickAction;
         _settings.EnableTileCornerTrigger = EnableTileCornerTrigger;
         _settings.TileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
             TileCornerTriggerDelayMilliseconds);

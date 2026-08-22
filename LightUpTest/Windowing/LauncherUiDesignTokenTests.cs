@@ -36,6 +36,8 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("Classes=\"launcher-settings-section\"", markup);
         Assert.Contains("Classes=\"launcher-field\"", markup);
         Assert.Contains("AutomationProperties.Name=\"保存设置\"", markup);
+        Assert.Contains("AutomationProperties.Name=\"左键点击托盘图标动作\"", markup);
+        Assert.Contains("TrayIconLeftClickActionLabelConverter", markup);
     }
 
     [Fact]
@@ -98,14 +100,15 @@ public sealed class LauncherUiDesignTokenTests
     }
 
     [Fact]
-    public void Tray_icon_uses_the_native_context_menu_without_a_left_click_menu_handler()
+    public void Tray_icon_uses_a_native_right_click_menu_and_a_configurable_left_click_action()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "App.axaml.cs");
         var source = File.ReadAllText(Path.GetFullPath(path));
 
         Assert.Contains("trayIcon.Menu = CreateTrayNativeMenu", source);
-        Assert.Contains("ToolTipText = \"LightUp 启动器 · 右键打开菜单\"", source);
-        Assert.DoesNotContain("trayIcon.Clicked", source);
+        Assert.Contains("ToolTipText = \"LightUp 启动器 · 左键打开入口，右键打开菜单\"", source);
+        Assert.Contains("trayIcon.Clicked", source);
+        Assert.Contains("getLeftClickAction() == TrayIconLeftClickAction.Tiles", source);
         Assert.DoesNotContain("quickMenu", source);
     }
 }

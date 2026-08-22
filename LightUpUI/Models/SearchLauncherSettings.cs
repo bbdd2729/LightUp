@@ -9,6 +9,7 @@ public sealed class SearchLauncherSettings
     public SearchLauncherMode Mode { get; set; } = SearchLauncherMode.Full;
     public string Hotkey { get; set; } = "alt+space";
     public string TileLauncherHotkey { get; set; } = "alt+shift+space";
+    public TrayIconLeftClickAction TrayIconLeftClickAction { get; set; } = TrayIconLeftClickAction.Search;
     public bool LaunchAtStartup { get; set; }
     public bool EnableTileCornerTrigger { get; set; }
     public int TileCornerTriggerDelayMilliseconds { get; set; } = 700;
