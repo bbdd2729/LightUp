@@ -19,10 +19,10 @@
         TransparencyLevelHint="AcrylicBlur,Transparent"
         TransparencyBackgroundFallback="#E61B1B1B"
         Deactivated="Window_Deactivated">
-    <Border Background="{DynamicResource LightUpWindowBrush}"
-            BorderBrush="{DynamicResource LightUpBorderBrush}"
+    <Border Background="{DynamicResource SemiColorBackground0}"
+            BorderBrush="{DynamicResource SemiColorBorder}"
             BorderThickness="1"
-            CornerRadius="16"
+            CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
             Padding="12">
         <Border.BoxShadow>
             <BoxShadows>0 14 38 0 #90000000</BoxShadows>
@@ -34,9 +34,11 @@
             </StackPanel>
 
             <ScrollViewer Grid.Row="1"
+                          MaxHeight="520"
+                          Padding="0,2,4,2"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="4" Margin="0,0,4,0">
+            <StackPanel Spacing="4">
                 <Button Classes="tray-menu-item" Command="{Binding OpenSearchCommand}"
                         AutomationProperties.Name="打开搜索"
                         KeyboardNavigation.TabIndex="0">

@@ -11,8 +11,8 @@
         MinHeight="560"
         Title="LightUp 设置"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource LightUpWindowBrush}"
-        Foreground="{DynamicResource LightUpTextBrush}">
+        Background="{DynamicResource SemiColorBackground0}"
+        Foreground="{DynamicResource SemiColorText0}">
     <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="16">
         <StackPanel Spacing="4">
             <StackPanel Orientation="Horizontal" Spacing="9">
@@ -168,7 +168,7 @@
                                   ItemsSource="{CompiledBinding ResultLimits}"
                                   SelectedItem="{CompiledBinding SelectedMaxResults, Mode=TwoWay}"
                                   AutomationProperties.Name="搜索结果数量"
-                                  KeyboardNavigation.TabIndex="6"/>
+                                  KeyboardNavigation.TabIndex="10"/>
                         <TextBlock Text="输入搜索时最多显示该数量的结果；空搜索仍最多显示 10 项常用入口。"
                                    FontSize="12"
                                    Foreground="{DynamicResource LightUpTextMutedBrush}"
@@ -177,7 +177,7 @@
                                   Content="搜索所有磁贴分类"
                                   IsChecked="{CompiledBinding SearchAllTileCategories, Mode=TwoWay}"
                                   AutomationProperties.Name="搜索所有磁贴分类"
-                                  KeyboardNavigation.TabIndex="7"/>
+                                  KeyboardNavigation.TabIndex="11"/>
                         <TextBlock Text="关闭后，简约模式只搜索磁贴启动器当前选中的分类。"
                                    FontSize="12"
                                    Foreground="{DynamicResource LightUpTextMutedBrush}"
@@ -186,7 +186,7 @@
                                   Content="保存最近搜索内容"
                                   IsChecked="{CompiledBinding SaveQueryHistory, Mode=TwoWay}"
                                   AutomationProperties.Name="保存最近搜索内容"
-                                  KeyboardNavigation.TabIndex="8"/>
+                                  KeyboardNavigation.TabIndex="12"/>
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                             <TextBlock Text="仅保存在本机设置中，不上传查询内容。"
                                        FontSize="12"
@@ -202,7 +202,7 @@
                                         Command="{CompiledBinding ClearQueryHistoryCommand}"
                                         Padding="12,6"
                                         AutomationProperties.Name="清空搜索历史"
-                                        KeyboardNavigation.TabIndex="9"/>
+                                        KeyboardNavigation.TabIndex="13"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -215,7 +215,7 @@
                                   Content="登录 Windows 后自动启动 LightUp"
                                   IsChecked="{CompiledBinding LaunchAtStartup, Mode=TwoWay}"
                                   AutomationProperties.Name="登录 Windows 后自动启动 LightUp"
-                                  KeyboardNavigation.TabIndex="10"/>
+                                  KeyboardNavigation.TabIndex="14"/>
                         <TextBlock Text="仅为当前用户创建启动项，不需要管理员权限。"
                                    FontSize="12"
                                    Foreground="{DynamicResource LightUpTextMutedBrush}"
@@ -225,13 +225,13 @@
                                  Text="{CompiledBinding SearchHotkey, Mode=TwoWay}"
                                  PlaceholderText="例如 alt+space"
                                  AutomationProperties.Name="搜索栏全局快捷键"
-                                 KeyboardNavigation.TabIndex="11"/>
+                                 KeyboardNavigation.TabIndex="15"/>
                         <TextBlock Text="磁贴启动器全局快捷键" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}" Margin="0,4,0,0"/>
                         <TextBox Classes="launcher-field"
                                  Text="{CompiledBinding TileLauncherHotkey, Mode=TwoWay}"
                                  PlaceholderText="例如 alt+shift+space"
                                  AutomationProperties.Name="磁贴启动器全局快捷键"
-                                 KeyboardNavigation.TabIndex="12"/>
+                                 KeyboardNavigation.TabIndex="16"/>
                         <TextBlock Text="支持 Ctrl、Alt、Shift、Win 与字母、数字、F1-F24、Space、Enter、Tab、Esc；两个入口不能重复。"
                                    FontSize="12"
                                    Foreground="{DynamicResource LightUpTextMutedBrush}"
@@ -242,10 +242,10 @@
         </ScrollViewer>
 
         <Border Grid.Row="2"
-                Background="{DynamicResource LightUpSurfaceStrongBrush}"
-                BorderBrush="{DynamicResource LightUpBorderBrush}"
+                Background="{DynamicResource SemiColorBackground2}"
+                BorderBrush="{DynamicResource SemiColorBorder}"
                 BorderThickness="1"
-                CornerRadius="10"
+                CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
                 Padding="12,10">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <TextBlock Text="{CompiledBinding StatusText}"
@@ -259,7 +259,7 @@
                         Command="{CompiledBinding SaveCommand}"
                         Padding="18,8"
                         AutomationProperties.Name="保存设置"
-                        KeyboardNavigation.TabIndex="13"
+                        KeyboardNavigation.TabIndex="17"
                         IsDefault="True"/>
             </Grid>
         </Border>

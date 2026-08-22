@@ -25,10 +25,10 @@
         KeyDown="Window_KeyDown"
         Deactivated="Window_Deactivated">
 
-    <Border Background="{DynamicResource LightUpWindowBrush}"
-            BorderBrush="{DynamicResource LightUpBorderBrush}"
+    <Border Background="{DynamicResource SemiColorBackground0}"
+            BorderBrush="{DynamicResource SemiColorBorder}"
             BorderThickness="1"
-            CornerRadius="18"
+            CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
             Padding="18">
         <Border.BoxShadow>
             <BoxShadows>0 12 36 0 #90000000</BoxShadows>
@@ -63,10 +63,9 @@
                     <TextBox Grid.Column="1" x:Name="QueryBox" Classes="launcher-query"
                              Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="搜索应用、程序或快捷方式..."
-                             Background="Transparent" BorderThickness="0"
-                             Foreground="{DynamicResource LightUpTextBrush}"
-                             CaretBrush="{DynamicResource LightUpAccentBrush}"
-                             FontSize="17" FontWeight="SemiBold" VerticalContentAlignment="Center"/>
+                             FontSize="17"
+                             FontWeight="SemiBold"
+                             Padding="0,4"/>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <Border Background="{DynamicResource LightUpSurfaceBrush}" CornerRadius="6" Padding="7,4">
                             <TextBlock Text="{Binding SearchModeLabel}" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="10" VerticalAlignment="Center"/>
@@ -90,11 +89,17 @@
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         </Style>
                         <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover Border.result-row">
+                            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected:pointerover Border.result-row">
+                            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
                         </Style>
                         <Style Selector="ListBoxItem:selected Border.result-row">
-                            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
-                            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
                             <Setter Property="BorderThickness" Value="1"/>
                         </Style>
                     </ListBox.Styles>
@@ -103,10 +108,12 @@
                             <Border Classes="result-row"
                                     MinHeight="58"
                                     Padding="12,9"
-                                    CornerRadius="10"
+                                    CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
                                     PointerPressed="Result_PointerPressed">
                                 <Border.ContextMenu>
-                                    <ContextMenu Classes="launcher-context-menu">
+                                    <ContextMenu Classes="launcher-context-menu"
+                                                 MaxHeight="560"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
                                         <MenuItem Header="打开"
                                                   Click="ContextOpenResult_Click"
                                                   AutomationProperties.Name="打开搜索结果">

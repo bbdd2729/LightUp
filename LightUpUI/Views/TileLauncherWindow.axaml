@@ -52,10 +52,10 @@
         </Style>
     </Window.Styles>
 
-    <Border Background="{DynamicResource LightUpWindowBrush}"
-            BorderBrush="{DynamicResource LightUpBorderBrush}"
+    <Border Background="{DynamicResource SemiColorBackground0}"
+            BorderBrush="{DynamicResource SemiColorBorder}"
             BorderThickness="1"
-            CornerRadius="18"
+            CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
             Padding="18">
         <Border.BoxShadow>
             <BoxShadows>0 12 36 0 #90000000</BoxShadows>
@@ -90,7 +90,7 @@
                     <Border x:Name="TopmostStatus"
                             IsVisible="False"
                             Background="{DynamicResource LightUpAccentSoftBrush}"
-                            CornerRadius="6"
+                            CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
                             Padding="7,3"
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="4">
@@ -125,12 +125,8 @@
                                  x:Name="SearchBox"
                                  Text="{CompiledBinding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  PlaceholderText="搜索当前分类的磁贴"
-                                 Background="Transparent"
-                                 BorderThickness="0"
-                                 Foreground="{DynamicResource LightUpTextBrush}"
-                                 CaretBrush="{DynamicResource LightUpAccentBrush}"
                                  FontSize="13"
-                                 VerticalContentAlignment="Center"
+                                 Padding="0,3"
                                  KeyboardNavigation.TabIndex="0"/>
                         <Button Grid.Column="2"
                                 Classes="launcher-chrome launcher-search-clear"
@@ -145,8 +141,7 @@
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                    <Border Background="{DynamicResource LightUpSurfaceBrush}"
-                            CornerRadius="6"
+                    <Border Classes="launcher-chip"
                             Padding="7,4"
                             VerticalAlignment="Center">
                         <TextBlock Text="Alt + Shift + Space"
@@ -189,13 +184,10 @@
                   ColumnSpacing="16">
 
                 <Border x:Name="TopCategoryNavigation"
+                        Classes="launcher-panel"
                         Grid.Row="0"
                         Grid.ColumnSpan="2"
                         IsVisible="{CompiledBinding IsTopNavigation}"
-                        Background="{DynamicResource LightUpSurfaceBrush}"
-                        BorderBrush="{DynamicResource LightUpBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="13"
                         Padding="10,8">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="1" VerticalAlignment="Center">
@@ -224,11 +216,14 @@
                                     <Setter Property="Background" Value="Transparent"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:pointerover Border.category-top-item">
-                                    <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:selected Border.category-top-item">
-                                    <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected:pointerover Border.category-top-item">
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:focus-visible Border.category-top-item">
                                     <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
@@ -270,11 +265,6 @@
                                      PlaceholderText="新分类"
                                      FontSize="11"
                                      Padding="8,6"
-                                     Background="{DynamicResource LightUpWindowBrush}"
-                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                     BorderThickness="1"
-                                     CornerRadius="8"
-                                     Foreground="{DynamicResource LightUpTextBrush}"
                                      KeyDown="NewCategory_KeyDown"/>
                             <Button Classes="launcher-primary launcher-icon-button"
                                     Command="{CompiledBinding AddNewCategoryCommand}"
@@ -292,13 +282,10 @@
                 </Border>
 
                 <Border x:Name="LeftCategoryNavigation"
+                        Classes="launcher-panel"
                         Grid.Row="1"
                         Grid.Column="0"
                         IsVisible="{CompiledBinding IsLeftNavigation}"
-                        Background="{DynamicResource LightUpSurfaceBrush}"
-                        BorderBrush="{DynamicResource LightUpBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="13"
                         Padding="10">
                     <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
                         <StackPanel Grid.Row="0" Spacing="2" Margin="3,2,3,0">
@@ -317,11 +304,6 @@
                                      PlaceholderText="新分类"
                                      FontSize="11"
                                      Padding="8,6"
-                                     Background="{DynamicResource LightUpWindowBrush}"
-                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                     BorderThickness="1"
-                                     CornerRadius="8"
-                                     Foreground="{DynamicResource LightUpTextBrush}"
                                      KeyboardNavigation.TabIndex="1"
                                      KeyDown="NewCategory_KeyDown"/>
                             <Button Grid.Column="1"
@@ -355,11 +337,14 @@
                                     <Setter Property="Background" Value="Transparent"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:pointerover Border.category-item">
-                                    <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:selected Border.category-item">
-                                    <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected:pointerover Border.category-item">
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:focus-visible Border.category-item">
                                     <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
@@ -370,7 +355,7 @@
                                 <DataTemplate x:DataType="tiles:TileCategory">
                                     <Border Classes="category-item"
                                             Padding="10,9"
-                                            CornerRadius="8"
+                                            CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
                                             BorderThickness="1"
                                             BorderBrush="Transparent"
                                             DragDrop.AllowDrop="True">
@@ -436,11 +421,6 @@
                                      PlaceholderText="分类名称"
                                      FontSize="11"
                                      Padding="8,6"
-                                     Background="{DynamicResource LightUpWindowBrush}"
-                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                     BorderThickness="1"
-                                     CornerRadius="8"
-                                     Foreground="{DynamicResource LightUpTextBrush}"
                                      ToolTip.Tip="重命名当前分类"
                                      AutomationProperties.Name="当前分类名称"
                                      KeyDown="RenameCategory_KeyDown"/>
@@ -476,11 +456,8 @@
                             </Button>
                         </WrapPanel>
                         <Border Grid.Row="2"
+                                Classes="launcher-chip"
                                 IsVisible="{CompiledBinding CanManageSelectedCategory}"
-                                Background="{DynamicResource LightUpSurfaceBrush}"
-                                BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
                                 Padding="8,5">
                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <TextBlock Text="删除后处理"
@@ -537,11 +514,12 @@
                             </StackPanel>
                         </Border>
                         <Border Grid.Row="3"
+                                Classes="launcher-panel"
                                 IsVisible="{CompiledBinding IsCategoryRemovalConfirmationVisible}"
                                 Background="{DynamicResource LightUpDangerSoftBrush}"
                                 BorderBrush="{DynamicResource LightUpDangerBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
+                                CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
                                 Padding="8,6">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -613,15 +591,18 @@
                                     <Setter Property="Height" Value="56"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:pointerover Border.tile-card">
-                                    <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:selected Border.tile-card">
-                                    <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected:pointerover Border.tile-card">
+                                    <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightPointerover}"/>
                                 </Style>
                                 <Style Selector="ListBoxItem:focus-visible Border.tile-card">
-                                    <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
                                     <Setter Property="BorderThickness" Value="2"/>
                                 </Style>
                             </ListBox.Styles>
@@ -637,14 +618,13 @@
                                 <DataTemplate x:DataType="tiles:TileItem">
                             <Border Classes="tile-card"
                                     Padding="12"
-                                    CornerRadius="12"
-                                    Background="{DynamicResource LightUpSurfaceStrongBrush}"
-                                    BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                    BorderThickness="1"
+                                    CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
                                     DragDrop.AllowDrop="True"
                                     PointerPressed="Tile_PointerPressed">
                                         <Border.ContextMenu>
-                                            <ContextMenu Classes="launcher-context-menu">
+                                            <ContextMenu Classes="launcher-context-menu"
+                                                         MaxHeight="560"
+                                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
                                                 <MenuItem Header="打开"
                                                           Click="ContextOpen_Click"
                                                           AutomationProperties.Name="打开磁贴入口">
@@ -723,7 +703,7 @@
                                             <Border Classes="tile-icon-box"
                                                     Width="44"
                                                     Height="44"
-                                                    CornerRadius="12"
+                                                    CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
                                                     Background="{DynamicResource LightUpAccentSoftBrush}"
                                                     HorizontalAlignment="Center">
                                                 <Grid>
@@ -789,7 +769,7 @@
                                                 <Border Grid.Column="1"
                                                         Width="22"
                                                         Height="22"
-                                                        CornerRadius="6"
+                                                        CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
                                                         Classes="tile-drag-handle"
                                                         PointerPressed="TileDragHandle_PointerPressed"
                                                         ToolTip.Tip="拖动到分类以移动入口"
@@ -819,17 +799,14 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <Border IsVisible="{CompiledBinding ShowEmptyState}"
-                                Background="{DynamicResource LightUpSurfaceBrush}"
-                                BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="14"
+                        <Border Classes="launcher-empty-state"
+                                IsVisible="{CompiledBinding ShowEmptyState}"
                                 Margin="4"
                                 Padding="24">
                             <StackPanel HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Spacing="10">
-                                <Border Width="52" Height="52" CornerRadius="16" Background="{DynamicResource LightUpAccentSoftBrush}" HorizontalAlignment="Center">
+                                <Border Width="52" Height="52" CornerRadius="{DynamicResource SemiBorderRadiusMedium}" Background="{DynamicResource LightUpAccentSoftBrush}" HorizontalAlignment="Center">
                                     <fluent:FluentIcon Icon="{x:Static icon:Icon.AppsAddIn}"
                                                         Width="24"
                                                         Height="24"
@@ -859,9 +836,8 @@
                             </StackPanel>
                         </Border>
 
-                        <Border IsVisible="{CompiledBinding IsLoading}"
-                                Background="{DynamicResource LightUpSurfaceBrush}"
-                                CornerRadius="14"
+                        <Border Classes="launcher-panel"
+                                IsVisible="{CompiledBinding IsLoading}"
                                 Margin="4"
                                 Padding="24">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="9">
@@ -919,10 +895,6 @@
                                      Text="{CompiledBinding EditedTileTitle, Mode=TwoWay}"
                                      IsEnabled="{CompiledBinding CanRenameSelectedItem}"
                                      FontSize="10.5"
-                                     Background="{DynamicResource LightUpWindowBrush}"
-                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                     BorderThickness="1"
-                                     Foreground="{DynamicResource LightUpTextBrush}"
                                      ToolTip.Tip="重命名选中入口（F2）"
                                      AutomationProperties.Name="选中入口名称"
                                      KeyDown="RenameTile_KeyDown"/>
@@ -940,10 +912,6 @@
                                      Text="{CompiledBinding EditedTileNotes, Mode=TwoWay}"
                                      IsEnabled="{CompiledBinding CanEditSelectedItemNotes}"
                                      FontSize="10.5"
-                                     Background="{DynamicResource LightUpWindowBrush}"
-                                     BorderBrush="{DynamicResource LightUpBorderBrush}"
-                                     BorderThickness="1"
-                                     Foreground="{DynamicResource LightUpTextBrush}"
                                      ToolTip.Tip="编辑选中入口备注"
                                      AutomationProperties.Name="选中入口备注"
                                      KeyDown="SaveNotes_KeyDown"/>
@@ -1021,20 +989,20 @@
                            VerticalAlignment="Center"/>
             </Grid>
 
-            <Border x:Name="ExternalDropOverlay"
+                    <Border x:Name="ExternalDropOverlay"
                     Grid.Row="0"
                     Grid.RowSpan="3"
                     Classes="external-drop-overlay"
                     IsVisible="False"
                     IsHitTestVisible="False"
-                    CornerRadius="14"
+                    CornerRadius="{DynamicResource SemiBorderRadiusMedium}"
                     Margin="-6">
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
                     <Border Width="44"
                             Height="44"
-                            CornerRadius="14"
+                            CornerRadius="{DynamicResource SemiBorderRadiusMedium}"
                             Background="{DynamicResource LightUpAccentSoftBrush}"
                             HorizontalAlignment="Center">
                         <fluent:FluentIcon Icon="{x:Static icon:Icon.Add}"
