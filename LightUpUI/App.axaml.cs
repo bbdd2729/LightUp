@@ -21,7 +21,7 @@ using LightUpUI.ViewModels;
 
 namespace LightUpUI;
 
-public class App : Application
+public partial class App : Application
 {
     public override void Initialize()
     {

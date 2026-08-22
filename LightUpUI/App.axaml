@@ -445,6 +445,24 @@
             <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
+        <Style Selector="Border.tile-drag-handle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.tile-drag-handle:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
+        </Style>
+        <Style Selector="Border.tile-drag-handle:pressed">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLightActive}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorPrimary}"/>
+        </Style>
+        <Style Selector="Border.tile-drag-handle:focus-visible">
+            <Setter Property="Background" Value="{DynamicResource SemiColorPrimaryLight}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
         <Style Selector="ListBoxItem:focus-visible Border.result-row">
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>

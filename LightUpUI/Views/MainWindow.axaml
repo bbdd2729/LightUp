@@ -109,6 +109,8 @@
                                     MinHeight="58"
                                     Padding="12,9"
                                     CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
+                                    AutomationProperties.Name="{CompiledBinding Title}"
+                                    AutomationProperties.HelpText="{CompiledBinding Subtitle}"
                                     PointerPressed="Result_PointerPressed">
                                 <Border.ContextMenu>
                                     <ContextMenu Classes="launcher-context-menu"

@@ -178,6 +178,8 @@ public sealed class SemiThemeResourceTests
         Assert.Contains("feedback-busy", appMarkup);
         Assert.Contains("x:Name=\"StatusFeedback\"", mainMarkup);
         Assert.Contains("x:Name=\"StatusFeedback\"", tileMarkup);
+        Assert.Contains("AutomationProperties.Name=\"{CompiledBinding Name}\"", tileMarkup);
+        Assert.Contains("AutomationProperties.Name=\"{CompiledBinding Title}\"", tileMarkup);
     }
 
     [Fact]

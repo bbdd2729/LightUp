@@ -20,6 +20,9 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("ContextMenu.launcher-context-menu", markup);
         Assert.Contains("Button.launcher-chrome.is-active", markup);
         Assert.Contains("Button.launcher-tile-remove:pointerover", markup);
+        Assert.Contains("Border.tile-drag-handle:pointerover", markup);
+        Assert.Contains("Border.tile-drag-handle:pressed", markup);
+        Assert.Contains("Border.tile-drag-handle:focus-visible", markup);
     }
 
     [Fact]
@@ -49,6 +52,8 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("Classes=\"launcher-status-bar\"", markup);
         Assert.Contains("ShowEmptyState", markup);
         Assert.Contains("ShowStatusBar", markup);
+        Assert.Contains("AutomationProperties.Name=\"{CompiledBinding Title}\"", markup);
+        Assert.Contains("AutomationProperties.HelpText=\"{CompiledBinding Subtitle}\"", markup);
     }
 
     [Fact]

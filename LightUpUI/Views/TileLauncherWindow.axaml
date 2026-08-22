@@ -242,6 +242,7 @@
                                             CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
                                             BorderThickness="1"
                                             BorderBrush="Transparent"
+                                            AutomationProperties.Name="{CompiledBinding Name}"
                                             DragDrop.AllowDrop="True">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
@@ -358,6 +359,7 @@
                                             CornerRadius="{DynamicResource SemiBorderRadiusExtraSmall}"
                                             BorderThickness="1"
                                             BorderBrush="Transparent"
+                                            AutomationProperties.Name="{CompiledBinding Name}"
                                             DragDrop.AllowDrop="True">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                                             <fluent:FluentIcon Icon="{x:Static icon:Icon.Folder}"
@@ -619,6 +621,8 @@
                             <Border Classes="tile-card"
                                     Padding="12"
                                     CornerRadius="{DynamicResource SemiBorderRadiusSmall}"
+                                    AutomationProperties.Name="{CompiledBinding Title}"
+                                    AutomationProperties.HelpText="{CompiledBinding TargetHealthMessage}"
                                     DragDrop.AllowDrop="True"
                                     PointerPressed="Tile_PointerPressed">
                                         <Border.ContextMenu>
