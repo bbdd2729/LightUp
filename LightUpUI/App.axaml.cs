@@ -83,18 +83,22 @@ public class App : Application
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
+            var surfaceCoordinator = new LauncherSurfaceCoordinator(
+                windowHost,
+                tileWindowHost,
+                tileWindowHost);
             tileWindowHost.CloseAfterLaunch = searchSettings.CloseTileLauncherAfterLaunch;
             var cornerTriggerController = new TileLauncherCornerTriggerController(
                 new WindowsCursorPositionService(),
                 () => tileWindow.Screens.All
                     .Select(screen => new TileLauncherScreenArea(screen.Bounds, screen.WorkingArea))
                     .ToArray(),
-                tileWindowHost,
+                surfaceCoordinator,
                 searchSettings);
             EventHandler? activationHandler = null;
             if (Program.InstanceCoordinator is { } instanceCoordinator)
             {
-                activationHandler = (_, _) => Dispatcher.UIThread.Post(tileWindowHost.Show);
+                activationHandler = (_, _) => Dispatcher.UIThread.Post(surfaceCoordinator.ShowTiles);
                 instanceCoordinator.ActivationRequested += activationHandler;
             }
             var hotkeyBindings = new LauncherHotkeyBindings(new WindowsGlobalHotkeyServiceFactory());
@@ -118,7 +122,7 @@ public class App : Application
                     cornerTriggerController.ApplySettings(settings);
                 });
             var actionHost = new LauncherActionHost(
-                tileWindowHost,
+                surfaceCoordinator,
                 () =>
                 {
                     ShowSettingsWindow(settingsViewModel, window);
@@ -167,9 +171,9 @@ public class App : Application
                 _ = tileWindowHost.EnsureLoadedAsync();
             };
             hotkeyBindings.SearchHotkeyPressed += (_, _) =>
-                Dispatcher.UIThread.Post(windowHost.Toggle);
+                Dispatcher.UIThread.Post(surfaceCoordinator.ToggleSearch);
             hotkeyBindings.TileLauncherHotkeyPressed += (_, _) =>
-                Dispatcher.UIThread.Post(tileWindowHost.Toggle);
+                Dispatcher.UIThread.Post(surfaceCoordinator.ToggleTiles);
             if (!hotkeyBindings.TryApply(
                     searchSettings.Hotkey,
                     searchSettings.TileLauncherHotkey,
@@ -180,8 +184,7 @@ public class App : Application
 
             CreateTrayIcon(
                 desktop,
-                windowHost,
-                tileWindowHost,
+                surfaceCoordinator,
                 () =>
                 {
                     ShowSettingsWindow(settingsViewModel, window);
@@ -234,8 +237,7 @@ public class App : Application
 
     private void CreateTrayIcon(
         IClassicDesktopStyleApplicationLifetime desktop,
-        ILauncherWindowHost searchHost,
-        ITileLauncherWindowHost tileHost,
+        LauncherSurfaceCoordinator surfaceCoordinator,
         Action openSettings)
     {
         if (!OperatingSystem.IsWindows())
@@ -250,8 +252,8 @@ public class App : Application
             ToolTipText = "LightUp 启动器 · 右键打开菜单"
         };
         trayIcon.Menu = CreateTrayNativeMenu(
-            () => searchHost.Show(),
-            () => tileHost.Show(),
+            surfaceCoordinator.ShowSearch,
+            surfaceCoordinator.ShowTiles,
             openSettings,
             () => desktop.Shutdown());
         TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
