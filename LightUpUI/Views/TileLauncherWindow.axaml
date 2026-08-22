@@ -42,12 +42,12 @@
             <Setter Property="BoxShadow" Value="0 3 0 0 #FF75A3FF"/>
         </Style>
         <Style Selector="Border.external-drop-overlay">
-            <Setter Property="Background" Value="#D91B2A3D"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpDropBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="Border.external-drop-overlay.drop-invalid">
-            <Setter Property="Background" Value="#D93D1D25"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpDangerBrush}"/>
         </Style>
     </Window.Styles>

@@ -58,6 +58,7 @@ public static class LauncherThemeService
         SetBrush(application, "LightUpSurfaceStrongBrush", isLight ? "1E000000" : "24FFFFFF");
         SetBrush(application, "LightUpInputBrush", isLight ? "0D17212B" : "26FFFFFF");
         SetBrush(application, "LightUpInputHoverBrush", isLight ? "1417212B" : "32FFFFFF");
+        SetBrush(application, "LightUpDropBrush", isLight ? "D9E7F0FF" : "D91B2A3D");
         SetBrush(application, "LightUpBorderBrush", isLight ? "24000000" : "32FFFFFF");
         SetBrush(application, "LightUpBorderBrushStrong", isLight ? "45000000" : "5AFFFFFF");
         SetBrush(application, "LightUpTextBrush", isLight ? "FF17212B" : "FFF7FAFC");

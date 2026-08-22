@@ -74,6 +74,12 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<LauncherItem> Results { get; } = [];
 
+    public bool ShowEmptyState => !IsSearching && Results.Count == 0;
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
+
+    public bool ShowStatusBar => HasStatus && !ShowEmptyState;
+
     partial void OnQueryTextChanged(string value)
     {
         _ = SearchAsync(value);
@@ -86,6 +92,18 @@ public partial class MainViewModel : ViewModelBase
             _ = SearchAsync(QueryText);
     }
 
+    partial void OnIsSearchingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowEmptyState));
+        OnPropertyChanged(nameof(ShowStatusBar));
+    }
+
+    partial void OnStatusTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasStatus));
+        OnPropertyChanged(nameof(ShowStatusBar));
+    }
+
     [RelayCommand]
     private void ClearQuery() => QueryText = string.Empty;
 
@@ -96,6 +114,7 @@ public partial class MainViewModel : ViewModelBase
         Results.Clear();
         SelectedItem = null;
         StatusText = "输入应用名称开始搜索";
+        NotifyResultStateChanged();
         IsLauncherVisible = true;
         _ = SearchAsync(string.Empty);
     }
@@ -107,6 +126,7 @@ public partial class MainViewModel : ViewModelBase
         Results.Clear();
         SelectedItem = null;
         IsSearching = false;
+        NotifyResultStateChanged();
         IsLauncherVisible = false;
     }
 
@@ -133,6 +153,7 @@ public partial class MainViewModel : ViewModelBase
             StatusText = Results.Count == 0
                 ? string.IsNullOrWhiteSpace(query) ? "暂无可显示的最近项目" : "没有找到匹配项目"
                 : string.Empty;
+            NotifyResultStateChanged();
         }
         catch (OperationCanceledException)
         {
@@ -142,6 +163,7 @@ public partial class MainViewModel : ViewModelBase
             Results.Clear();
             SelectedItem = null;
             StatusText = $"搜索失败：{ex.Message}";
+            NotifyResultStateChanged();
         }
         finally
         {
@@ -277,6 +299,7 @@ public partial class MainViewModel : ViewModelBase
         finally
         {
             IsSearching = false;
+            NotifyResultStateChanged();
         }
     }
 
@@ -340,6 +363,13 @@ public partial class MainViewModel : ViewModelBase
 
     public void ReportStatus(string message)
         => StatusText = string.IsNullOrWhiteSpace(message) ? "操作失败" : message;
+
+    private void NotifyResultStateChanged()
+    {
+        OnPropertyChanged(nameof(ShowEmptyState));
+        OnPropertyChanged(nameof(HasStatus));
+        OnPropertyChanged(nameof(ShowStatusBar));
+    }
 
     private sealed class NullLauncherWindowHost : ILauncherWindowHost
     {

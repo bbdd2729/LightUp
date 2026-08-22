@@ -18,6 +18,7 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("Button.launcher-secondary", markup);
         Assert.Contains("Border.launcher-settings-section", markup);
         Assert.Contains("ContextMenu.launcher-context-menu", markup);
+        Assert.Contains("Button.launcher-chrome.is-active", markup);
     }
 
     [Fact]
@@ -43,6 +44,21 @@ public sealed class LauncherUiDesignTokenTests
         Assert.Contains("MinHeight=\"240\"", markup);
         Assert.Contains("MinHeight=\"58\"", markup);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", markup);
+        Assert.Contains("Classes=\"launcher-empty-state\"", markup);
+        Assert.Contains("Classes=\"launcher-status-bar\"", markup);
+        Assert.Contains("ShowEmptyState", markup);
+        Assert.Contains("ShowStatusBar", markup);
+    }
+
+    [Fact]
+    public void Tile_drag_overlay_uses_theme_resources()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "LightUpUI", "Views", "TileLauncherWindow.axaml");
+        var markup = File.ReadAllText(Path.GetFullPath(path));
+
+        Assert.Contains("LightUpDropBrush", markup);
+        Assert.Contains("LightUpDangerSoftBrush", markup);
+        Assert.DoesNotContain("#D91B2A3D", markup);
     }
 
     [Fact]

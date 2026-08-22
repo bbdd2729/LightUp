@@ -167,7 +167,16 @@ public partial class MainWindow : Window
             : FluentIcons.Common.Icon.PinOff;
         topmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
         ToolTip.SetTip(topmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
+        SetClass(topmostButton, "is-active", Topmost);
         topmostStatus.IsVisible = Topmost;
+    }
+
+    private static void SetClass(Control control, string className, bool enabled)
+    {
+        if (enabled)
+            control.Classes.Add(className);
+        else
+            control.Classes.Remove(className);
     }
 
     private MainViewModel ViewModel => (MainViewModel)DataContext!;

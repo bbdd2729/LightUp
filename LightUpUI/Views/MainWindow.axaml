@@ -169,17 +169,46 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource LightUpTextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding !IsSearching}"/>
+                <Border Classes="launcher-empty-state"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding ShowEmptyState}">
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <fluent:FluentIcon Icon="{x:Static icon:Icon.Info}"
+                                            Width="24"
+                                            Height="24"
+                                            Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                            HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding StatusText}"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxLines="2"/>
+                    </StackPanel>
+                </Border>
                 <ProgressBar IsIndeterminate="True" Height="2" VerticalAlignment="Bottom" IsVisible="{Binding IsSearching}"/>
             </Grid>
 
-            <TextBlock Grid.Row="3"
-                       Text="↑↓ 选择    Enter 启动    Ctrl+Enter 位置    Shift+Enter 复制路径    Esc 关闭"
-                       Foreground="{DynamicResource LightUpTextFaintBrush}"
-                       FontSize="10"
-                       HorizontalAlignment="Right"
-                       TextTrimming="CharacterEllipsis"
-                       MaxLines="1"/>
+            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Border Classes="launcher-status-bar"
+                        IsVisible="{Binding ShowStatusBar}"
+                        MaxWidth="360"
+                        HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="{DynamicResource LightUpTextMutedBrush}"
+                               FontSize="10"
+                               TextTrimming="CharacterEllipsis"
+                               MaxLines="1"/>
+                </Border>
+                <TextBlock Grid.Column="1"
+                           Text="↑↓ 选择    Enter 启动    Ctrl+Enter 位置    Shift+Enter 复制路径    Esc 关闭"
+                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                           FontSize="10"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           MaxLines="1"/>
+            </Grid>
         </Grid>
     </Border>
 </Window>

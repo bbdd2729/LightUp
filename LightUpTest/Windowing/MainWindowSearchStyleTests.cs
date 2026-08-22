@@ -15,5 +15,8 @@ public sealed class MainWindowSearchStyleTests
         Assert.DoesNotContain("Foreground=\"White\"", markup);
         Assert.DoesNotContain("CaretBrush=\"White\"", markup);
         Assert.Contains("Classes=\"launcher-query\"", markup);
+        Assert.Contains("ColumnDefinitions=\"40,*,Auto\"", markup);
+        Assert.Contains("MinWidth=\"48\"", markup);
+        Assert.Contains("MaxWidth=\"82\"", markup);
     }
 }

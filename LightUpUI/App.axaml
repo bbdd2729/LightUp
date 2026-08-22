@@ -14,6 +14,7 @@
         <SolidColorBrush x:Key="LightUpSurfaceStrongBrush" Color="#24FFFFFF"/>
         <SolidColorBrush x:Key="LightUpInputBrush" Color="#26FFFFFF"/>
         <SolidColorBrush x:Key="LightUpInputHoverBrush" Color="#32FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpDropBrush" Color="#D91B2A3D"/>
         <SolidColorBrush x:Key="LightUpBorderBrush" Color="#32FFFFFF"/>
         <SolidColorBrush x:Key="LightUpBorderBrushStrong" Color="#5AFFFFFF"/>
         <SolidColorBrush x:Key="LightUpTextBrush" Color="#FFF7FAFC"/>
@@ -51,6 +52,15 @@
         </Style>
         <Style Selector="Button.launcher-chrome:pressed">
             <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-chrome.is-active">
+            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpAccentBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-chrome.is-active:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
         </Style>
         <Style Selector="Button.launcher-primary">
             <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
@@ -249,6 +259,20 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="14"/>
+        </Style>
+        <Style Selector="Border.launcher-empty-state">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+        <Style Selector="Border.launcher-status-bar">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="Padding" Value="8,5"/>
         </Style>
     </Application.Styles>
 </Application>
