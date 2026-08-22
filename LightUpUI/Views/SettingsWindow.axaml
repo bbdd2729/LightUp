@@ -121,6 +121,47 @@
 
                 <Border Classes="launcher-settings-section">
                     <StackPanel Spacing="8">
+                        <TextBlock Text="磁贴自动弹出" FontSize="15" FontWeight="SemiBold"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="启用屏幕四角自动弹出"
+                                  IsChecked="{CompiledBinding EnableTileCornerTrigger, Mode=TwoWay}"
+                                  AutomationProperties.Name="启用屏幕四角自动弹出"
+                                  KeyboardNavigation.TabIndex="6"/>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="触发延迟" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                                <TextBlock Text="鼠标在屏幕角落停留达到该时间后打开启动器。"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ComboBox Grid.Column="1"
+                                      Classes="launcher-field"
+                                      Width="112"
+                                      ItemsSource="{CompiledBinding TileCornerTriggerDelays}"
+                                      SelectedItem="{CompiledBinding TileCornerTriggerDelayMilliseconds, Mode=TwoWay}"
+                                      AutomationProperties.Name="四角弹出触发延迟"
+                                      KeyboardNavigation.TabIndex="7"/>
+                        </Grid>
+                        <CheckBox Classes="launcher-field"
+                                  Content="鼠标离开磁贴窗口后自动关闭"
+                                  IsChecked="{CompiledBinding CloseTileLauncherOnPointerLeave, Mode=TwoWay}"
+                                  AutomationProperties.Name="鼠标离开磁贴窗口后自动关闭"
+                                  KeyboardNavigation.TabIndex="8"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="启动入口后自动关闭磁贴窗口"
+                                  IsChecked="{CompiledBinding CloseTileLauncherAfterLaunch, Mode=TwoWay}"
+                                  AutomationProperties.Name="启动入口后自动关闭磁贴窗口"
+                                  KeyboardNavigation.TabIndex="9"/>
+                        <TextBlock Text="快捷键和托盘手动打开的启动器不受鼠标离开规则影响。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
                         <TextBlock Text="搜索结果与历史" FontSize="15" FontWeight="SemiBold"/>
                         <TextBlock Text="搜索结果数量" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
                         <ComboBox Classes="launcher-field"

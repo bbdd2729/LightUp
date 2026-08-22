@@ -21,6 +21,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Action<bool> _applySearchAllTileCategories;
     private readonly Func<bool, string?> _applyLaunchAtStartup;
     private readonly Func<string, string, string?> _applyHotkeys;
+    private readonly Action<SearchLauncherSettings> _applyTileCornerSettings;
 
     public SettingsViewModel(
         ISearchLauncherSettingsStore settingsStore,
@@ -32,7 +33,8 @@ public partial class SettingsViewModel : ViewModelBase
         Action<int>? applyMaxResults = null,
         Action<bool>? applySearchAllTileCategories = null,
         Func<bool, string?>? applyLaunchAtStartup = null,
-        Func<string, string, string?>? applyHotkeys = null)
+        Func<string, string, string?>? applyHotkeys = null,
+        Action<SearchLauncherSettings>? applyTileCornerSettings = null)
     {
         _settingsStore = settingsStore;
         _settings = settings;
@@ -44,6 +46,7 @@ public partial class SettingsViewModel : ViewModelBase
         _applySearchAllTileCategories = applySearchAllTileCategories ?? (_ => { });
         _applyLaunchAtStartup = applyLaunchAtStartup ?? (_ => null);
         _applyHotkeys = applyHotkeys ?? ((_, _) => null);
+        _applyTileCornerSettings = applyTileCornerSettings ?? (_ => { });
         _selectedSearchMode = settings.Mode;
         _selectedThemeMode = ThemePalettePolicy.NormalizeThemeMode(settings.Appearance.ThemeMode);
         _selectedColorPalette = ThemePalettePolicy.NormalizeColorPalette(settings.Appearance.ColorPalette);
@@ -54,6 +57,11 @@ public partial class SettingsViewModel : ViewModelBase
         _launchAtStartup = settings.LaunchAtStartup;
         _searchHotkey = settings.Hotkey;
         _tileLauncherHotkey = settings.TileLauncherHotkey;
+        _enableTileCornerTrigger = settings.EnableTileCornerTrigger;
+        _tileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
+            settings.TileCornerTriggerDelayMilliseconds);
+        _closeTileLauncherOnPointerLeave = settings.CloseTileLauncherOnPointerLeave;
+        _closeTileLauncherAfterLaunch = settings.CloseTileLauncherAfterLaunch;
         _selectedCategoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(
             settings.CategoryNavigationPlacement);
         _selectedTileDensity = TileDensityPolicy.Normalize(settings.Appearance.TileDensity);
@@ -65,6 +73,7 @@ public partial class SettingsViewModel : ViewModelBase
     public Array CategoryNavigationPlacements { get; } = Enum.GetValues<CategoryNavigationPlacement>();
     public Array TileDensities { get; } = Enum.GetValues<TileDensity>();
     public int[] ResultLimits { get; } = [10, 20, 30, 50, 100];
+    public int[] TileCornerTriggerDelays { get; } = [300, 500, 700, 1000, 1500, 2000, 3000];
 
     [ObservableProperty]
     private SearchLauncherMode _selectedSearchMode;
@@ -107,6 +116,18 @@ public partial class SettingsViewModel : ViewModelBase
     private string _tileLauncherHotkey;
 
     [ObservableProperty]
+    private bool _enableTileCornerTrigger;
+
+    [ObservableProperty]
+    private int _tileCornerTriggerDelayMilliseconds;
+
+    [ObservableProperty]
+    private bool _closeTileLauncherOnPointerLeave;
+
+    [ObservableProperty]
+    private bool _closeTileLauncherAfterLaunch;
+
+    [ObservableProperty]
     private string _statusText = string.Empty;
 
     partial void OnSelectedColorPaletteChanged(LauncherColorPalette value)
@@ -140,6 +161,11 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.LaunchAtStartup = LaunchAtStartup;
         _settings.Hotkey = searchHotkey;
         _settings.TileLauncherHotkey = tileLauncherHotkey;
+        _settings.EnableTileCornerTrigger = EnableTileCornerTrigger;
+        _settings.TileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
+            TileCornerTriggerDelayMilliseconds);
+        _settings.CloseTileLauncherOnPointerLeave = CloseTileLauncherOnPointerLeave;
+        _settings.CloseTileLauncherAfterLaunch = CloseTileLauncherAfterLaunch;
         await _settingsStore.SaveAsync(_settings, cancellationToken);
         _applySearchMode(SelectedSearchMode);
         _applyAppearance(_settings.Appearance);
@@ -147,6 +173,7 @@ public partial class SettingsViewModel : ViewModelBase
         _applyTileDensity(_settings.Appearance.TileDensity);
         _applyMaxResults(_settings.MaxResults);
         _applySearchAllTileCategories(_settings.SearchAllTileCategories);
+        _applyTileCornerSettings(_settings);
         StatusText = "设置已保存";
     }
 

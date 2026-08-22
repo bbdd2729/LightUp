@@ -11,8 +11,10 @@ using Avalonia.Threading;
 using Avalonia.Media.Imaging;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LightUpUI.Models;
 using LightUpUI.Plugins;
+using LightUpUI.Presentation;
 using LightUpUI.Services;
 using LightUpUI.Views;
 using LightUpUI.ViewModels;
@@ -81,6 +83,14 @@ public class App : Application
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
+            tileWindowHost.CloseAfterLaunch = searchSettings.CloseTileLauncherAfterLaunch;
+            var cornerTriggerController = new TileLauncherCornerTriggerController(
+                new WindowsCursorPositionService(),
+                () => tileWindow.Screens.All
+                    .Select(screen => new TileLauncherScreenArea(screen.Bounds, screen.WorkingArea))
+                    .ToArray(),
+                tileWindowHost,
+                searchSettings);
             EventHandler? activationHandler = null;
             if (Program.InstanceCoordinator is { } instanceCoordinator)
             {
@@ -101,7 +111,12 @@ public class App : Application
                 applySearchAllTileCategories: searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories,
                 applyLaunchAtStartup: startupRegistration.Apply,
                 applyHotkeys: (searchHotkey, tileLauncherHotkey) =>
-                    hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error);
+                    hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error,
+                applyTileCornerSettings: settings =>
+                {
+                    tileWindowHost.CloseAfterLaunch = settings.CloseTileLauncherAfterLaunch;
+                    cornerTriggerController.ApplySettings(settings);
+                });
             var actionHost = new LauncherActionHost(
                 tileWindowHost,
                 () =>
@@ -143,10 +158,12 @@ public class App : Application
                 () => settingsStore.SaveAsync(searchSettings, CancellationToken.None),
                 new Size(720, 420),
                 new Size(1800, 1200));
+            tileWindowHost.CornerPositionApplier = tileWindowStateTracker.SetPositionWithoutSaving;
             window.Opened += (_, _) => searchWindowStateTracker.Restore(searchSettings.Appearance.SearchWindow);
             tileWindow.Opened += (_, _) =>
             {
-                tileWindowStateTracker.Restore(searchSettings.Appearance.TileLauncherWindow);
+                if (!tileWindowHost.IsCornerActivated)
+                    tileWindowStateTracker.Restore(searchSettings.Appearance.TileLauncherWindow);
                 _ = tileWindowHost.EnsureLoadedAsync();
             };
             hotkeyBindings.SearchHotkeyPressed += (_, _) =>
@@ -179,6 +196,7 @@ public class App : Application
             desktop.MainWindow = startupWindow;
             if (LauncherStartupPolicy.ShouldShowMainSurfaceOnStartup)
                 startupWindow.Show();
+            cornerTriggerController.Start();
 
             desktop.Exit += (_, _) =>
             {
@@ -189,6 +207,7 @@ public class App : Application
                     instanceCoordinator.ActivationRequested -= activationHandler;
                 searchWindowStateTracker.Dispose();
                 tileWindowStateTracker.Dispose();
+                cornerTriggerController.Dispose();
             };
         }
         catch
