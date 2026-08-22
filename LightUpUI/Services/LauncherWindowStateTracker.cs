@@ -71,6 +71,22 @@ public sealed class LauncherWindowStateTracker : IDisposable
         IsTopmost = _window.Topmost
     };
 
+    public void SetPositionWithoutSaving(PixelPoint position)
+    {
+        if (_disposed)
+            return;
+
+        _isRestoring = true;
+        try
+        {
+            _window.Position = position;
+        }
+        finally
+        {
+            _isRestoring = false;
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed)

@@ -132,6 +132,49 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task SaveAsync_persists_startup_preference_after_registering_it()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        bool? appliedStartup = null;
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyLaunchAtStartup: value =>
+            {
+                appliedStartup = value;
+                return null;
+            })
+        {
+            LaunchAtStartup = true
+        };
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.True(store.Settings.LaunchAtStartup);
+        Assert.True(appliedStartup);
+    }
+
+    [Fact]
+    public async Task SaveAsync_does_not_persist_startup_preference_when_registration_fails()
+    {
+        var store = new FakeSettingsStore(new SearchLauncherSettings());
+        var viewModel = new SettingsViewModel(
+            store,
+            store.Settings,
+            _ => { },
+            applyLaunchAtStartup: _ => "无法访问当前用户的启动项。")
+        {
+            LaunchAtStartup = true
+        };
+
+        await viewModel.SaveAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(store.Settings.LaunchAtStartup);
+        Assert.Equal("无法访问当前用户的启动项。", viewModel.StatusText);
+    }
+
+    [Fact]
     public async Task SaveAsync_normalizes_hotkeys_and_notifies_the_hotkey_host()
     {
         var store = new FakeSettingsStore(new SearchLauncherSettings());

@@ -44,6 +44,10 @@ public sealed class WindowsFileIconService : IFileIconService
         return null;
     }
 
+    public void Invalidate(string? path) => _cache.Invalidate(path);
+
+    public void ClearCache() => _cache.Clear();
+
     private static IImage? LoadShellIcon(string path, int size)
     {
         if (!OperatingSystem.IsWindows() || (!File.Exists(path) && !Directory.Exists(path)))

@@ -21,6 +21,8 @@ namespace LightUpUI.Views;
 public partial class TileLauncherWindow : Window
 {
     private readonly TileLauncherViewModel _viewModel;
+    private Control? _categoryDropTarget;
+    private Control? _tileDropTarget;
 
     public TileLauncherWindow()
         : this(new TileLauncherViewModel(new JsonLauncherStateStore(), new WindowsProcessLauncher()))
@@ -117,7 +119,12 @@ public partial class TileLauncherWindow : Window
         e.Handled = true;
     }
 
-    private void Window_DragLeave(object? sender, DragEventArgs e) => ClearExternalDropFeedback();
+    private void Window_DragLeave(object? sender, DragEventArgs e)
+    {
+        ClearExternalDropFeedback();
+        ClearCategoryDropFeedback();
+        ClearTileDropFeedback();
+    }
 
     private async void Window_Drop(object? sender, DragEventArgs e)
     {
@@ -125,6 +132,8 @@ public partial class TileLauncherWindow : Window
         var text = e.DataTransfer.TryGetText();
         var kind = TileDropPolicy.Classify(files is not null, text);
         ClearExternalDropFeedback();
+        ClearCategoryDropFeedback();
+        ClearTileDropFeedback();
 
         switch (kind)
         {
@@ -229,6 +238,7 @@ public partial class TileLauncherWindow : Window
             : FluentIcons.Common.Icon.PinOff;
         topmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
         ToolTip.SetTip(topmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
+        SetClass(topmostButton, "is-active", Topmost);
         topmostStatus.IsVisible = Topmost;
     }
 
@@ -311,8 +321,15 @@ public partial class TileLauncherWindow : Window
         var target = FindCategoryDropTarget(e.Source);
         var category = GetDropCategory(target);
         if (category is null || !TryGetDraggedTileId(e, out _))
+        {
+            ClearCategoryDropFeedback();
             return;
+        }
 
+        if (!ReferenceEquals(_categoryDropTarget, target))
+            ClearCategoryDropFeedback();
+
+        _categoryDropTarget = target;
         target!.Classes.Add("category-drop-target");
         e.DragEffects = DragDropEffects.Move;
         e.Handled = true;
@@ -320,7 +337,9 @@ public partial class TileLauncherWindow : Window
 
     private void Category_DragLeave(object? sender, DragEventArgs e)
     {
-        FindCategoryDropTarget(e.Source)?.Classes.Remove("category-drop-target");
+        var target = FindCategoryDropTarget(e.Source);
+        if (target is null || ReferenceEquals(target, _categoryDropTarget))
+            ClearCategoryDropFeedback();
     }
 
     private async void Category_Drop(object? sender, DragEventArgs e)
@@ -336,7 +355,7 @@ public partial class TileLauncherWindow : Window
         }
         finally
         {
-            target?.Classes.Remove("category-drop-target");
+            ClearCategoryDropFeedback();
             e.Handled = true;
         }
     }
@@ -369,7 +388,15 @@ public partial class TileLauncherWindow : Window
     {
         var target = FindDropTarget<TileItem>(e.Source, "tile-card");
         if (target is null || !TryGetDraggedTileId(e, out _))
+        {
+            ClearTileDropFeedback();
             return;
+        }
+
+        if (!ReferenceEquals(_tileDropTarget, target))
+            ClearTileDropFeedback();
+
+        _tileDropTarget = target;
 
         var insertAfterTarget = e.GetPosition(target).Y >= target.Bounds.Height / 2;
         SetClass(target, "tile-drop-before", !insertAfterTarget);
@@ -380,8 +407,9 @@ public partial class TileLauncherWindow : Window
 
     private void Tile_DragLeave(object? sender, DragEventArgs e)
     {
-        if (FindDropTarget<TileItem>(e.Source, "tile-card") is { } target)
-            ClearTileDropFeedback(target);
+        var target = FindDropTarget<TileItem>(e.Source, "tile-card");
+        if (target is null || ReferenceEquals(target, _tileDropTarget))
+            ClearTileDropFeedback();
     }
 
     private async void Tile_Drop(object? sender, DragEventArgs e)
@@ -400,15 +428,25 @@ public partial class TileLauncherWindow : Window
         }
         finally
         {
-            ClearTileDropFeedback(target);
+            ClearTileDropFeedback();
             e.Handled = true;
         }
     }
 
-    private static void ClearTileDropFeedback(Control target)
+    private void ClearCategoryDropFeedback()
     {
-        target.Classes.Remove("tile-drop-before");
-        target.Classes.Remove("tile-drop-after");
+        _categoryDropTarget?.Classes.Remove("category-drop-target");
+        _categoryDropTarget = null;
+    }
+
+    private void ClearTileDropFeedback()
+    {
+        if (_tileDropTarget is null)
+            return;
+
+        _tileDropTarget.Classes.Remove("tile-drop-before");
+        _tileDropTarget.Classes.Remove("tile-drop-after");
+        _tileDropTarget = null;
     }
 
     private static TileItem? GetContextTile(object? sender)

@@ -16,18 +16,27 @@ public partial class MainViewModel : ViewModelBase
     private readonly IProcessLauncher _processLauncher;
     private readonly ILauncherWindowHost _windowHost;
     private readonly IPathRevealService _pathRevealService;
+    private readonly ISearchHistoryService? _searchHistoryService;
+    private readonly Func<string, Task<LaunchResult>> _copyText;
+    private readonly IAdministratorProcessLauncher? _administratorProcessLauncher;
     private CancellationTokenSource? _searchCancellation;
 
     public MainViewModel(
         ISearchService searchService,
         IProcessLauncher processLauncher,
         ILauncherWindowHost windowHost,
-        IPathRevealService? pathRevealService = null)
+        IPathRevealService? pathRevealService = null,
+        ISearchHistoryService? searchHistoryService = null,
+        Func<string, Task<LaunchResult>>? copyText = null,
+        IAdministratorProcessLauncher? administratorProcessLauncher = null)
     {
         _searchService = searchService;
         _processLauncher = processLauncher;
         _windowHost = windowHost;
         _pathRevealService = pathRevealService ?? new WindowsPathRevealService();
+        _searchHistoryService = searchHistoryService;
+        _copyText = copyText ?? (_ => Task.FromResult(LaunchResult.Failed("当前环境不支持剪贴板")));
+        _administratorProcessLauncher = administratorProcessLauncher;
     }
 
     public MainViewModel()
@@ -65,6 +74,12 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<LauncherItem> Results { get; } = [];
 
+    public bool ShowEmptyState => !IsSearching && Results.Count == 0;
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
+
+    public bool ShowStatusBar => HasStatus && !ShowEmptyState;
+
     partial void OnQueryTextChanged(string value)
     {
         _ = SearchAsync(value);
@@ -77,6 +92,18 @@ public partial class MainViewModel : ViewModelBase
             _ = SearchAsync(QueryText);
     }
 
+    partial void OnIsSearchingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowEmptyState));
+        OnPropertyChanged(nameof(ShowStatusBar));
+    }
+
+    partial void OnStatusTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasStatus));
+        OnPropertyChanged(nameof(ShowStatusBar));
+    }
+
     [RelayCommand]
     private void ClearQuery() => QueryText = string.Empty;
 
@@ -87,6 +114,7 @@ public partial class MainViewModel : ViewModelBase
         Results.Clear();
         SelectedItem = null;
         StatusText = "输入应用名称开始搜索";
+        NotifyResultStateChanged();
         IsLauncherVisible = true;
         _ = SearchAsync(string.Empty);
     }
@@ -98,6 +126,7 @@ public partial class MainViewModel : ViewModelBase
         Results.Clear();
         SelectedItem = null;
         IsSearching = false;
+        NotifyResultStateChanged();
         IsLauncherVisible = false;
     }
 
@@ -124,6 +153,7 @@ public partial class MainViewModel : ViewModelBase
             StatusText = Results.Count == 0
                 ? string.IsNullOrWhiteSpace(query) ? "暂无可显示的最近项目" : "没有找到匹配项目"
                 : string.Empty;
+            NotifyResultStateChanged();
         }
         catch (OperationCanceledException)
         {
@@ -133,6 +163,7 @@ public partial class MainViewModel : ViewModelBase
             Results.Clear();
             SelectedItem = null;
             StatusText = $"搜索失败：{ex.Message}";
+            NotifyResultStateChanged();
         }
         finally
         {
@@ -163,14 +194,30 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task InvokeSelectedAsync()
     {
-        if (SelectedItem is null)
+        var item = SelectedItem;
+        if (item is null)
             return;
 
         IsSearching = true;
-        var result = await _processLauncher.LaunchAsync(SelectedItem, CancellationToken.None);
+        if (LauncherItemActionPolicy.IsSearchQueryAction(item))
+        {
+            QueryText = item.Arguments!.Trim();
+            IsSearching = false;
+            StatusText = string.Empty;
+            return;
+        }
+
+        var result = await _processLauncher.LaunchAsync(item, CancellationToken.None);
         IsSearching = false;
         if (result.Succeeded)
-            _windowHost.Hide();
+        {
+            await RecordSuccessfulQueryAsync();
+
+            if (LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item))
+                StatusText = $"已复制结果：{item.Arguments}";
+            else
+                _windowHost.Hide();
+        }
         else
             StatusText = result.ErrorMessage ?? "启动失败";
     }
@@ -216,8 +263,113 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public async Task CopySelectedPathAsync(CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        if (item is null)
+        {
+            StatusText = "请先选择一个搜索结果";
+            return;
+        }
+
+        if (!item.CanCopyLaunchPath)
+        {
+            StatusText = "此结果没有可复制的路径";
+            return;
+        }
+
+        IsSearching = true;
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = await _copyText(item.LaunchPath);
+            StatusText = result.Succeeded
+                ? $"已复制路径：{item.Title}"
+                : result.ErrorMessage ?? "复制路径失败";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "复制路径已取消";
+        }
+        catch (Exception exception)
+        {
+            StatusText = $"复制路径失败：{exception.Message}";
+        }
+        finally
+        {
+            IsSearching = false;
+            NotifyResultStateChanged();
+        }
+    }
+
+    [RelayCommand]
+    public async Task LaunchSelectedAsAdministratorAsync(CancellationToken cancellationToken = default)
+    {
+        var item = SelectedItem;
+        if (item is null)
+        {
+            StatusText = "请先选择一个搜索结果";
+            return;
+        }
+
+        var administratorProcessLauncher = _administratorProcessLauncher;
+        if (!item.CanRunAsAdministrator || administratorProcessLauncher is null)
+        {
+            StatusText = "此结果不支持管理员启动";
+            return;
+        }
+
+        IsSearching = true;
+        try
+        {
+            var result = await administratorProcessLauncher.LaunchAsAdministratorAsync(item, cancellationToken);
+            if (result.Succeeded)
+            {
+                await RecordSuccessfulQueryAsync();
+                _windowHost.Hide();
+            }
+            else
+                StatusText = result.ErrorMessage ?? "管理员启动失败";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "管理员启动已取消";
+        }
+        catch (Exception exception)
+        {
+            StatusText = $"管理员启动失败：{exception.Message}";
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    private async Task RecordSuccessfulQueryAsync()
+    {
+        if (_searchHistoryService is null)
+            return;
+
+        try
+        {
+            await _searchHistoryService.RecordAsync(QueryText, CancellationToken.None);
+        }
+        catch
+        {
+            // A history write must never turn a successful launch into an error.
+        }
+    }
+
     public void ReportStatus(string message)
         => StatusText = string.IsNullOrWhiteSpace(message) ? "操作失败" : message;
+
+    private void NotifyResultStateChanged()
+    {
+        OnPropertyChanged(nameof(ShowEmptyState));
+        OnPropertyChanged(nameof(HasStatus));
+        OnPropertyChanged(nameof(ShowStatusBar));
+    }
 
     private sealed class NullLauncherWindowHost : ILauncherWindowHost
     {

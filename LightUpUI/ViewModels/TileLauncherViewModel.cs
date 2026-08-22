@@ -18,6 +18,8 @@ public partial class TileLauncherViewModel : ViewModelBase
     public const string DefaultCategoryId = TileLauncherStatePolicy.AllCategoryId;
     public const string DefaultCategoryName = TileLauncherStatePolicy.AllCategoryName;
 
+    public event EventHandler? LaunchSucceeded;
+
     public static IReadOnlyList<CategoryRemovalModeOption> CategoryRemovalModes { get; } =
     [
         new(CategoryRemovalMode.MoveItems, "迁移入口"),
@@ -339,7 +341,12 @@ public partial class TileLauncherViewModel : ViewModelBase
 
         RefreshVisibleItems();
         if (await PersistStateAsync(cancellationToken))
-            StatusText = $"已添加 {addedCount} 个入口";
+        {
+            var skippedCount = candidates.Length - addedCount;
+            StatusText = skippedCount == 0
+                ? $"已添加 {addedCount} 个入口"
+                : $"已添加 {addedCount} 个入口，跳过 {skippedCount} 个重复入口";
+        }
     }
 
     public void AddCategory(string name) => _ = AddCategoryAsync(name);
@@ -1107,6 +1114,8 @@ public partial class TileLauncherViewModel : ViewModelBase
             StatusText = result.Succeeded
                 ? $"已打开“{SelectedItem.Title}”"
                 : GetLaunchFailureMessage(SelectedItem, result.ErrorMessage);
+            if (result.Succeeded)
+                LaunchSucceeded?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
         {

@@ -11,8 +11,10 @@ using Avalonia.Threading;
 using Avalonia.Media.Imaging;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LightUpUI.Models;
 using LightUpUI.Plugins;
+using LightUpUI.Presentation;
 using LightUpUI.Services;
 using LightUpUI.Views;
 using LightUpUI.ViewModels;
@@ -43,6 +45,7 @@ public class App : Application
         {
             var tileStateStore = new JsonLauncherStateStore();
             var settingsStore = new SearchLauncherSettingsStore();
+            var startupRegistration = new WindowsStartupRegistrationService();
             var searchSettings = await StartupSettingsLoader.LoadAsync(
                 settingsStore,
                 CancellationToken.None);
@@ -51,10 +54,14 @@ public class App : Application
             {
                 SearchAllTileCategories = searchSettings.SearchAllTileCategories
             };
+            var searchHistoryService = new SearchHistoryService(settingsStore, searchSettings);
             var fullProviders = new List<ISearchProvider>
             {
                 tileProvider,
+                new SearchHistorySearchProvider(searchHistoryService),
+                new EverythingSearchProvider(),
                 new BuiltInActionSearchProvider(),
+                new CalculatorSearchProvider(),
                 new ShortcutSearchProvider(),
                 new PathExecutableSearchProvider()
             };
@@ -76,6 +83,20 @@ public class App : Application
             var tileWindowHost = new TileLauncherWindowHost(tileViewModel);
             var tileWindow = new TileLauncherWindow(tileViewModel);
             tileWindowHost.Attach(tileWindow);
+            tileWindowHost.CloseAfterLaunch = searchSettings.CloseTileLauncherAfterLaunch;
+            var cornerTriggerController = new TileLauncherCornerTriggerController(
+                new WindowsCursorPositionService(),
+                () => tileWindow.Screens.All
+                    .Select(screen => new TileLauncherScreenArea(screen.Bounds, screen.WorkingArea))
+                    .ToArray(),
+                tileWindowHost,
+                searchSettings);
+            EventHandler? activationHandler = null;
+            if (Program.InstanceCoordinator is { } instanceCoordinator)
+            {
+                activationHandler = (_, _) => Dispatcher.UIThread.Post(tileWindowHost.Show);
+                instanceCoordinator.ActivationRequested += activationHandler;
+            }
             var hotkeyBindings = new LauncherHotkeyBindings(new WindowsGlobalHotkeyServiceFactory());
             ViewModels.MainViewModel? viewModel = null;
             MainWindow? window = null;
@@ -88,19 +109,36 @@ public class App : Application
                 applyTileDensity: density => tileViewModel.TileDensity = density,
                 applyMaxResults: maxResults => viewModel!.MaxResults = maxResults,
                 applySearchAllTileCategories: searchAllTileCategories => tileProvider.SearchAllTileCategories = searchAllTileCategories,
+                applyLaunchAtStartup: startupRegistration.Apply,
                 applyHotkeys: (searchHotkey, tileLauncherHotkey) =>
-                    hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error);
+                    hotkeyBindings.TryApply(searchHotkey, tileLauncherHotkey, out var error) ? null : error,
+                applyTileCornerSettings: settings =>
+                {
+                    tileWindowHost.CloseAfterLaunch = settings.CloseTileLauncherAfterLaunch;
+                    cornerTriggerController.ApplySettings(settings);
+                });
             var actionHost = new LauncherActionHost(
                 tileWindowHost,
                 () =>
                 {
                     ShowSettingsWindow(settingsViewModel, window);
                     return Task.CompletedTask;
-                });
+                },
+                copyText: text => window is null
+                    ? Task.FromResult(LaunchResult.Failed("搜索窗口尚未准备完成"))
+                    : window.CopyTextAsync(text));
             IProcessLauncher processLauncher = new LauncherProcessRouter(
                 launchProcess,
                 actionHost.ExecuteAsync);
-            viewModel = new ViewModels.MainViewModel(searchService, processLauncher, windowHost)
+            viewModel = new ViewModels.MainViewModel(
+                searchService,
+                processLauncher,
+                windowHost,
+                searchHistoryService: searchHistoryService,
+                copyText: text => window is null
+                    ? Task.FromResult(LaunchResult.Failed("搜索窗口尚未准备完成"))
+                    : window.CopyTextAsync(text),
+                administratorProcessLauncher: new WindowsAdministratorProcessLauncher())
             {
                 SearchMode = searchSettings.Mode,
                 MaxResults = searchSettings.MaxResults
@@ -120,10 +158,12 @@ public class App : Application
                 () => settingsStore.SaveAsync(searchSettings, CancellationToken.None),
                 new Size(720, 420),
                 new Size(1800, 1200));
+            tileWindowHost.CornerPositionApplier = tileWindowStateTracker.SetPositionWithoutSaving;
             window.Opened += (_, _) => searchWindowStateTracker.Restore(searchSettings.Appearance.SearchWindow);
             tileWindow.Opened += (_, _) =>
             {
-                tileWindowStateTracker.Restore(searchSettings.Appearance.TileLauncherWindow);
+                if (!tileWindowHost.IsCornerActivated)
+                    tileWindowStateTracker.Restore(searchSettings.Appearance.TileLauncherWindow);
                 _ = tileWindowHost.EnsureLoadedAsync();
             };
             hotkeyBindings.SearchHotkeyPressed += (_, _) =>
@@ -156,14 +196,18 @@ public class App : Application
             desktop.MainWindow = startupWindow;
             if (LauncherStartupPolicy.ShouldShowMainSurfaceOnStartup)
                 startupWindow.Show();
+            cornerTriggerController.Start();
 
             desktop.Exit += (_, _) =>
             {
                 searchWindowStateTracker.FlushAsync().GetAwaiter().GetResult();
                 tileWindowStateTracker.FlushAsync().GetAwaiter().GetResult();
                 hotkeyBindings.Dispose();
+                if (activationHandler is not null && Program.InstanceCoordinator is { } instanceCoordinator)
+                    instanceCoordinator.ActivationRequested -= activationHandler;
                 searchWindowStateTracker.Dispose();
                 tileWindowStateTracker.Dispose();
+                cornerTriggerController.Dispose();
             };
         }
         catch

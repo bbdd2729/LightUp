@@ -19,7 +19,9 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Action<TileDensity> _applyTileDensity;
     private readonly Action<int> _applyMaxResults;
     private readonly Action<bool> _applySearchAllTileCategories;
+    private readonly Func<bool, string?> _applyLaunchAtStartup;
     private readonly Func<string, string, string?> _applyHotkeys;
+    private readonly Action<SearchLauncherSettings> _applyTileCornerSettings;
 
     public SettingsViewModel(
         ISearchLauncherSettingsStore settingsStore,
@@ -30,7 +32,9 @@ public partial class SettingsViewModel : ViewModelBase
         Action<TileDensity>? applyTileDensity = null,
         Action<int>? applyMaxResults = null,
         Action<bool>? applySearchAllTileCategories = null,
-        Func<string, string, string?>? applyHotkeys = null)
+        Func<bool, string?>? applyLaunchAtStartup = null,
+        Func<string, string, string?>? applyHotkeys = null,
+        Action<SearchLauncherSettings>? applyTileCornerSettings = null)
     {
         _settingsStore = settingsStore;
         _settings = settings;
@@ -40,15 +44,24 @@ public partial class SettingsViewModel : ViewModelBase
         _applyTileDensity = applyTileDensity ?? (_ => { });
         _applyMaxResults = applyMaxResults ?? (_ => { });
         _applySearchAllTileCategories = applySearchAllTileCategories ?? (_ => { });
+        _applyLaunchAtStartup = applyLaunchAtStartup ?? (_ => null);
         _applyHotkeys = applyHotkeys ?? ((_, _) => null);
+        _applyTileCornerSettings = applyTileCornerSettings ?? (_ => { });
         _selectedSearchMode = settings.Mode;
         _selectedThemeMode = ThemePalettePolicy.NormalizeThemeMode(settings.Appearance.ThemeMode);
         _selectedColorPalette = ThemePalettePolicy.NormalizeColorPalette(settings.Appearance.ColorPalette);
         _customAccentColor = ThemePalettePolicy.NormalizeCustomAccentColor(settings.Appearance.CustomAccentColor);
         _selectedMaxResults = SearchResultLimitPolicy.Normalize(settings.MaxResults);
         _searchAllTileCategories = settings.SearchAllTileCategories;
+        _saveQueryHistory = settings.SaveQueryHistory;
+        _launchAtStartup = settings.LaunchAtStartup;
         _searchHotkey = settings.Hotkey;
         _tileLauncherHotkey = settings.TileLauncherHotkey;
+        _enableTileCornerTrigger = settings.EnableTileCornerTrigger;
+        _tileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
+            settings.TileCornerTriggerDelayMilliseconds);
+        _closeTileLauncherOnPointerLeave = settings.CloseTileLauncherOnPointerLeave;
+        _closeTileLauncherAfterLaunch = settings.CloseTileLauncherAfterLaunch;
         _selectedCategoryNavigationPlacement = CategoryNavigationPlacementPolicy.Normalize(
             settings.CategoryNavigationPlacement);
         _selectedTileDensity = TileDensityPolicy.Normalize(settings.Appearance.TileDensity);
@@ -60,6 +73,7 @@ public partial class SettingsViewModel : ViewModelBase
     public Array CategoryNavigationPlacements { get; } = Enum.GetValues<CategoryNavigationPlacement>();
     public Array TileDensities { get; } = Enum.GetValues<TileDensity>();
     public int[] ResultLimits { get; } = [10, 20, 30, 50, 100];
+    public int[] TileCornerTriggerDelays { get; } = [300, 500, 700, 1000, 1500, 2000, 3000];
 
     [ObservableProperty]
     private SearchLauncherMode _selectedSearchMode;
@@ -88,10 +102,30 @@ public partial class SettingsViewModel : ViewModelBase
     private bool _searchAllTileCategories;
 
     [ObservableProperty]
+    private bool _saveQueryHistory;
+
+    public int QueryHistoryCount => _settings.QueryHistory.Count;
+
+    [ObservableProperty]
+    private bool _launchAtStartup;
+
+    [ObservableProperty]
     private string _searchHotkey;
 
     [ObservableProperty]
     private string _tileLauncherHotkey;
+
+    [ObservableProperty]
+    private bool _enableTileCornerTrigger;
+
+    [ObservableProperty]
+    private int _tileCornerTriggerDelayMilliseconds;
+
+    [ObservableProperty]
+    private bool _closeTileLauncherOnPointerLeave;
+
+    [ObservableProperty]
+    private bool _closeTileLauncherAfterLaunch;
 
     [ObservableProperty]
     private string _statusText = string.Empty;
@@ -102,6 +136,12 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
+        var startupError = _applyLaunchAtStartup(LaunchAtStartup);
+        if (!string.IsNullOrWhiteSpace(startupError))
+        {
+            StatusText = startupError;
+            return;
+        }
         if (!TryApplyHotkeys(out var searchHotkey, out var tileLauncherHotkey))
             return;
 
@@ -114,8 +154,18 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.Appearance.TileDensity = TileDensityPolicy.Normalize(SelectedTileDensity);
         _settings.MaxResults = SearchResultLimitPolicy.Normalize(SelectedMaxResults);
         _settings.SearchAllTileCategories = SearchAllTileCategories;
+        _settings.SaveQueryHistory = SaveQueryHistory;
+        if (!SaveQueryHistory)
+            _settings.QueryHistory.Clear();
+        OnPropertyChanged(nameof(QueryHistoryCount));
+        _settings.LaunchAtStartup = LaunchAtStartup;
         _settings.Hotkey = searchHotkey;
         _settings.TileLauncherHotkey = tileLauncherHotkey;
+        _settings.EnableTileCornerTrigger = EnableTileCornerTrigger;
+        _settings.TileCornerTriggerDelayMilliseconds = TileCornerTriggerSettingsPolicy.NormalizeDelay(
+            TileCornerTriggerDelayMilliseconds);
+        _settings.CloseTileLauncherOnPointerLeave = CloseTileLauncherOnPointerLeave;
+        _settings.CloseTileLauncherAfterLaunch = CloseTileLauncherAfterLaunch;
         await _settingsStore.SaveAsync(_settings, cancellationToken);
         _applySearchMode(SelectedSearchMode);
         _applyAppearance(_settings.Appearance);
@@ -123,7 +173,17 @@ public partial class SettingsViewModel : ViewModelBase
         _applyTileDensity(_settings.Appearance.TileDensity);
         _applyMaxResults(_settings.MaxResults);
         _applySearchAllTileCategories(_settings.SearchAllTileCategories);
+        _applyTileCornerSettings(_settings);
         StatusText = "设置已保存";
+    }
+
+    [RelayCommand]
+    public async Task ClearQueryHistoryAsync(CancellationToken cancellationToken = default)
+    {
+        _settings.QueryHistory.Clear();
+        OnPropertyChanged(nameof(QueryHistoryCount));
+        await _settingsStore.SaveAsync(_settings, cancellationToken);
+        StatusText = "搜索历史已清空";
     }
 
     private bool TryApplyHotkeys(out string searchHotkey, out string tileLauncherHotkey)

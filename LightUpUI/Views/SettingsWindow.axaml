@@ -1,91 +1,267 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LightUpUI.ViewModels"
+        xmlns:fluent="using:FluentIcons.Avalonia"
+        xmlns:icon="using:FluentIcons.Common"
         x:Class="LightUpUI.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
         Width="520"
         Height="720"
+        MinWidth="460"
+        MinHeight="560"
         Title="LightUp 设置"
-        WindowStartupLocation="CenterOwner">
-    <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource LightUpWindowBrush}"
+        Foreground="{DynamicResource LightUpTextBrush}">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="16">
         <StackPanel Spacing="4">
-            <TextBlock Text="设置" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextBrush}"/>
-            <TextBlock Text="配置搜索模式和磁贴启动器的导航布局。" Foreground="{DynamicResource LightUpTextMutedBrush}" FontSize="12"/>
+            <StackPanel Orientation="Horizontal" Spacing="9">
+                <Border Width="32" Height="32" CornerRadius="9" Background="{DynamicResource LightUpAccentSoftBrush}">
+                    <fluent:FluentIcon Icon="{x:Static icon:Icon.Settings}"
+                                        Width="17"
+                                        Height="17"
+                                        Foreground="{DynamicResource LightUpAccentBrush}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="设置"
+                           FontSize="24"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource LightUpTextBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="配置外观、搜索和启动器行为。"
+                       Foreground="{DynamicResource LightUpTextMutedBrush}"
+                       FontSize="12"/>
         </StackPanel>
-        <Border Grid.Row="1" Padding="16" Background="{DynamicResource LightUpSurfaceBrush}" BorderBrush="{DynamicResource LightUpBorderBrush}" BorderThickness="1" CornerRadius="10">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Spacing="14">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="外观主题" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{CompiledBinding ThemeModes}"
-                              SelectedItem="{CompiledBinding SelectedThemeMode, Mode=TwoWay}"/>
-                    <TextBlock Text="System：跟随 Windows。Light 和 Dark：固定应用窗口与搜索栏的明暗主题。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="强调色" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{CompiledBinding ColorPalettes}"
-                              SelectedItem="{CompiledBinding SelectedColorPalette, Mode=TwoWay}"/>
-                    <TextBox Text="{CompiledBinding CustomAccentColor, Mode=TwoWay}"
-                             IsVisible="{CompiledBinding IsCustomAccentColorVisible}"
-                             PlaceholderText="#4CC2FF"
-                             ToolTip.Tip="选择 Custom 时生效，支持 #RRGGBB 或 #AARRGGBB"/>
-                    <TextBlock Text="提供多组预设颜色；选择 Custom 时输入自定义颜色值。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                <TextBlock Text="搜索模式" FontWeight="SemiBold"/>
-                <ComboBox ItemsSource="{Binding SearchModes}"
-                          SelectedItem="{Binding SelectedSearchMode, Mode=TwoWay}"/>
-                <TextBlock Text="简约模式：只搜索已加入磁贴的入口。&#x0a;完整模式：加入桌面/开始菜单、PATH 程序和内建动作。"
-                           Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="分类导航位置" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{Binding CategoryNavigationPlacements}"
-                              SelectedItem="{Binding SelectedCategoryNavigationPlacement, Mode=TwoWay}"/>
-                    <TextBlock Text="左侧：分类固定在窗口左边。&#x0a;顶部：分类以横向列表显示，为磁贴区域腾出完整宽度。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="磁贴密度" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{CompiledBinding TileDensities}"
-                              SelectedItem="{CompiledBinding SelectedTileDensity, Mode=TwoWay}"/>
-                    <TextBlock Text="紧凑：在较小窗口中显示更多入口。&#x0a;舒适：更大的图标和间距，更适合触控与高分辨率屏幕。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="搜索结果数量" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{CompiledBinding ResultLimits}"
-                              SelectedItem="{CompiledBinding SelectedMaxResults, Mode=TwoWay}"/>
-                    <TextBlock Text="输入搜索时最多显示该数量的结果；空搜索仍最多显示 10 项常用入口。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="简约模式搜索范围" FontWeight="SemiBold"/>
-                    <CheckBox Content="搜索所有磁贴分类"
-                              IsChecked="{CompiledBinding SearchAllTileCategories, Mode=TwoWay}"/>
-                    <TextBlock Text="关闭后，简约模式只搜索磁贴启动器当前选中的分类。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="搜索栏全局快捷键" FontWeight="SemiBold"/>
-                    <TextBox Text="{CompiledBinding SearchHotkey, Mode=TwoWay}"
-                             PlaceholderText="例如 alt+space"/>
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <TextBlock Text="磁贴启动器全局快捷键" FontWeight="SemiBold"/>
-                    <TextBox Text="{CompiledBinding TileLauncherHotkey, Mode=TwoWay}"
-                             PlaceholderText="例如 alt+shift+space"/>
-                    <TextBlock Text="支持 Ctrl、Alt、Shift、Win 与字母、数字、F1–F24、Space、Enter、Tab、Esc；两个入口不能重复。"
-                               Opacity="0.65" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                </StackPanel>
-            </ScrollViewer>
+
+        <ScrollViewer Grid.Row="1"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      KeyboardNavigation.TabNavigation="Continue"
+                      ScrollViewer.BringIntoViewOnFocusChange="True">
+            <StackPanel Spacing="12" Margin="0,0,10,0">
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="外观主题" FontSize="15" FontWeight="SemiBold"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding ThemeModes}"
+                                  SelectedItem="{CompiledBinding SelectedThemeMode, Mode=TwoWay}"
+                                  AutomationProperties.Name="外观主题"
+                                  KeyboardNavigation.TabIndex="0"/>
+                        <TextBlock Text="System 跟随 Windows；Light 和 Dark 固定应用窗口、输入框和菜单的主题。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="强调色" FontSize="15" FontWeight="SemiBold"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding ColorPalettes}"
+                                  SelectedItem="{CompiledBinding SelectedColorPalette, Mode=TwoWay}"
+                                  AutomationProperties.Name="强调色方案"
+                                  KeyboardNavigation.TabIndex="1"/>
+                        <TextBox Classes="launcher-field"
+                                 Text="{CompiledBinding CustomAccentColor, Mode=TwoWay}"
+                                 IsVisible="{CompiledBinding IsCustomAccentColorVisible}"
+                                 PlaceholderText="#4CC2FF"
+                                 ToolTip.Tip="选择 Custom 时生效，支持 #RRGGBB 或 #AARRGGBB"
+                                 AutomationProperties.Name="自定义强调色"
+                                 KeyboardNavigation.TabIndex="2"/>
+                        <TextBlock Text="强调色用于焦点、选中状态和主操作。选择 Custom 后可输入自定义颜色值。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="搜索模式" FontSize="15" FontWeight="SemiBold"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding SearchModes}"
+                                  SelectedItem="{CompiledBinding SelectedSearchMode, Mode=TwoWay}"
+                                  AutomationProperties.Name="搜索模式"
+                                  KeyboardNavigation.TabIndex="3"/>
+                        <TextBlock Text="简约模式只搜索磁贴入口；完整模式加入桌面、开始菜单、PATH 程序和内建动作。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="磁贴启动器" FontSize="15" FontWeight="SemiBold"/>
+                        <TextBlock Text="分类导航位置" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding CategoryNavigationPlacements}"
+                                  SelectedItem="{CompiledBinding SelectedCategoryNavigationPlacement, Mode=TwoWay}"
+                                  AutomationProperties.Name="分类导航位置"
+                                  KeyboardNavigation.TabIndex="4"/>
+                        <TextBlock Text="左侧固定分类栏；顶部使用横向分类列表，为磁贴区保留完整宽度。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="磁贴密度" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}" Margin="0,4,0,0"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding TileDensities}"
+                                  SelectedItem="{CompiledBinding SelectedTileDensity, Mode=TwoWay}"
+                                  AutomationProperties.Name="磁贴密度"
+                                  KeyboardNavigation.TabIndex="5"/>
+                        <TextBlock Text="紧凑模式显示更多入口；舒适模式提供更大的图标和间距。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="磁贴自动弹出" FontSize="15" FontWeight="SemiBold"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="启用屏幕四角自动弹出"
+                                  IsChecked="{CompiledBinding EnableTileCornerTrigger, Mode=TwoWay}"
+                                  AutomationProperties.Name="启用屏幕四角自动弹出"
+                                  KeyboardNavigation.TabIndex="6"/>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="触发延迟" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                                <TextBlock Text="鼠标在屏幕角落停留达到该时间后打开启动器。"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ComboBox Grid.Column="1"
+                                      Classes="launcher-field"
+                                      Width="112"
+                                      ItemsSource="{CompiledBinding TileCornerTriggerDelays}"
+                                      SelectedItem="{CompiledBinding TileCornerTriggerDelayMilliseconds, Mode=TwoWay}"
+                                      AutomationProperties.Name="四角弹出触发延迟"
+                                      KeyboardNavigation.TabIndex="7"/>
+                        </Grid>
+                        <CheckBox Classes="launcher-field"
+                                  Content="鼠标离开磁贴窗口后自动关闭"
+                                  IsChecked="{CompiledBinding CloseTileLauncherOnPointerLeave, Mode=TwoWay}"
+                                  AutomationProperties.Name="鼠标离开磁贴窗口后自动关闭"
+                                  KeyboardNavigation.TabIndex="8"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="启动入口后自动关闭磁贴窗口"
+                                  IsChecked="{CompiledBinding CloseTileLauncherAfterLaunch, Mode=TwoWay}"
+                                  AutomationProperties.Name="启动入口后自动关闭磁贴窗口"
+                                  KeyboardNavigation.TabIndex="9"/>
+                        <TextBlock Text="快捷键和托盘手动打开的启动器不受鼠标离开规则影响。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="搜索结果与历史" FontSize="15" FontWeight="SemiBold"/>
+                        <TextBlock Text="搜索结果数量" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}"/>
+                        <ComboBox Classes="launcher-field"
+                                  ItemsSource="{CompiledBinding ResultLimits}"
+                                  SelectedItem="{CompiledBinding SelectedMaxResults, Mode=TwoWay}"
+                                  AutomationProperties.Name="搜索结果数量"
+                                  KeyboardNavigation.TabIndex="6"/>
+                        <TextBlock Text="输入搜索时最多显示该数量的结果；空搜索仍最多显示 10 项常用入口。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="搜索所有磁贴分类"
+                                  IsChecked="{CompiledBinding SearchAllTileCategories, Mode=TwoWay}"
+                                  AutomationProperties.Name="搜索所有磁贴分类"
+                                  KeyboardNavigation.TabIndex="7"/>
+                        <TextBlock Text="关闭后，简约模式只搜索磁贴启动器当前选中的分类。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="保存最近搜索内容"
+                                  IsChecked="{CompiledBinding SaveQueryHistory, Mode=TwoWay}"
+                                  AutomationProperties.Name="保存最近搜索内容"
+                                  KeyboardNavigation.TabIndex="8"/>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Text="仅保存在本机设置中，不上传查询内容。"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="{CompiledBinding QueryHistoryCount}"
+                                           Foreground="{DynamicResource LightUpTextFaintBrush}"
+                                           VerticalAlignment="Center"/>
+                                <Button Classes="launcher-secondary"
+                                        Content="清空历史"
+                                        Command="{CompiledBinding ClearQueryHistoryCommand}"
+                                        Padding="12,6"
+                                        AutomationProperties.Name="清空搜索历史"
+                                        KeyboardNavigation.TabIndex="9"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="launcher-settings-section">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="启动与快捷键" FontSize="15" FontWeight="SemiBold"/>
+                        <CheckBox Classes="launcher-field"
+                                  Content="登录 Windows 后自动启动 LightUp"
+                                  IsChecked="{CompiledBinding LaunchAtStartup, Mode=TwoWay}"
+                                  AutomationProperties.Name="登录 Windows 后自动启动 LightUp"
+                                  KeyboardNavigation.TabIndex="10"/>
+                        <TextBlock Text="仅为当前用户创建启动项，不需要管理员权限。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="搜索栏全局快捷键" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}" Margin="0,4,0,0"/>
+                        <TextBox Classes="launcher-field"
+                                 Text="{CompiledBinding SearchHotkey, Mode=TwoWay}"
+                                 PlaceholderText="例如 alt+space"
+                                 AutomationProperties.Name="搜索栏全局快捷键"
+                                 KeyboardNavigation.TabIndex="11"/>
+                        <TextBlock Text="磁贴启动器全局快捷键" FontWeight="SemiBold" Foreground="{DynamicResource LightUpTextMutedBrush}" Margin="0,4,0,0"/>
+                        <TextBox Classes="launcher-field"
+                                 Text="{CompiledBinding TileLauncherHotkey, Mode=TwoWay}"
+                                 PlaceholderText="例如 alt+shift+space"
+                                 AutomationProperties.Name="磁贴启动器全局快捷键"
+                                 KeyboardNavigation.TabIndex="12"/>
+                        <TextBlock Text="支持 Ctrl、Alt、Shift、Win 与字母、数字、F1-F24、Space、Enter、Tab、Esc；两个入口不能重复。"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource LightUpTextMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                Background="{DynamicResource LightUpSurfaceStrongBrush}"
+                BorderBrush="{DynamicResource LightUpBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="12,10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Text="{CompiledBinding StatusText}"
+                           Foreground="{DynamicResource LightUpTextMutedBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           MaxLines="1"/>
+                <Button Grid.Column="1"
+                        Classes="launcher-primary"
+                        Content="保存设置"
+                        Command="{CompiledBinding SaveCommand}"
+                        Padding="18,8"
+                        AutomationProperties.Name="保存设置"
+                        KeyboardNavigation.TabIndex="13"
+                        IsDefault="True"/>
+            </Grid>
         </Border>
-        <DockPanel Grid.Row="2">
-            <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Opacity="0.7"/>
-            <Button DockPanel.Dock="Right" Content="保存" Command="{Binding SaveCommand}" Padding="18,8"/>
-        </DockPanel>
     </Grid>
 </Window>

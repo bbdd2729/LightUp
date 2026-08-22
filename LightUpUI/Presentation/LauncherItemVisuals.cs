@@ -13,6 +13,8 @@ public static class LauncherItemVisuals
         LauncherItemKind.Application => Icon.AppGeneric,
         LauncherItemKind.Shortcut => Icon.Link,
         LauncherItemKind.PathExecutable => Icon.WindowDevTools,
+        LauncherItemKind.File => Icon.Document,
+        LauncherItemKind.Folder => Icon.Folder,
         LauncherItemKind.Action => Icon.Sparkle,
         _ => Icon.Circle
     };
@@ -32,6 +34,8 @@ public static class LauncherItemVisuals
         LauncherItemKind.Application => "应用",
         LauncherItemKind.Shortcut => "快捷方式",
         LauncherItemKind.PathExecutable => "系统程序",
+        LauncherItemKind.File => "文件",
+        LauncherItemKind.Folder => "文件夹",
         LauncherItemKind.Action => "功能",
         _ => "项目"
     };

@@ -7,6 +7,108 @@ namespace LightUpTest.Launcher;
 public sealed class MainViewModelResultActionTests
 {
     [Fact]
+    public async Task Invoking_a_calculation_keeps_the_search_open_and_reports_that_the_result_was_copied()
+    {
+        var windowHost = new FakeWindowHost();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success));
+        viewModel.SelectedItem = new LauncherItem(
+            "action:copy-calculation", "2 + 2 = 4", "", "lightup:calculator", "4", LauncherItemKind.Action);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.False(windowHost.WasHidden);
+        Assert.Equal("已复制结果：4", viewModel.StatusText);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
+    public async Task Invoking_a_normal_result_hides_the_search_after_a_successful_launch()
+    {
+        var windowHost = new FakeWindowHost();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success));
+        viewModel.SelectedItem = new LauncherItem(
+            "shortcut:editor", "Editor", "", "C:\\Tools\\editor.lnk", null, LauncherItemKind.Shortcut);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.True(windowHost.WasHidden);
+        Assert.Equal(string.Empty, viewModel.StatusText);
+    }
+
+    [Fact]
+    public async Task A_successful_launch_records_the_current_query_without_blocking_hide_behavior()
+    {
+        var windowHost = new FakeWindowHost();
+        var history = new FakeSearchHistoryService();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success), history);
+        viewModel.QueryText = "  report  ";
+        viewModel.SelectedItem = new LauncherItem(
+            "shortcut:editor", "Editor", "", "C:\\Tools\\editor.lnk", null, LauncherItemKind.Shortcut);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.Equal("  report  ", history.LastQuery);
+        Assert.True(windowHost.WasHidden);
+    }
+
+    [Fact]
+    public async Task Invoking_a_recent_query_suggestion_replaces_the_query_and_keeps_the_launcher_open()
+    {
+        var windowHost = new FakeWindowHost();
+        var history = new FakeSearchHistoryService();
+        var viewModel = CreateViewModel(windowHost, new FakePathRevealService(LaunchResult.Success), history);
+        viewModel.SelectedItem = new LauncherItem(
+            "action:search-query:docs", "再次搜索“docs”", "", "lightup:search-query", "docs", LauncherItemKind.Action);
+
+        await viewModel.InvokeSelectedCommand.ExecuteAsync(null);
+
+        Assert.Equal("docs", viewModel.QueryText);
+        Assert.False(windowHost.WasHidden);
+        Assert.Null(history.LastQuery);
+    }
+
+    [Fact]
+    public async Task CopySelectedPathAsync_copies_a_file_path_and_keeps_the_launcher_open()
+    {
+        string? copiedPath = null;
+        var viewModel = CreateViewModel(
+            new FakeWindowHost(),
+            new FakePathRevealService(LaunchResult.Success),
+            copyText: path =>
+            {
+                copiedPath = path;
+                return Task.FromResult(LaunchResult.Success);
+            });
+        viewModel.SelectedItem = new LauncherItem(
+            "file:report", "Report", "", "C:\\Docs\\Report.pdf", null, LauncherItemKind.File);
+
+        await viewModel.CopySelectedPathAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("C:\\Docs\\Report.pdf", copiedPath);
+        Assert.Contains("已复制路径", viewModel.StatusText);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
+    public async Task LaunchSelectedAsAdministratorAsync_hides_after_a_successful_elevated_launch()
+    {
+        var windowHost = new FakeWindowHost();
+        var administratorLauncher = new FakeAdministratorProcessLauncher(LaunchResult.Success);
+        var viewModel = CreateViewModel(
+            windowHost,
+            new FakePathRevealService(LaunchResult.Success),
+            administratorProcessLauncher: administratorLauncher);
+        viewModel.SelectedItem = new LauncherItem(
+            "file:tool", "Tool", "", "C:\\Tools\\tool.exe", null, LauncherItemKind.File);
+
+        await viewModel.LaunchSelectedAsAdministratorCommand.ExecuteAsync(null);
+
+        Assert.Equal("file:tool", administratorLauncher.LastItem?.Id);
+        Assert.True(windowHost.WasHidden);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
     public async Task RevealSelectedItemAsync_reveals_file_backed_results_without_hiding_the_search_window()
     {
         var revealService = new FakePathRevealService(LaunchResult.Success);
@@ -37,8 +139,20 @@ public sealed class MainViewModelResultActionTests
         Assert.Contains("没有可打开的位置", viewModel.StatusText);
     }
 
-    private static MainViewModel CreateViewModel(ILauncherWindowHost windowHost, IPathRevealService revealService)
-        => new(new EmptySearchService(), new FakeProcessLauncher(), windowHost, revealService);
+    private static MainViewModel CreateViewModel(
+        ILauncherWindowHost windowHost,
+        IPathRevealService revealService,
+        ISearchHistoryService? history = null,
+        Func<string, Task<LaunchResult>>? copyText = null,
+        IAdministratorProcessLauncher? administratorProcessLauncher = null)
+        => new(
+            new EmptySearchService(),
+            new FakeProcessLauncher(),
+            windowHost,
+            revealService,
+            history,
+            copyText,
+            administratorProcessLauncher);
 
     private sealed class EmptySearchService : ISearchService
     {
@@ -74,6 +188,34 @@ public sealed class MainViewModelResultActionTests
         public Task<LaunchResult> RevealAsync(string path, CancellationToken cancellationToken)
         {
             LastPath = path;
+            return Task.FromResult(result);
+        }
+    }
+
+    private sealed class FakeSearchHistoryService : ISearchHistoryService
+    {
+        public IReadOnlyList<string> RecentQueries => [];
+
+        public string? LastQuery { get; private set; }
+
+        public Task RecordAsync(string query, CancellationToken cancellationToken)
+        {
+            LastQuery = query;
+            return Task.CompletedTask;
+        }
+
+        public Task ClearAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class FakeAdministratorProcessLauncher(LaunchResult result) : IAdministratorProcessLauncher
+    {
+        public LauncherItem? LastItem { get; private set; }
+
+        public Task<LaunchResult> LaunchAsAdministratorAsync(
+            LauncherItem item,
+            CancellationToken cancellationToken)
+        {
+            LastItem = item;
             return Task.FromResult(result);
         }
     }

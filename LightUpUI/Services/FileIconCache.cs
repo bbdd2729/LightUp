@@ -25,6 +25,21 @@ public sealed class FileIconCache(Func<string, int, IImage?> loadIcon)
         return entry.Value;
     }
 
+    public void Invalidate(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        var normalizedPath = NormalizePath(path);
+        foreach (var key in _icons.Keys)
+        {
+            if (key.EndsWith($"|{normalizedPath}", StringComparison.OrdinalIgnoreCase))
+                _icons.TryRemove(key, out _);
+        }
+    }
+
+    public void Clear() => _icons.Clear();
+
     private static string NormalizePath(string path)
     {
         var trimmedPath = path.Trim();

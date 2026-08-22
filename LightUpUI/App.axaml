@@ -12,6 +12,9 @@
         <SolidColorBrush x:Key="LightUpWindowBrush" Color="#F0141A27"/>
         <SolidColorBrush x:Key="LightUpSurfaceBrush" Color="#1AFFFFFF"/>
         <SolidColorBrush x:Key="LightUpSurfaceStrongBrush" Color="#24FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpInputBrush" Color="#26FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpInputHoverBrush" Color="#32FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpDropBrush" Color="#D91B2A3D"/>
         <SolidColorBrush x:Key="LightUpBorderBrush" Color="#32FFFFFF"/>
         <SolidColorBrush x:Key="LightUpBorderBrushStrong" Color="#5AFFFFFF"/>
         <SolidColorBrush x:Key="LightUpTextBrush" Color="#FFF7FAFC"/>
@@ -22,6 +25,8 @@
         <SolidColorBrush x:Key="LightUpAccentSoftBrush" Color="#304CC2FF"/>
         <SolidColorBrush x:Key="LightUpSelectionBrush" Color="#3A4CC2FF"/>
         <SolidColorBrush x:Key="LightUpHoverBrush" Color="#20FFFFFF"/>
+        <SolidColorBrush x:Key="LightUpFocusBrush" Color="#4CC2FF"/>
+        <SolidColorBrush x:Key="LightUpDisabledBrush" Color="#5C96A6B5"/>
         <SolidColorBrush x:Key="LightUpDangerBrush" Color="#FFE66D75"/>
         <SolidColorBrush x:Key="LightUpDangerSoftBrush" Color="#20E66D75"/>
         <SolidColorBrush x:Key="LightUpSuccessBrush" Color="#FF76E3A1"/>
@@ -36,10 +41,10 @@
             <Setter Property="Foreground" Value="{DynamicResource LightUpTextMutedBrush}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="MinWidth" Value="32"/>
-            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="MinWidth" Value="36"/>
+            <Setter Property="MinHeight" Value="36"/>
         </Style>
         <Style Selector="Button.launcher-chrome:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
@@ -48,12 +53,22 @@
         <Style Selector="Button.launcher-chrome:pressed">
             <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
         </Style>
+        <Style Selector="Button.launcher-chrome.is-active">
+            <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpAccentBrush}"/>
+        </Style>
+        <Style Selector="Button.launcher-chrome.is-active:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpSelectionBrush}"/>
+        </Style>
         <Style Selector="Button.launcher-primary">
             <Setter Property="Background" Value="{DynamicResource LightUpAccentSoftBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="MinHeight" Value="36"/>
         </Style>
         <Style Selector="Button.launcher-primary:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpAccentBrush}"/>
@@ -78,10 +93,14 @@
             <Setter Property="Opacity" Value="0.78"/>
         </Style>
         <Style Selector="Border.launcher-search-shell">
-            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpInputBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+        <Style Selector="Border.launcher-search-shell:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpInputHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
         </Style>
         <Style Selector="Button.launcher-search-clear">
             <Setter Property="MinWidth" Value="26"/>
@@ -97,7 +116,7 @@
             <Setter Property="Padding" Value="0"/>
         </Style>
         <Style Selector="Button.launcher-tile-remove:pointerover">
-            <Setter Property="Background" Value="#20E66D75"/>
+            <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpDangerBrush}"/>
         </Style>
         <Style Selector="Button.launcher-tile-remove:pressed">
@@ -121,14 +140,32 @@
             <Setter Property="Opacity" Value="0.72"/>
         </Style>
         <Style Selector="Button.launcher-chrome:focus-visible">
-            <Setter Property="BorderBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Button.launcher-secondary">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceStrongBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        <Style Selector="Button.launcher-secondary:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+        </Style>
+        <Style Selector="Button.launcher-secondary:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="Button.tray-menu-item">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="MinHeight" Value="56"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
         </Style>
@@ -145,6 +182,23 @@
         <Style Selector="Button.tray-menu-exit:pointerover">
             <Setter Property="Background" Value="{DynamicResource LightUpDangerSoftBrush}"/>
         </Style>
+        <Style Selector="ContextMenu.launcher-context-menu">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceStrongBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+        <Style Selector="ContextMenu.launcher-context-menu MenuItem">
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="10,7"/>
+        </Style>
+        <Style Selector="ContextMenu.launcher-context-menu MenuItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpHoverBrush}"/>
+        </Style>
+        <Style Selector="ContextMenu.launcher-context-menu MenuItem:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource LightUpDisabledBrush}"/>
+        </Style>
         <Style Selector="TextBox.launcher-query">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
@@ -160,6 +214,73 @@
         <Style Selector="TextBox.launcher-query:pointerover">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+        </Style>
+        <Style Selector="TextBox.launcher-field">
+            <Setter Property="Background" Value="{DynamicResource LightUpInputBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource LightUpAccentBrush}"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+        <Style Selector="TextBox.launcher-field:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpInputHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+        </Style>
+        <Style Selector="TextBox.launcher-field:focus">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="ComboBox.launcher-field">
+            <Setter Property="Background" Value="{DynamicResource LightUpInputBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+        <Style Selector="ComboBox.launcher-field:pointerover">
+            <Setter Property="Background" Value="{DynamicResource LightUpInputHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrushStrong}"/>
+        </Style>
+        <Style Selector="ComboBox.launcher-field:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="CheckBox.launcher-field">
+            <Setter Property="Foreground" Value="{DynamicResource LightUpTextBrush}"/>
+            <Setter Property="MinHeight" Value="32"/>
+        </Style>
+        <Style Selector="Border.launcher-settings-section">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14"/>
+        </Style>
+        <Style Selector="Border.launcher-empty-state">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+        <Style Selector="Border.launcher-status-bar">
+            <Setter Property="Background" Value="{DynamicResource LightUpSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="Padding" Value="8,5"/>
+        </Style>
+        <Style Selector="Border.result-row">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="ListBoxItem:focus-visible Border.result-row">
+            <Setter Property="BorderBrush" Value="{DynamicResource LightUpFocusBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
     </Application.Styles>
 </Application>

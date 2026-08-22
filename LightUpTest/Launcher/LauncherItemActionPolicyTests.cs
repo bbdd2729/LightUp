@@ -21,4 +21,39 @@ public sealed class LauncherItemActionPolicyTests
         Assert.False(item.CanRevealLocation);
         Assert.True(item.CanCopyLaunchPath);
     }
+
+    [Theory]
+    [InlineData("action:copy-calculation", true)]
+    [InlineData("action:web-search", false)]
+    [InlineData("shortcut:notepad", false)]
+    public void Successful_actions_only_keep_the_search_open_when_their_feedback_must_remain_visible(
+        string id,
+        bool expected)
+    {
+        var item = new LauncherItem(id, "Item", "", "path", null, LauncherItemKind.Action);
+
+        Assert.Equal(expected, LauncherItemActionPolicy.ShouldKeepSearchOpenAfterSuccess(item));
+    }
+
+    [Fact]
+    public void Search_query_action_requires_a_non_empty_query_argument()
+    {
+        var valid = new LauncherItem(
+            "action:search-query:docs", "Search", "", "lightup:search-query", "docs", LauncherItemKind.Action);
+        var invalid = valid with { Arguments = " " };
+
+        Assert.True(LauncherItemActionPolicy.IsSearchQueryAction(valid));
+        Assert.False(LauncherItemActionPolicy.IsSearchQueryAction(invalid));
+    }
+
+    [Theory]
+    [InlineData("C:\\Tools\\tool.exe", true)]
+    [InlineData("C:\\Tools\\tool.lnk", true)]
+    [InlineData("C:\\Docs\\readme.txt", false)]
+    public void Administrator_action_is_limited_to_elevatable_file_types(string path, bool expected)
+    {
+        var item = new LauncherItem("item", "Item", "", path, null, LauncherItemKind.File);
+
+        Assert.Equal(expected, LauncherItemActionPolicy.CanRunAsAdministrator(item));
+    }
 }

@@ -51,4 +51,21 @@ public sealed class FileIconCacheTests
 
         Assert.Equal(0, calls);
     }
+
+    [Fact]
+    public void Invalidate_forces_the_next_request_to_reload_the_path()
+    {
+        var calls = 0;
+        var cache = new FileIconCache((_, _) =>
+        {
+            calls++;
+            return null;
+        });
+
+        _ = cache.GetOrLoad(@"C:\Tools\App.exe", 32);
+        cache.Invalidate(@"c:\tools\app.exe");
+        _ = cache.GetOrLoad(@"C:\Tools\App.exe", 32);
+
+        Assert.Equal(2, calls);
+    }
 }

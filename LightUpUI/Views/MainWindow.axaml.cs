@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -30,6 +31,25 @@ public partial class MainWindow : Window
     }
 
     public static bool TryFocusQueryBox(Control? queryBox) => queryBox?.Focus() == true;
+
+    public async Task<LaunchResult> CopyTextAsync(string text)
+    {
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null)
+                return LaunchResult.Failed("当前环境不支持剪贴板");
+
+            var data = new DataTransfer();
+            data.Add(DataTransferItem.CreateText(text));
+            await clipboard.SetDataAsync(data);
+            return LaunchResult.Success;
+        }
+        catch (Exception exception)
+        {
+            return LaunchResult.Failed($"复制到剪贴板失败：{exception.Message}");
+        }
+    }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -117,28 +137,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        try
-        {
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard is null)
-            {
-                ViewModel.ReportStatus("当前环境不支持剪贴板");
-                return;
-            }
-
-            var data = new DataTransfer();
-            data.Add(DataTransferItem.CreateText(item.LaunchPath));
-            await clipboard.SetDataAsync(data);
+        var result = await CopyTextAsync(item.LaunchPath);
+        if (result.Succeeded)
             ViewModel.ReportStatus($"已复制路径：{item.Title}");
-        }
-        catch (Exception exception)
-        {
-            ViewModel.ReportStatus($"复制路径失败：{exception.Message}");
-        }
-        finally
-        {
-            e.Handled = true;
-        }
+        else
+            ViewModel.ReportStatus(result.ErrorMessage ?? "复制路径失败");
+
+        e.Handled = true;
+    }
+
+    private async void ContextRunAsAdministrator_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectContextResult(sender) is not null)
+            await ViewModel.LaunchSelectedAsAdministratorAsync();
+
+        e.Handled = true;
     }
 
     private void UpdateTopmostButton()
@@ -154,12 +167,21 @@ public partial class MainWindow : Window
             : FluentIcons.Common.Icon.PinOff;
         topmostIcon.IconVariant = WindowChromePolicy.GetTopmostIconVariant(Topmost);
         ToolTip.SetTip(topmostButton, WindowChromePolicy.GetTopmostToolTip(Topmost));
+        SetClass(topmostButton, "is-active", Topmost);
         topmostStatus.IsVisible = Topmost;
+    }
+
+    private static void SetClass(Control control, string className, bool enabled)
+    {
+        if (enabled)
+            control.Classes.Add(className);
+        else
+            control.Classes.Remove(className);
     }
 
     private MainViewModel ViewModel => (MainViewModel)DataContext!;
 
-    private void Window_KeyDown(object? sender, KeyEventArgs e)
+    private async void Window_KeyDown(object? sender, KeyEventArgs e)
     {
         switch (e.Key)
         {
@@ -172,7 +194,12 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 break;
             case Key.Enter:
-                ViewModel.InvokeSelectedCommand.Execute(null);
+                if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+                    await ViewModel.RevealSelectedItemAsync();
+                else if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    await ViewModel.CopySelectedPathAsync();
+                else
+                    ViewModel.InvokeSelectedCommand.Execute(null);
                 e.Handled = true;
                 break;
             case Key.Escape:

@@ -59,6 +59,20 @@ public sealed class MainViewModelDefaultResultsTests
         Assert.Equal(string.Empty, viewModel.QueryText);
     }
 
+    [Fact]
+    public void Empty_state_and_status_bar_are_mutually_exclusive()
+    {
+        var viewModel = new MainViewModel(new FakeSearchService([]), new FakeProcessLauncher(), new FakeWindowHost());
+
+        Assert.True(viewModel.ShowEmptyState);
+        Assert.False(viewModel.ShowStatusBar);
+
+        viewModel.ReportStatus("已复制路径");
+
+        Assert.True(viewModel.ShowEmptyState);
+        Assert.False(viewModel.ShowStatusBar);
+    }
+
     private sealed class FakeSearchService(IReadOnlyList<LauncherItem> results) : ISearchService
     {
         public string? LastQuery { get; private set; }
